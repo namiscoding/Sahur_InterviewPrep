@@ -1,13 +1,20 @@
-﻿using InterviewPrep.API.Models;
+﻿// Program.cs
+
+// ... (các using khác)
+using InterviewPrep.API.Application.Profiles;
+using InterviewPrep.API.Application.Services;
+using InterviewPrep.API.Data; // Đảm bảo đã import ApplicationDbContext của bạn
+using InterviewPrep.API.Data.Repositories;
+using InterviewPrep.API.Models; // Đảm bảo đã import ApplicationUser của bạn
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+
 // 1. Cấu hình DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("MyCnn")));
@@ -23,7 +30,20 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// 3. Cấu hình Authentication với JWT Bearer
+// Add Repositories
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+// Add Services
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
+// *** THÊM DÒNG NÀY VÀO ĐÂY ***
+// 3. Cấu hình Authorization Services (bắt buộc)
+builder.Services.AddAuthorization();
+
+// 4. Cấu hình Authentication với JWT Bearer
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -44,10 +64,45 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Thêm Controllers
+builder.Services.AddControllers(); // Cần thêm nếu bạn muốn sử dụng Controller MVC/API
+
+// Thêm Swagger/OpenAPI (nếu cần)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Cấu hình CORS (nếu cần thiết cho Frontend)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder.WithOrigins("http://localhost:5173") // Thay đổi nếu Frontend của bạn chạy trên cổng khác
+                          .AllowAnyHeader()
+                          .AllowAnyMethod());
+});
+
+
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
+// 1. Kích hoạt Swagger trong môi trường phát triển
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// 2. Chuyển hướng HTTP sang HTTPS
 app.UseHttpsRedirection();
+
+// 3. Sử dụng CORS policy
+app.UseCors("AllowSpecificOrigin");
+
+// 4. Sử dụng Authentication và Authorization
+// Thứ tự rất quan trọng: UseAuthentication phải trước UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
-app.Run();
 
+// 5. Ánh xạ các Controller
+app.MapControllers();
+
+app.Run();
