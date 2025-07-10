@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using InterviewPrep.API.Application.DTOs;
+using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Models;
 
 namespace InterviewPrep.API.Application.Profiles
@@ -10,6 +10,9 @@ namespace InterviewPrep.API.Application.Profiles
         {
             
             CreateMap<Category, CategoryDTO>();
+            CreateMap<CreateCategoryDTO, Category>();
+            CreateMap<UpdateCategoryInfoDTO, Category>();
+            CreateMap<UpdateCategoryStatusDTO, Category>();
         }
     }
 }

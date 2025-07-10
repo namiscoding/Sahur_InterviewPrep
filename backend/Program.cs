@@ -1,9 +1,7 @@
-﻿// Program.cs
-
-// ... (các using khác)
+﻿
 using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
-using InterviewPrep.API.Data; // Đảm bảo đã import ApplicationDbContext của bạn
+using InterviewPrep.API.Data; 
 using InterviewPrep.API.Data.Repositories;
 using InterviewPrep.API.Models; // Đảm bảo đã import ApplicationUser của bạn
 using Microsoft.AspNetCore.Authentication.JwtBearer;
