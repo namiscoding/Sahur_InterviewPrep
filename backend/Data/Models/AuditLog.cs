@@ -1,4 +1,4 @@
-﻿namespace InterviewPrep.API.Models
+﻿namespace InterviewPrep.API.Data.Models
 {
     public class AuditLog
     {

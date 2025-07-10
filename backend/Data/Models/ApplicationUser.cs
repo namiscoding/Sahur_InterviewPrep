@@ -1,8 +1,8 @@
-﻿using InterviewPrep.API.Models.Enums;
+﻿using InterviewPrep.API.Data.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace InterviewPrep.API.Models
+namespace InterviewPrep.API.Data.Models
 {
     public class ApplicationUser : IdentityUser
     {

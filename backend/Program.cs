@@ -1,11 +1,11 @@
 ﻿// Program.cs
 
 // ... (các using khác)
+using InterviewPrep.API;
 using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
-using InterviewPrep.API.Data; // Đảm bảo đã import ApplicationDbContext của bạn
+using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
-using InterviewPrep.API.Models; // Đảm bảo đã import ApplicationUser của bạn
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,12 +32,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 // Add Repositories
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 // Add Services
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Add AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(Program));
 
 // *** THÊM DÒNG NÀY VÀO ĐÂY ***
 // 3. Cấu hình Authorization Services (bắt buộc)
@@ -80,6 +80,10 @@ builder.Services.AddCors(options =>
                           .AllowAnyMethod());
 });
 
+// Swagger services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
@@ -104,5 +108,4 @@ app.UseAuthorization();
 
 // 5. Ánh xạ các Controller
 app.MapControllers();
-
 app.Run();

@@ -1,7 +1,8 @@
 // frontend-web/src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import CategoryManagementPage from './pages/Staff/CategoryManagementPage'; // Đảm bảo đường dẫn này đúng
+//import CategoryManagementPage from './pages/Staff/CategoryManagementPage'; // Đảm bảo đường dẫn này đúng
+import Test5 from './pages/Test5';
 
 // Xóa hoặc comment nội dung mặc định của Vite/React nếu nó ở đây
 // Ví dụ: function App() { const [count, setCount] = useState(0) ... }
@@ -24,7 +25,8 @@ function App() {
 
         <Routes>
           <Route path="/" element={<h1 style={{textAlign: 'center', marginTop: '50px'}}>Welcome to Interview Prep!</h1>} /> {/* Trang chủ đơn giản */}
-          <Route path="/staff/categories" element={<CategoryManagementPage />} />
+          {/* <Route path="/staff/categories" element={<CategoryManagementPage />} /> */}
+          <Route path="/test" element={<Test5/>}/>
           {/* Thêm các Route khác cho các chức năng sau này */}
         </Routes>
       </div>

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using InterviewPrep.API.Application.DTOs;
-using InterviewPrep.API.Models;
+using InterviewPrep.API.Data.Models;
 
 namespace InterviewPrep.API.Application.Profiles
 {
