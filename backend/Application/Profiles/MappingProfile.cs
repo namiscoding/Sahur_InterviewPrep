@@ -10,6 +10,9 @@ namespace InterviewPrep.API.Application.Profiles
         {
             
             CreateMap<Category, CategoryDTO>();
+            CreateMap<CreateCategoryDTO, Category>();
+            CreateMap<UpdateCategoryInfoDTO, Category>();
+            CreateMap<UpdateCategoryStatusDTO, Category>();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Data.Models;
+using InterviewPrep.API.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace InterviewPrep.API.Data.Repositories

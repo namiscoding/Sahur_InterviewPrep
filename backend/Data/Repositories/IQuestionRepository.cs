@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Data.Models;
+using InterviewPrep.API.Data.Models;
 
 namespace InterviewPrep.API.Data.Repositories
 {

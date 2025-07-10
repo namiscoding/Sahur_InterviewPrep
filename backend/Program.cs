@@ -1,4 +1,3 @@
-﻿// Program.cs
 
 // ... (các using khác)
 using InterviewPrep.API;
