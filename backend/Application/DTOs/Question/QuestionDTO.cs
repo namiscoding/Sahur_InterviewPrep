@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Models.Enums;
+﻿using InterviewPrep.API.Data.Models.Enums;
 
 namespace InterviewPrep.API.Application.DTOs.Question
 {

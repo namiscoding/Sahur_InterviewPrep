@@ -1,8 +1,8 @@
-﻿using InterviewPrep.API.Models.Enums;
-using InterviewPrep.API.Models;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using InterviewPrep.API.Data.Models;
+using InterviewPrep.API.Data.Models.Enums;
 
 // Đảm bảo bạn đã có các model này trong project, ví dụ: using YourProject.Models;
 

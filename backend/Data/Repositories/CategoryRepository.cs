@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Models;
+﻿using InterviewPrep.API.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 

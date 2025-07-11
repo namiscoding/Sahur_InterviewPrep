@@ -1,6 +1,6 @@
-﻿using InterviewPrep.API.Models.Enums;
+﻿using InterviewPrep.API.Data.Models.Enums;
 
-namespace InterviewPrep.API.Models
+namespace InterviewPrep.API.Data.Models
 {
     public class MockSession
     {
