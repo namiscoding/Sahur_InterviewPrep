@@ -1,8 +1,6 @@
-
-// ... (các using khác)
-using InterviewPrep.API;
 using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
+using InterviewPrep.API.Data;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,8 +8,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Cấu hình EPPlus License (cho phiên bản 8.0+)
+// Chọn một trong các cách sau:
+
+// Cách 1: Sử dụng cho cá nhân/học tập (non-commercial)
+ExcelPackage.License.SetNonCommercialPersonal("Your Name");
+
+// Cách 2: Sử dụng cho tổ chức phi lợi nhuận (non-commercial)
+// ExcelPackage.License.SetNonCommercialOrganization("Your Organization Name");
+
+// Cách 3: Sử dụng cho thương mại (cần license key)
+// ExcelPackage.License.SetCommercial("Your License Key Here");
+
 var configuration = builder.Configuration;
 
 // 1. Cấu hình DbContext
@@ -30,15 +42,18 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // Add Repositories
+builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+
 // Add Services
+builder.Services.AddScoped<IExcelImporterService, ExcelImporterService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-// *** THÊM DÒNG NÀY VÀO ĐÂY ***
 // 3. Cấu hình Authorization Services (bắt buộc)
 builder.Services.AddAuthorization();
 
@@ -79,10 +94,10 @@ builder.Services.AddCors(options =>
                           .AllowAnyMethod());
 });
 
+
 // Swagger services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
 

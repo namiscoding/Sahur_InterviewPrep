@@ -1,5 +1,5 @@
 ﻿using InterviewPrep.API.Application.DTOs.Category;
-using InterviewPrep.API.Models;
+using InterviewPrep.API.Data.Models;
 
 namespace InterviewPrep.API.Application.Services
 {
