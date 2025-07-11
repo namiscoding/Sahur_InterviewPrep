@@ -1,4 +1,4 @@
-﻿namespace InterviewPrep.API.Models.Enums
+﻿namespace InterviewPrep.API.Data.Models.Enums
 {
     public enum SubscriptionPlanLevel
     {

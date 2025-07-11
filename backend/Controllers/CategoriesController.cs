@@ -6,24 +6,24 @@ using System.Security.Claims;
 
 namespace InterviewPrep.API.Controllers
 {
-    [Route("api/staff/categories")]
+    [Route("api")]
     [ApiController]
-    public class StaffCategoriesController : ControllerBase
+    public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
-        public StaffCategoriesController(ICategoryService categoriasService)
+        public CategoriesController(ICategoryService categoriasService)
         {
             _categoryService = categoriasService;
         }
 
-        [HttpGet]
+        [HttpGet("staff/categories")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategories()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
             return Ok(categories);
         }
 
-        [HttpGet("search")]
+        [HttpGet("staff/categories/search")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> SearchCategories([FromQuery] string? name, [FromQuery] bool? isActive)
         {
             if (string.IsNullOrWhiteSpace(name) && !isActive.HasValue)
@@ -41,7 +41,7 @@ namespace InterviewPrep.API.Controllers
             return Ok(categories);
         }
 
-        [HttpPost]
+        [HttpPost("staff/categories")]
         public async Task<ActionResult<CategoryDTO>> AddCategory([FromBody] CreateCategoryDTO createCategoryDto)
         {
             if (!ModelState.IsValid)
@@ -62,7 +62,7 @@ namespace InterviewPrep.API.Controllers
             return CreatedAtAction(nameof(GetAllCategories), new { id = newCategory.Id }, newCategory);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("staff/categories/{id}")]
         public async Task<ActionResult<CategoryDTO>> UpdateCategoryInfo(int id, [FromBody] UpdateCategoryInfoDTO updateDto)
         {
             if (!ModelState.IsValid)
@@ -78,7 +78,7 @@ namespace InterviewPrep.API.Controllers
             return Ok(updateCategory);
         }
 
-        [HttpPut("{id}/status")]
+        [HttpPut("staff/categories/{id}/status")]
         public async Task<ActionResult<CategoryDTO>> UpdateCategoryStatus(int id, [FromBody] UpdateCategoryStatusDTO updateDto)
         {
             if (!ModelState.IsValid)

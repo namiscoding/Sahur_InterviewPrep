@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
-using InterviewPrep.API.Models;
 namespace InterviewPrep.API.Application.Services
 {
     public class CategoryService : ICategoryService
