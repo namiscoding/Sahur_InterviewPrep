@@ -54,5 +54,20 @@ namespace InterviewPrep.API.Application.Services
 
             return _mapper.Map<UserDTO>(user);
         }
+        public async Task<UserDTO> UpdateCustomerSubscriptionAsync(string id, UpdateSubscriptionDTO updateDto, string reason)
+        {
+            var user = await _userRepository.GetCustomerByIdAsync(id);
+            if (user == null) return null;
+
+            var oldLevel = user.SubscriptionLevel.ToString();
+            var oldExpiry = user.SubscriptionExpiryDate;
+
+            _mapper.Map(updateDto, user);
+            await _userRepository.UpdateUserAsync(user);
+
+            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
+            return _mapper.Map<UserDTO>(user);
+        }
     }
 }

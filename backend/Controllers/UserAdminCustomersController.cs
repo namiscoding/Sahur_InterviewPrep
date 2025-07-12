@@ -46,5 +46,15 @@ namespace InterviewPrep.API.Controllers
             if (updated == null) return NotFound();
             return Ok(updated);
         }
+        [HttpPut("{id}/upgrade")]
+        public async Task<ActionResult<UserDTO>> UpgradeCustomerSubscription(string id, [FromBody] UpdateSubscriptionDTO updateDto, [FromQuery] string reason)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (string.IsNullOrEmpty(reason)) return BadRequest("Reason is required for upgrade.");
+
+            var updated = await _userService.UpdateCustomerSubscriptionAsync(id, updateDto, reason);
+            if (updated == null) return NotFound();
+            return Ok(updated);
+        }
     }
 }
