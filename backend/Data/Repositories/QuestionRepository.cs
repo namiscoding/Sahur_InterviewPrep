@@ -6,14 +6,25 @@ namespace InterviewPrep.API.Data.Repositories
     public class QuestionRepository : IQuestionRepository
     {
         private readonly ApplicationDbContext _context;
+
         public QuestionRepository(ApplicationDbContext context)
         {
             _context = context;
         }
-
         public async Task<IEnumerable<Question>> GetAllQuestionsAsync()
         {
             return await _context.Questions.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Question>> GetActiveQuestionsAsync()
+        {
+            return await _context.Questions
+                .Where(q => q.IsActive)
+                .Include(q => q.QuestionCategories)
+                    .ThenInclude(qc => qc.Category)
+                .Include(q => q.QuestionTags)
+                    .ThenInclude(qt => qt.Tag)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Question>> SearchQuestionsAsync(string? quesContent, bool? isActive, int? quesDifficultyLevel)
@@ -136,6 +147,17 @@ namespace InterviewPrep.API.Data.Repositories
             await _context.SaveChangesAsync();
             return question;
         }
+        public IQueryable<Question> GetActiveQuestionsQuery()
+        {
+            return _context.Questions.Where(q => q.IsActive).AsQueryable();
+        }
 
+        public async Task<Question?> GetActiveQuestionByIdAsync(long id)
+        {
+            return await _context.Questions
+                .Include(q => q.QuestionCategories).ThenInclude(qc => qc.Category)
+                .Include(q => q.QuestionTags).ThenInclude(qt => qt.Tag)
+                .FirstOrDefaultAsync(q => q.Id == id && q.IsActive);
+        }
     }
 }
