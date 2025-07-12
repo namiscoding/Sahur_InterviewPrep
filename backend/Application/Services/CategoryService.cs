@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
@@ -67,6 +68,12 @@ namespace InterviewPrep.API.Application.Services
             await _categoryRepository.UpdateCategoryAsync(existingCategory);
 
             return _mapper.Map<CategoryDTO>(existingCategory);
+        }
+
+        public async Task<IEnumerable<CategoryForCustomerDto>> GetAllCategoriesForCustomerAsync()
+        {
+            var categories = await _categoryRepository.GetAllCategoriesAsync();
+            return _mapper.Map<IEnumerable<CategoryForCustomerDto>>(categories);
         }
     }
 }

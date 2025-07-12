@@ -147,6 +147,17 @@ namespace InterviewPrep.API.Data.Repositories
             await _context.SaveChangesAsync();
             return question;
         }
+        public IQueryable<Question> GetActiveQuestionsQuery()
+        {
+            return _context.Questions.Where(q => q.IsActive).AsQueryable();
+        }
 
+        public async Task<Question?> GetActiveQuestionByIdAsync(long id)
+        {
+            return await _context.Questions
+                .Include(q => q.QuestionCategories).ThenInclude(qc => qc.Category)
+                .Include(q => q.QuestionTags).ThenInclude(qt => qt.Tag)
+                .FirstOrDefaultAsync(q => q.Id == id && q.IsActive);
+        }
     }
 }

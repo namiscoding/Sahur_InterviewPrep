@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { Question } from '../types/question.types';
+import { PaginatedResult, Question } from '../types/question.types';
 
-const API_URL = 'https://localhost:2004/api'; // Thay bằng URL thực tế
+const API_URL = 'https://localhost:2004/api'; 
 
-// Giả sử bạn có một instance của axios đã được cấu hình với token
 const apiClient = axios.create({
   baseURL: API_URL,
 });
@@ -18,13 +17,30 @@ apiClient.interceptors.request.use(config => {
 });
 
 
-export const getQuestions = async (): Promise<Question[]> => {
+export interface GetQuestionsParams {
+  pageNumber?: number;
+  pageSize?: number;
+  search?: string;
+  categoryId?: number;
+  difficultyLevel?: string;
+}
+
+// Hàm gọi API được nâng cấp
+export const getQuestions = async (params: GetQuestionsParams): Promise<PaginatedResult<Question>> => {
   try {
-    const response = await apiClient.get<Question[]>('/questions');
+    // Xây dựng query string một cách linh hoạt
+    const queryParams = new URLSearchParams();
+    
+    if (params.pageNumber) queryParams.append('pageNumber', params.pageNumber.toString());
+    if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    if (params.search) queryParams.append('search', params.search);
+    if (params.categoryId) queryParams.append('categoryId', params.categoryId.toString());
+    if (params.difficultyLevel) queryParams.append('difficultyLevel', params.difficultyLevel); // Sửa ở đây
+
+    const response = await apiClient.get<PaginatedResult<Question>>(`/questions?${queryParams.toString()}`);
     return response.data;
   } catch (error) {
     console.error('Failed to fetch questions:', error);
-    // Xử lý lỗi một cách hợp lý, có thể throw để component bắt
     throw error;
   }
 };

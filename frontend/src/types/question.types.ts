@@ -8,3 +8,11 @@ export interface Question {
   categories: CategoryForCustomer[];
   tags: Tag[];
 }
+
+export interface PaginatedResult<T> {
+  items: T[];
+  pageNumber: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
+}

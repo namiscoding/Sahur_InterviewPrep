@@ -1,4 +1,5 @@
 ﻿
+using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Question;
 
 namespace InterviewPrep.API.Application.Services
@@ -10,7 +11,10 @@ namespace InterviewPrep.API.Application.Services
         Task<IEnumerable<QuestionDTO>> GetQuestionsSortedByUsageCountAsync(bool descending = true);
         Task<QuestionDTO> AddQuestionAsync(CreateQuestionDTO createDto, string createdByUserId);
         Task<QuestionDTO?> UpdateQuestionInfoAsync(long id, UpdateQuestionInfoDTO updateDto);
-        Task<QuestionDTO?> UpdateQuestionStatusAsync(long id, UpdateQuestionStatusDTO updateDto); 
+        Task<QuestionDTO?> UpdateQuestionStatusAsync(long id, UpdateQuestionStatusDTO updateDto);
         Task<QuestionDTO?> GetQuestionByIdAsync(long id);
+        Task<PaginatedResultDto<QuestionForCustomerDto>> GetQuestionsAsync(string? search, int? categoryId, string? difficultyLevel, int pageNumber, int pageSize);
+        Task<QuestionForCustomerDto?> GetActiveQuestionByIdAsync(long id);
     }
 }
+        

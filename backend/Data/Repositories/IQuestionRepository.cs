@@ -13,5 +13,7 @@ namespace InterviewPrep.API.Data.Repositories
         Task<Question> AddQuestionAsync(Question question, List<int>? categoryIds, List<int>? tagIds);
         Task<Question?> GetQuestionByIdAsync(long id);
         Task<Question> UpdateQuestionAsync(Question question, List<int>? categoryIds, List<int>? tagIds);
+        IQueryable<Question> GetActiveQuestionsQuery();
+        Task<Question?> GetActiveQuestionByIdAsync(long id);
     }
 }

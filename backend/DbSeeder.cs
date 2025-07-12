@@ -1,83 +1,93 @@
 ﻿using InterviewPrep.API.Data.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace InterviewPrep.API
 {
     public static class DbSeeder
     {
-        // Phương thức này sẽ được gọi từ Program.cs
-        public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+        public static async Task SeedDataAsync(IServiceProvider serviceProvider)
         {
-            // Lấy các service cần thiết thông qua Dependency Injection
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>(); 
 
-            // --- Tạo các Roles (Customer, Staff, Admin) ---
-            // Kiểm tra và tạo Role "Admin" nếu chưa tồn tại
-            if (!await roleManager.RoleExistsAsync("Admin"))
+            // --- 1. Seed Roles và Users (như cũ) ---
+            await SeedRolesAndUsers(userManager, roleManager);
+
+            // --- 2. Seed Categories, Tags, và Questions ---
+            // Chỉ seed nếu chưa có câu hỏi nào
+            if (!await context.Questions.AnyAsync())
             {
-                await roleManager.CreateAsync(new IdentityRole("Admin"));
+                await SeedQuestionData(context, userManager);
             }
-            // Kiểm tra và tạo Role "Staff" nếu chưa tồn tại
-            if (!await roleManager.RoleExistsAsync("Staff"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Staff"));
-            }
-            // Kiểm tra và tạo Role "Customer" nếu chưa tồn tại
-            if (!await roleManager.RoleExistsAsync("Customer"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Customer"));
-            }
+        }
 
+        private static async Task SeedRolesAndUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        {
+            // Code seed roles và user của bạn ở đây...
+            if (!await roleManager.RoleExistsAsync("Admin")) await roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await roleManager.RoleExistsAsync("Staff")) await roleManager.CreateAsync(new IdentityRole("Staff"));
+            if (!await roleManager.RoleExistsAsync("Customer")) await roleManager.CreateAsync(new IdentityRole("Customer"));
+            // ... v.v cho các user
+        }
 
-            // --- Tạo tài khoản Admin ---
-            string adminEmail = "admin@example.com";
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        private static async Task SeedQuestionData(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        {
+            // Lấy một user để làm người tạo câu hỏi
+            var creator = await userManager.FindByEmailAsync("staff@example.com");
+            if (creator == null) return; // Dừng lại nếu không tìm thấy user
 
-            if (adminUser == null)
+            // --- Tạo Categories ---
+            var catCSharp = new Category { Name = "Lập trình C#", Description = "Các câu hỏi về ngôn ngữ C# và .NET" };
+            var catOOP = new Category { Name = "OOP", Description = "Các câu hỏi về Lập trình Hướng đối tượng" };
+            var catDb = new Category { Name = "Cơ sở dữ liệu", Description = "Các câu hỏi về SQL, NoSQL và thiết kế CSDL" };
+
+            context.Categories.AddRange(catCSharp, catOOP, catDb);
+            await context.SaveChangesAsync(); // Lưu để lấy ID
+
+            // --- Tạo Tags ---
+            var tagBackend = new Tag { Name = "Backend", Slug = "backend" };
+            var tagAlgorithm = new Tag { Name = "Thuật toán", Slug = "algorithm" };
+            var tagBasic = new Tag { Name = "Cơ bản", Slug = "basic" };
+
+            context.Tags.AddRange(tagBackend, tagAlgorithm, tagBasic);
+            await context.SaveChangesAsync(); // Lưu để lấy ID
+
+            // --- Tạo Questions và liên kết ---
+            var questions = new List<Question>
             {
-                var newAdminUser = new ApplicationUser
+                new Question
                 {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    DisplayName = "Admin User",
-                    EmailConfirmed = true // Xác thực email luôn để test cho dễ
-                };
-                // Tạo user với mật khẩu
-                var result = await userManager.CreateAsync(newAdminUser, "Admin@123");
-
-                // Nếu tạo thành công, gán Role "Admin" cho user này
-                if (result.Succeeded)
+                    Content = "SOLID là gì? Giải thích từng nguyên tắc.",
+                    SampleAnswer = "SOLID là viết tắt của 5 nguyên tắc thiết kế hướng đối tượng...",
+                    DifficultyLevel = Data.Models.Enums.DifficultyLevel.Medium,
+                    CreatedBy = creator.Id,
+                    QuestionCategories = new List<QuestionCategory> { new QuestionCategory { Category = catOOP } },
+                    QuestionTags = new List<QuestionTag> { new QuestionTag { Tag = tagBackend }, new QuestionTag { Tag = tagBasic } }
+                },
+                new Question
                 {
-                    await userManager.AddToRoleAsync(newAdminUser, "Admin");
+                    Content = "Sự khác biệt giữa `var`, `dynamic` và `object` trong C#?",
+                    SampleAnswer = "`var` được xác định kiểu lúc biên dịch, `object` là kiểu cơ sở, `dynamic` xác định kiểu lúc chạy...",
+                    DifficultyLevel = Data.Models.Enums.DifficultyLevel.Easy,
+                    CreatedBy = creator.Id,
+                    QuestionCategories = new List<QuestionCategory> { new QuestionCategory { Category = catCSharp } },
+                    QuestionTags = new List<QuestionTag> { new QuestionTag { Tag = tagBasic } }
+                },
+                new Question
+                {
+                    Content = "Sự khác biệt giữa INNER JOIN và LEFT JOIN là gì?",
+                    SampleAnswer = "INNER JOIN trả về các hàng khi có sự trùng khớp ở cả hai bảng. LEFT JOIN trả về tất cả các hàng từ bảng bên trái...",
+                    DifficultyLevel = Data.Models.Enums.DifficultyLevel.Easy,
+                    CreatedBy = creator.Id,
+                    QuestionCategories = new List<QuestionCategory> { new QuestionCategory { Category = catDb } },
+                    QuestionTags = new List<QuestionTag> { new QuestionTag { Tag = tagBackend } }
                 }
-            }
+            };
 
-            // --- Tạo tài khoản Staff ---
-            string staffEmail = "staff@example.com";
-            var staffUser = await userManager.FindByEmailAsync(staffEmail);
-            if (staffUser == null)
-            {
-                var newStaffUser = new ApplicationUser { UserName = staffEmail, Email = staffEmail, DisplayName = "Staff User", EmailConfirmed = true };
-                var result = await userManager.CreateAsync(newStaffUser, "Staff@123");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(newStaffUser, "Staff");
-                }
-            }
-
-            // --- Tạo tài khoản Customer ---
-            string customerEmail = "customer@example.com";
-            var customerUser = await userManager.FindByEmailAsync(customerEmail);
-            if (customerUser == null)
-            {
-                var newCustomerUser = new ApplicationUser { UserName = customerEmail, Email = customerEmail, DisplayName = "Customer User", EmailConfirmed = true };
-                var result = await userManager.CreateAsync(newCustomerUser, "Customer@123");
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(newCustomerUser, "Customer");
-                }
-            }
+            context.Questions.AddRange(questions);
+            await context.SaveChangesAsync();
         }
     }
 

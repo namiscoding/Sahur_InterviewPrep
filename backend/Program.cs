@@ -12,17 +12,8 @@ using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cấu hình EPPlus License (cho phiên bản 8.0+)
-// Chọn một trong các cách sau:
-
 // Cách 1: Sử dụng cho cá nhân/học tập (non-commercial)
 ExcelPackage.License.SetNonCommercialPersonal("Your Name");
-
-// Cách 2: Sử dụng cho tổ chức phi lợi nhuận (non-commercial)
-// ExcelPackage.License.SetNonCommercialOrganization("Your Organization Name");
-
-// Cách 3: Sử dụng cho thương mại (cần license key)
-// ExcelPackage.License.SetCommercial("Your License Key Here");
 
 var configuration = builder.Configuration;
 

@@ -2,7 +2,7 @@
 {
     public class QuestionForCustomerDto
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Content { get; set; }
         public string DifficultyLevel { get; set; }
         public ICollection<CategoryForCustomerDto> Categories { get; set; }

@@ -1,4 +1,5 @@
-﻿using InterviewPrep.API.Application.DTOs.Category;
+﻿using InterviewPrep.API.Application.DTOs;
+using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.Services;
 using Microsoft.AspNetCore.Http;
@@ -173,6 +174,31 @@ namespace InterviewPrep.API.Controllers
             }
 
             return Ok(updatedQuestion);
+        }
+
+        [HttpGet("questions")]
+        public async Task<ActionResult<PaginatedResultDto<QuestionForCustomerDto>>> GetQuestions(
+           [FromQuery] string? search,
+           [FromQuery] int? categoryId,
+           [FromQuery] string? difficultyLevel,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+        {
+            var result = await _questionService.GetQuestionsAsync(search, categoryId, difficultyLevel, pageNumber, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet("questions/{id}")]
+        public async Task<ActionResult<QuestionForCustomerDto>> GetQuestionByIdForCustomer(long id)
+        {
+            var question = await _questionService.GetActiveQuestionByIdAsync(id);
+
+            if (question == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(question);
         }
     }
 }
