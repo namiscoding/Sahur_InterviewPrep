@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.DTOs.Question;
+using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
@@ -44,8 +45,14 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             CreateMap<UsageLog, UsageLogDTO>();
-
+            CreateMap<UpdateSubscriptionDTO, ApplicationUser>()
+                .ForMember(dest => dest.SubscriptionLevel, opt => opt.MapFrom(src => Enum.Parse<SubscriptionLevel>(src.SubscriptionLevel)));
             CreateMap<UpdateUserStatusDTO, ApplicationUser>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
+            CreateMap<ApplicationUser, StaffDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            CreateMap<UpdateStaffStatusDTO, ApplicationUser>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
         }
     }
