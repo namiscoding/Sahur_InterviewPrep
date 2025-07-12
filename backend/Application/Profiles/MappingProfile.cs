@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using InterviewPrep.API.Application.DTOs.Audit;
 using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
@@ -54,6 +55,7 @@ namespace InterviewPrep.API.Application.Profiles
 
             CreateMap<UpdateStaffStatusDTO, ApplicationUser>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
+            CreateMap<AuditLog, AuditLogDTO>();
         }
     }
 }

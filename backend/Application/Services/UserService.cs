@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿// Application/Services/UserService.cs (Updated with audit logging)
+using AutoMapper;
 using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
@@ -12,12 +13,14 @@ namespace InterviewPrep.API.Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private readonly IAuditLogService _auditLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository, IMapper mapper, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _auditLogService = auditLogService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -51,9 +54,11 @@ namespace InterviewPrep.API.Application.Services
             await _userRepository.UpdateUserAsync(user);
 
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(id, $"Updated customer status from {oldStatus} to {user.Status}", ip); // Audit log added
 
             return _mapper.Map<UserDTO>(user);
         }
+
         public async Task<UserDTO> UpdateCustomerSubscriptionAsync(string id, UpdateSubscriptionDTO updateDto, string reason)
         {
             var user = await _userRepository.GetCustomerByIdAsync(id);
@@ -66,6 +71,7 @@ namespace InterviewPrep.API.Application.Services
             await _userRepository.UpdateUserAsync(user);
 
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(id, $"Upgraded customer subscription from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}", ip); // Audit log added
 
             return _mapper.Map<UserDTO>(user);
         }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿// Application/Services/StaffService.cs (Updated with audit logging)
+using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
@@ -13,17 +14,20 @@ namespace InterviewPrep.API.Application.Services
         private readonly IStaffRepository _staffRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly IAuditLogService _auditLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public StaffService(
             IStaffRepository staffRepository,
             UserManager<ApplicationUser> userManager,
             IMapper mapper,
+            IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor)
         {
             _staffRepository = staffRepository;
             _userManager = userManager;
             _mapper = mapper;
+            _auditLogService = auditLogService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -65,6 +69,7 @@ namespace InterviewPrep.API.Application.Services
             await _userManager.AddToRoleAsync(staff, "Staff");
 
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(staff.Id, $"Created new staff account: {staff.Email}", ip); // Audit log added
 
             return _mapper.Map<StaffDTO>(staff);
         }
@@ -79,6 +84,7 @@ namespace InterviewPrep.API.Application.Services
             await _staffRepository.UpdateStaffAsync(staff);
 
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(id, $"Updated staff status from {oldStatus} to {staff.Status}", ip); // Audit log added
 
             return _mapper.Map<StaffDTO>(staff);
         }
@@ -88,7 +94,7 @@ namespace InterviewPrep.API.Application.Services
             var staff = await _userManager.FindByIdAsync(id);
             if (staff == null) throw new Exception("Staff not found");
 
-            var tempPassword = GenerateTempPassword(); // Implement below
+            var tempPassword = GenerateTempPassword();
             var token = await _userManager.GeneratePasswordResetTokenAsync(staff);
             var result = await _userManager.ResetPasswordAsync(staff, token, tempPassword);
 
@@ -98,15 +104,14 @@ namespace InterviewPrep.API.Application.Services
             }
 
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(id, $"Reset password for staff: {staff.Email}", ip); // Audit log added
 
             // Optionally send email with tempPassword
-            // return tempPassword for admin to communicate
             return tempPassword;
         }
 
         private string GenerateTempPassword()
         {
-            // Simple temp password generator - enhance for production
             return Guid.NewGuid().ToString().Substring(0, 12) + "!A1";
         }
     }
