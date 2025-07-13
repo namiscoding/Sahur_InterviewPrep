@@ -9,8 +9,8 @@ namespace InterviewPrep.API.Application.Services
         Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync();
         Task<IEnumerable<CategoryForCustomerDto>> GetAllCategoriesForCustomerAsync();
         Task<CategoryDTO> AddCategoryAsync(CreateCategoryDTO categoryDto, string createdByUserId);
-        Task<CategoryDTO?> UpdateCategoryInfoAsync(int id, UpdateCategoryInfoDTO updateDto); 
-        Task<CategoryDTO?> UpdateCategoryStatusAsync(int id, UpdateCategoryStatusDTO updateDto);
+        Task<CategoryDTO?> UpdateCategoryInfoAsync(int id, UpdateCategoryInfoDTO updateDto, string userId);
+        Task<CategoryDTO?> UpdateCategoryStatusAsync(int id, UpdateCategoryStatusDTO updateDto, string userId);
         Task<IEnumerable<CategoryDTO>> SearchCategoriesAsync(string? categoryName, bool? isActive);
     }
 }

@@ -13,6 +13,6 @@ namespace InterviewPrep.API.Application.DTOs.Question
         public DifficultyLevel DifficultyLevel { get; set; }
         public bool IsActive { get; set; } = true; 
         public List<int>? CategoryIds { get; set; }
-        public List<int>? TagIds { get; set; }
+        public List<string>? TagNames { get; set; }
     }
 }

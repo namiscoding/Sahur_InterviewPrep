@@ -1,6 +1,7 @@
 ﻿using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -55,17 +56,21 @@ namespace InterviewPrep.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            //Trả id người dùng vào đây 
-            //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B"; 
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized("User is not authenticated or user ID not found.");
+                // TẠM THỜI cho dev/test, hãy thay bằng ID user thật sự trong DB khi có Auth
+                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User is not authenticated or user ID not found.");
+                }
             }
 
             var newCategory = await _categoryService.AddCategoryAsync(createCategoryDto, userId);
 
-            
+
             return CreatedAtAction(nameof(GetAllCategories), new { id = newCategory.Id }, newCategory);
         }
 
@@ -77,12 +82,24 @@ namespace InterviewPrep.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var updateCategory = await _categoryService.UpdateCategoryInfoAsync(id, updateDto);
-            if (updateCategory == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound($"Khong tim thay Category ID {id}");
+                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User is not authenticated or user ID not found.");
+                }
             }
-            return Ok(updateCategory);
+
+            var updatedCategory = await _categoryService.UpdateCategoryInfoAsync(id, updateDto, userId);
+
+            if (updatedCategory == null)
+            {
+                return NotFound($"Category with ID {id} not found.");
+            }
+
+            return Ok(updatedCategory);
         }
 
         [HttpPut("staff/categories/{id}/status")]
@@ -93,12 +110,24 @@ namespace InterviewPrep.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var updateCategory = await _categoryService.UpdateCategoryStatusAsync(id, updateDto);
-            if (updateCategory == null)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
             {
-                return NotFound($"Khong tim thay Category ID {id}");
+                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User is not authenticated or user ID not found.");
+                }
             }
-            return Ok(updateCategory);
+
+            var updatedCategory = await _categoryService.UpdateCategoryStatusAsync(id, updateDto, userId);
+
+            if (updatedCategory == null)
+            {
+                return NotFound($"Category with ID {id} not found.");
+            }
+
+            return Ok(updatedCategory);
         }
     }
 }
