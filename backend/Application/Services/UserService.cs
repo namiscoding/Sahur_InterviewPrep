@@ -2,10 +2,11 @@
 using AutoMapper;
 using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Data.Models;
+using InterviewPrep.API.Data.Models.Enums;
 using InterviewPrep.API.Data.Repositories;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace InterviewPrep.API.Application.Services
 {
@@ -67,13 +68,36 @@ namespace InterviewPrep.API.Application.Services
             var oldLevel = user.SubscriptionLevel.ToString();
             var oldExpiry = user.SubscriptionExpiryDate;
 
-            _mapper.Map(updateDto, user);
+            // Convert string to enum SubscriptionLevel
+            if (!Enum.TryParse<SubscriptionLevel>(updateDto.SubscriptionLevel, true, out var parsedLevel))
+            {
+                throw new ArgumentException("Invalid subscription level.");
+            }
+
+            user.SubscriptionLevel = parsedLevel;
+
+            if (parsedLevel == SubscriptionLevel.Premium)
+            {
+                user.SubscriptionExpiryDate = updateDto.SubscriptionExpiryDate ?? DateTime.UtcNow.AddMonths(1);
+            }
+            else if (parsedLevel == SubscriptionLevel.Free)
+            {
+                user.SubscriptionExpiryDate = null;
+            }
+            else
+            {
+                user.SubscriptionExpiryDate = updateDto.SubscriptionExpiryDate;
+            }
+
             await _userRepository.UpdateUserAsync(user);
 
-            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id, $"Upgraded customer subscription from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}", ip); // Audit log added
+            var ip = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(id,
+                $"Upgraded customer subscription from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}",
+                ip);
 
             return _mapper.Map<UserDTO>(user);
         }
+
     }
 }
