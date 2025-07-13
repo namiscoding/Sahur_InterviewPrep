@@ -16,6 +16,6 @@ namespace InterviewPrep.API.Application.DTOs.Question
 
         public List<int>? CategoryIds { get; set; }
 
-        public List<int>? TagIds { get; set; }
+        public List<string>? TagNames { get; set; }
     }
 }

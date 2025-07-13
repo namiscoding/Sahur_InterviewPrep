@@ -1,20 +1,20 @@
 ﻿using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Question;
-using InterviewPrep.API.Data.Repositories;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
+using InterviewPrep.API.Data.Repositories;
 using OfficeOpenXml;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace InterviewPrep.API.Application.Services
 {
     public class ExcelImporterService : IExcelImporterService
     {
         private readonly IQuestionRepository _questionRepository;
-        private readonly ICategoryRepository _categoryRepository; 
-        private readonly ITagRepository _tagRepository; 
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IMapper _mapper;
 
         public ExcelImporterService(IQuestionRepository questionRepository,
@@ -24,14 +24,14 @@ namespace InterviewPrep.API.Application.Services
         {
             _questionRepository = questionRepository;
             _categoryRepository = categoryRepository;
-            _tagRepository = tagRepository; 
+            _tagRepository = tagRepository;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<QuestionDTO>> ImportQuestionsFromExcelAsync(Stream fileStream, string createdByUserId)
         {
             var importedQuestions = new List<Question>();
-            //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            //ExcelPackage.License = new ExcelPackageLicense(); // Đảm bảo license được thiết lập đúng cách cho EPPlus 8+ trong Program.cs
 
             using (var package = new ExcelPackage(fileStream))
             {
@@ -42,23 +42,17 @@ namespace InterviewPrep.API.Application.Services
                 }
 
                 int rowCount = worksheet.Dimension.Rows;
-                int colCount = worksheet.Dimension.Columns;
 
                 var allCategories = (await _categoryRepository.GetAllCategoriesAsync()).ToList();
-                var allTags = (await _tagRepository.GetAllTagsAsync()).ToList();
 
-                for (int row = 2; row <= rowCount; row++) // Bắt đầu từ hàng thứ 2 nếu hàng 1 là header
+                for (int row = 2; row <= rowCount; row++)
                 {
                     var questionDto = new CreateQuestionDTO();
-                    // Đọc dữ liệu từ các cột
-                    // Bạn cần ánh xạ cột Excel với thuộc tính DTO của bạn
-                    // Ví dụ: Cột A là Content, Cột B là SampleAnswer, v.v.
                     try
                     {
                         questionDto.Content = worksheet.Cells[row, 1].Text.Trim(); // Cột A
                         questionDto.SampleAnswer = worksheet.Cells[row, 2].Text?.Trim(); // Cột B
 
-                        // Chuyển đổi DifficultyLevel từ string sang enum
                         string difficultyStr = worksheet.Cells[row, 3].Text.Trim(); // Cột C
                         if (Enum.TryParse(difficultyStr, true, out DifficultyLevel difficultyLevel))
                         {
@@ -66,9 +60,8 @@ namespace InterviewPrep.API.Application.Services
                         }
                         else
                         {
-                            // Xử lý lỗi hoặc gán mặc định nếu không parse được
                             Console.WriteLine($"Warning: Invalid DifficultyLevel '{difficultyStr}' in row {row}. Defaulting to Medium.");
-                            questionDto.DifficultyLevel = DifficultyLevel.Medium; // Gán mặc định
+                            questionDto.DifficultyLevel = DifficultyLevel.Medium;
                         }
 
                         questionDto.IsActive = bool.Parse(worksheet.Cells[row, 4].Text.Trim()); // Cột D
@@ -84,31 +77,29 @@ namespace InterviewPrep.API.Application.Services
                                 .ToList();
                         }
 
-                        // Xử lý TagIds từ tên
-                        string tagNames = worksheet.Cells[row, 6].Text?.Trim(); // Cột F (ví dụ: "C#, SQL")
-                        if (!string.IsNullOrEmpty(tagNames))
+                        // Xử lý TagNames từ tên (đã đổi sang List<string>)
+                        string tagNamesString = worksheet.Cells[row, 6].Text?.Trim(); // Cột F (ví dụ: "C#, SQL")
+                        if (!string.IsNullOrEmpty(tagNamesString))
                         {
-                            var names = tagNames.Split(',').Select(n => n.Trim()).ToList();
-                            questionDto.TagIds = allTags
-                                .Where(t => names.Contains(t.Name, StringComparer.OrdinalIgnoreCase))
-                                .Select(t => t.Id)
-                                .ToList();
+                            questionDto.TagNames = tagNamesString.Split(',').Select(n => n.Trim()).ToList();
+                        }
+                        else
+                        {
+                            questionDto.TagNames = new List<string>(); // Đảm bảo không null
                         }
 
+                        // Tạo Question Model và thêm vào DB
                         if (!string.IsNullOrEmpty(questionDto.Content))
                         {
                             var question = _mapper.Map<Question>(questionDto);
-                            question.CreatedBy = createdByUserId;
-                           
-
-                            var addedQuestion = await _questionRepository.AddQuestionAsync(question, questionDto.CategoryIds, questionDto.TagIds);
+                            var addedQuestion = await _questionRepository.AddQuestionAsync(question, questionDto.CategoryIds, questionDto.TagNames, createdByUserId); // Đã thêm createdByUserId
                             importedQuestions.Add(addedQuestion);
                         }
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error importing row {row}: {ex.Message}");
-                     
+                        // Ghi lại lỗi để báo cáo cho người dùng sau
                     }
                 }
             }
