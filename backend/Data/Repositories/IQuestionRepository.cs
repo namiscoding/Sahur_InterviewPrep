@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
 
@@ -6,6 +6,7 @@ namespace InterviewPrep.API.Data.Repositories
 {
     public interface IQuestionRepository
     {
+        Task<IEnumerable<Question>> GetActiveQuestionsAsync();
         Task<IEnumerable<Question>> GetAllQuestionsAsync();
         Task<Question> AddQuestionAsync(Question question, List<int>? categoryIds, List<string>? tagNames, string userId);
         Task<Question?> GetQuestionByIdAsync(long id);
@@ -25,6 +26,9 @@ namespace InterviewPrep.API.Data.Repositories
             DateTime? startDate,
             DateTime? endDate,
             string timeUnit = "month");
+      
+        IQueryable<Question> GetActiveQuestionsQuery();
+        Task<Question?> GetActiveQuestionByIdAsync(long id);
     }
 
     public class CategoryUsageTrend

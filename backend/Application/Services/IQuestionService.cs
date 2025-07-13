@@ -1,4 +1,5 @@
 ﻿
+using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Question;
 
 namespace InterviewPrep.API.Application.Services
@@ -24,5 +25,10 @@ namespace InterviewPrep.API.Application.Services
             DateTime? startDate,
             DateTime? endDate,
             string timeUnit = "month");
+
+        Task<PaginatedResultDto<QuestionForCustomerDto>> GetQuestionsAsync(string? search, int? categoryId, string? difficultyLevel, int pageNumber, int pageSize);
+        Task<QuestionForCustomerDto?> GetActiveQuestionByIdAsync(long id);
+
     }
 }
+        

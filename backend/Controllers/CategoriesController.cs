@@ -24,6 +24,13 @@ namespace InterviewPrep.API.Controllers
             return Ok(categories);
         }
 
+        [HttpGet("categories")]
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategoriesForCustomer()
+        {
+            var categories = await _categoryService.GetAllCategoriesForCustomerAsync();
+            return Ok(categories);
+        }
+
         [HttpGet("staff/categories/search")]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> SearchCategories([FromQuery] string? name, [FromQuery] bool? isActive)
         {
