@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Edit, Trash2, ArrowLeft, Search, Filter } from "lucide-react";
 
 interface CategoryManagementPageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: String) => void;
 }
 
 const CategoryManagementPage: React.FC<CategoryManagementPageProps> = ({ onNavigate }) => {

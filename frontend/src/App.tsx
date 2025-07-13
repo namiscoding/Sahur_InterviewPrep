@@ -1,14 +1,73 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
+import { LoginForm } from './pages/Auth/Login';
+import { RegisterForm } from './pages/Auth/Register';
+import { ForgotPasswordForm } from './pages/Auth/ForgotPasswordForm';
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
+import { UserProfile } from './pages/profile/update-profile';
 
-type Page = "home" | "categories";
+type Page =
+  | "home"
+  | "categories"
+  | "login"
+  | "register"
+  | "forgot-password"
+  | "reset-password"|"update-profile"
+
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>("home");
+ const [currentPage, setCurrentPage] = useState<String>("login")
+  const [resetParams, setResetParams] = useState<{ email: string; token: string }>({
+    email: "",
+    token: ""
+  })
 
-  const navigate = (page: Page) => {
-    setCurrentPage(page);
-  };
+
+  const navigate = (page: String, data?: any) => {
+    if (page === "reset-password" && data) {
+      setResetParams({ email: data.email, token: data.token })
+    }
+     if (page === "update-profile" && data?.token) {
+    localStorage.setItem("token", data.token); // 👈 đảm bảo token được lưu
+  }
+    setCurrentPage(page)
+  }
+useEffect(() => {
+  const searchParams = new URLSearchParams(window.location.search)
+  const email = searchParams.get("email")
+  const token = searchParams.get("token")
+  const path = window.location.pathname
+
+  // Ưu tiên reset-password nếu có token
+  if (email && token) {
+    navigate("reset-password", { email, token })
+    return
+  }
+
+  // Còn lại map path sang page
+  switch (path) {
+    case "/update-profile":
+      navigate("update-profile")
+      break
+    case "/categories":
+      navigate("categories")
+      break
+    case "/home":
+      navigate("home")
+      break
+    case "/login":
+      navigate("login")
+      break
+    case "/register":
+      navigate("register")
+      break
+    case "/forgot-password":
+      navigate("forgot-password")
+      break
+    default:
+      navigate("login") // fallback
+  }
+}, []);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -16,6 +75,30 @@ function App() {
         return <HomePage onNavigate={navigate} />;
       case "categories":
         return <CategoryManagementPage onNavigate={navigate} />;
+
+      case "login":
+        return (
+          <LoginForm
+            onLogin={() => setCurrentPage("home")} // hoặc navigate("home")
+            onNavigate={navigate}
+          />
+        );
+
+      case "register":
+        return (
+          <RegisterForm
+            onRegister={() => navigate("login")}
+            onNavigate={navigate}
+          />
+        );
+
+      case "forgot-password":
+        return <ForgotPasswordForm onNavigate={navigate} />
+
+   case "reset-password":
+        return <ResetPasswordPage onNavigate={navigate} resetParams={resetParams} />
+    case "update-profile":
+      return <UserProfile onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }
@@ -44,7 +127,7 @@ function HomePage({ onNavigate }: { onNavigate: (page: Page) => void }) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Category Management Card */}
           <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
-               onClick={() => onNavigate("categories")}>
+            onClick={() => onNavigate("categories")}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
               <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
