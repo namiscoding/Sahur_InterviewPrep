@@ -210,7 +210,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
-              <p className="mt-2 text-gray-600">Manage staff accounts in your interview system</p>
+              <p className="mt-2 text-gray-600">UserAdmin manage staff accounts in InterviewPrep system</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => onNavigate("home")}>

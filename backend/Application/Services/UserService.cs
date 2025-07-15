@@ -1,5 +1,4 @@
-﻿// Application/Services/UserService.cs (Updated with audit logging)
-using AutoMapper;
+﻿using AutoMapper;
 using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
@@ -78,22 +77,25 @@ namespace InterviewPrep.API.Application.Services
 
             if (parsedLevel == SubscriptionLevel.Premium)
             {
-                user.SubscriptionExpiryDate = updateDto.SubscriptionExpiryDate ?? DateTime.UtcNow.AddMonths(1);
+                if (user.SubscriptionLevel == SubscriptionLevel.Free)
+                {
+                    user.SubscriptionExpiryDate = DateTime.UtcNow.AddMonths(1);
+                }
+                else if (user.SubscriptionLevel == SubscriptionLevel.Premium)
+                {
+                    user.SubscriptionExpiryDate = (user.SubscriptionExpiryDate ?? DateTime.UtcNow).AddMonths(1);
+                }
             }
             else if (parsedLevel == SubscriptionLevel.Free)
             {
                 user.SubscriptionExpiryDate = null;
-            }
-            else
-            {
-                user.SubscriptionExpiryDate = updateDto.SubscriptionExpiryDate;
             }
 
             await _userRepository.UpdateUserAsync(user);
 
             var ip = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
             await _auditLogService.LogActionAsync(id,
-                $"Upgraded customer subscription from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}",
+                $"Updated customer subscription from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}",
                 ip);
 
             return _mapper.Map<UserDTO>(user);

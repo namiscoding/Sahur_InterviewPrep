@@ -1,7 +1,6 @@
-// src/services/customerService.ts
 import axios from 'axios';
 
-const API_URL = 'https://localhost:2004/api/useradmin/customers';
+const API_URL = 'https://localhost:2004/api/admin/customers';
 
 export interface UserDTO {
   id: string;
@@ -52,7 +51,6 @@ export interface UpdateUserStatusDTO {
 
 export interface UpdateSubscriptionDTO {
   subscriptionLevel: string;
-  subscriptionExpiryDate?: string;
   reason: string;
 }
 

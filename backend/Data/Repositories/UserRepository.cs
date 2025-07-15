@@ -19,21 +19,17 @@ namespace InterviewPrep.API.Data.Repositories
 
         public async Task<(IEnumerable<ApplicationUser> Users, int Total)> GetAllCustomersAsync(string search = null, string status = null, int page = 1, int pageSize = 10)
         {
-            var query = _context.Users
-                .Where(u => u.SubscriptionLevel == SubscriptionLevel.Free ||
-                            u.SubscriptionLevel == SubscriptionLevel.Basic ||
-                            u.SubscriptionLevel == SubscriptionLevel.Premium) // All levels 1-3
-                .AsQueryable();
+            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
+            if (customerRole == null) return (Enumerable.Empty<ApplicationUser>(), 0);
 
-            var userAdminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
-            if (userAdminRole != null)
-            {
-                var adminIds = await _context.UserRoles
-                    .Where(ur => ur.RoleId == userAdminRole.Id)
-                    .Select(ur => ur.UserId)
-                    .ToListAsync();
-                query = query.Where(u => !adminIds.Contains(u.Id));
-            }
+            var customerIds = await _context.UserRoles
+                .Where(ur => ur.RoleId == customerRole.Id)
+                .Select(ur => ur.UserId)
+                .ToListAsync();
+
+            var query = _context.Users
+                .Where(u => customerIds.Contains(u.Id))
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -45,12 +41,12 @@ namespace InterviewPrep.API.Data.Repositories
                 query = query.Where(u => u.Status == parsedStatus);
             }
 
-            var total = await query.CountAsync(); // Count full filtered query
+            var total = await query.CountAsync();
 
             var users = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(); // List from same query
+                .ToListAsync();
 
             return (users, total);
         }

@@ -1,4 +1,3 @@
-// src/pages/Admin/CustomerManagementPage.tsx (Updated)
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   getCustomers,
@@ -48,7 +47,6 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [newSubscriptionLevel, setNewSubscriptionLevel] = useState("");
-  const [newSubscriptionExpiry, setNewSubscriptionExpiry] = useState("");
   const [reason, setReason] = useState("");
   const [updateError, setUpdateError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -81,7 +79,6 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
       setSelectedCustomer(details);
       setNewStatus(details.status);
       setNewSubscriptionLevel(details.subscriptionLevel);
-      setNewSubscriptionExpiry(details.subscriptionExpiryDate ? new Date(details.subscriptionExpiryDate).toISOString().split('T')[0] : "");
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch customer details.');
@@ -110,30 +107,37 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
     }
   };
 
-  const calculateDefaultExpiry = useCallback(() => {
-    const now = new Date('2025-07-14'); // Current date as per system
-    now.setMonth(now.getMonth() + 1);
-    return now.toISOString().split('T')[0];
+  const calculateDefaultExpiry = useCallback((baseDate: Date = new Date('2025-07-14')) => {
+    const expiry = new Date(baseDate);
+    expiry.setMonth(expiry.getMonth() + 1);
+    return expiry.toISOString().split('T')[0];
   }, []);
 
   useEffect(() => {
+    if (!selectedCustomer) return;
+
     if (newSubscriptionLevel === 'Free') {
-      setNewSubscriptionExpiry('');
-    } else if (newSubscriptionLevel === 'Premium' && selectedCustomer?.subscriptionLevel !== 'Premium') {
-      setNewSubscriptionExpiry(calculateDefaultExpiry());
-    } else if (newSubscriptionLevel === 'Premium' && selectedCustomer?.subscriptionLevel === 'Premium') {
-      // Keep current or allow change
-      setNewSubscriptionExpiry(selectedCustomer.subscriptionExpiryDate ? new Date(selectedCustomer.subscriptionExpiryDate).toISOString().split('T')[0] : calculateDefaultExpiry());
+      setReason('');
+    } else if (newSubscriptionLevel === 'Premium') {
+      if (selectedCustomer.subscriptionLevel !== 'Premium') {
+        // From Free to Premium: +1 month from now
+        setReason('');
+      } else {
+        // From Premium to Premium: +1 month from current expiry
+        setReason('');
+      }
     }
   }, [newSubscriptionLevel, selectedCustomer, calculateDefaultExpiry]);
 
   const handleUpdateSubscription = async () => {
-    if (!selectedCustomer) return;
+    if (!selectedCustomer || !reason.trim()) {
+      setUpdateError('Reason is required for subscription changes.');
+      return;
+    }
     setUpdateError(null);
     try {
       const dto: UpdateSubscriptionDTO = {
         subscriptionLevel: newSubscriptionLevel,
-        subscriptionExpiryDate: newSubscriptionLevel === 'Free' ? undefined : (newSubscriptionExpiry || undefined),
         reason,
       };
       const updated = await updateCustomerSubscription(selectedCustomer.id, dto);
@@ -166,7 +170,6 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
   const getSubscriptionColor = (level: string) => {
     switch (level.toLowerCase()) {
       case 'premium': return "bg-purple-100 text-purple-800";
-      case 'basic': return "bg-blue-100 text-blue-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -211,7 +214,7 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Customer Management</h1>
-              <p className="mt-2 text-gray-600">Manage customer accounts in your interview system</p>
+              <p className="mt-2 text-gray-600">UserAdmin manage customer accounts in InterviewPrep system</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => onNavigate("home")}>
@@ -476,24 +479,14 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Free">Free</SelectItem>
-                    <SelectItem value="Basic">Basic</SelectItem>
                     <SelectItem value="Premium">Premium</SelectItem>
                   </SelectContent>
                 </Select>
-                {newSubscriptionLevel !== 'Free' && (
-                  <Input
-                    type="date"
-                    value={newSubscriptionExpiry}
-                    onChange={(e) => setNewSubscriptionExpiry(e.target.value)}
-                    className="mt-2"
-                    placeholder="Subscription Expiry Date"
-                  />
-                )}
                 <Textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   className="mt-2"
-                  placeholder="Reason for update"
+                  placeholder="Reason for update (required)"
                 />
                 <Button className="mt-2" onClick={handleUpdateSubscription}>Update Subscription</Button>
               </div>

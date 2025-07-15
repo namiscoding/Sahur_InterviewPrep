@@ -5,9 +5,7 @@ namespace InterviewPrep.API.Application.DTOs.User
     public class UpdateSubscriptionDTO
     {
         [Required]
-        public string SubscriptionLevel { get; set; } // "Basic", "Premium" (from enum strings)
-
-        public DateTime? SubscriptionExpiryDate { get; set; }
+        public string SubscriptionLevel { get; set; } // "Free", "Premium" (from enum strings)
 
         [Required]
         public string Reason { get; set; }

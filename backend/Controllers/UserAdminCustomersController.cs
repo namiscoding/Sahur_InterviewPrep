@@ -1,5 +1,4 @@
-﻿// Controllers/UserAdminCustomersController.cs (Return PagedResult)
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.DTOs.User;
@@ -7,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Controllers
 {
-    [Route("api/useradmin/customers")]
+    [Route("api/admin/customers")]
     [ApiController]
-    //[Authorize(Roles = "UserAdmin")]
-    public class UserAdminCustomersController : ControllerBase
+    //[Authorize(Roles = "Admin")]
+    public class CustomerAdminController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public UserAdminCustomersController(IUserService userService)
+        public CustomerAdminController(IUserService userService)
         {
             _userService = userService;
         }
@@ -46,6 +45,7 @@ namespace InterviewPrep.API.Controllers
             if (updated == null) return NotFound();
             return Ok(updated);
         }
+
         [HttpPut("{id}/upgrade")]
         public async Task<ActionResult<UserDTO>> UpgradeCustomerSubscription(string id, [FromBody] UpdateSubscriptionDTO updateDto)
         {
