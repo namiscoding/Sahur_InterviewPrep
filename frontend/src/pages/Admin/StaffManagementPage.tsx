@@ -108,56 +108,67 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
     }
   };
 
+  const [resetLoading, setResetLoading] = useState(false);
+
   const handleResetPassword = async () => {
     if (!selectedStaff) return;
+
+    setResetLoading(true);
     try {
-      console.log('Resetting password for staff ID:', selectedStaff.id);
       const tempPassword = await resetStaffPassword(selectedStaff.id);
       toast({
-        title: "Success",
-        description: `Password reset successfully. Temporary password: ${tempPassword}`,
-        duration: 5000,
+        title: "Password Reset Successful",
+        description: `Temporary password: ${tempPassword}`,
+        duration: 6000,
       });
-    } catch (err) {
-      console.error('Failed to reset password:', err);
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unknown error occurred while resetting password.";
+      console.error("Reset password failed:", err);
+
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to reset staff password.",
-        duration: 2000,
+        title: "Password Reset Failed",
+        description: message,
+        duration: 4000,
       });
+    } finally {
+      setResetLoading(false);
     }
   };
+
 
   const handleCreateStaff = async () => {
     setCreateError(null);
     try {
       const dto: CreateStaffDTO = {
         displayName: newDisplayName,
-        email: newEmail,
-        password: newPassword,
+        email: newEmail
       };
       await createStaff(dto);
       setIsCreateOpen(false);
       setNewDisplayName("");
       setNewEmail("");
-      setNewPassword("");
       fetchStaffs();
       toast({
         title: "Success",
-        description: "Staff created successfully.",
-        duration: 2000,
+        description: "Staff created and temporary password sent via email.",
+        duration: 4000,
       });
-    } catch (err) {
-      setCreateError('Failed to create staff.');
+    } catch (err: any) {
+      const message = err.message || "Failed to create staff.";
+      setCreateError(message);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create staff.",
-        duration: 2000,
+        description: message,
+        duration: 4000,
       });
     }
   };
+
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -381,7 +392,9 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
 
               <div className="mt-6">
                 <h3 className="font-semibold mb-2">Reset Password</h3>
-                <Button variant="destructive" onClick={handleResetPassword}>Reset Password</Button>
+                <Button variant="destructive" onClick={handleResetPassword} disabled={resetLoading}>
+                  {resetLoading ? "Resetting..." : "Reset Password"}
+                </Button>
               </div>
 
               {updateError && (
@@ -424,18 +437,6 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
                 id="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="password" className="text-right">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
                 className="col-span-3"
               />
             </div>
