@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://localhost:2004/api/admin/customers';
+const API_URL = 'https://localhost:2004/api/useradmin/customers';
 
 export interface UserDTO {
   id: string;

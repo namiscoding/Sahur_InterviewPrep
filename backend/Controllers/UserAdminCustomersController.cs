@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Controllers
 {
-    [Route("api/admin/customers")]
+    [Route("api/useradmin/customers")]
     [ApiController]
     //[Authorize(Roles = "Admin")]
     public class CustomerAdminController : ControllerBase

@@ -1,4 +1,3 @@
-// src/services/staffService.ts
 import axios from 'axios';
 
 const API_URL = 'https://localhost:2004/api/useradmin/staff';
@@ -15,33 +14,6 @@ export interface PagedResult<T> {
   totalCount: number;
   page: number;
   pageSize: number;
-}
-
-export interface StaffDetailDTO extends StaffDTO {
-  transactions: TransactionDTO[];
-  mockSessions: MockSessionDTO[];
-  usageLogs: UsageLogDTO[];
-}
-
-export interface TransactionDTO {
-  id: number;
-  amount: number;
-  currency: string;
-  status: string;
-  createdAt: string;
-}
-
-export interface MockSessionDTO {
-  id: number;
-  sessionType: string;
-  status: string;
-  startedAt: string;
-}
-
-export interface UsageLogDTO {
-  id: number;
-  actionType: string;
-  usageTimestamp: string;
 }
 
 export interface CreateStaffDTO {
@@ -71,9 +43,9 @@ export const getStaffs = async (
   }
 };
 
-export const getStaffDetails = async (id: string): Promise<StaffDetailDTO> => {
+export const getStaffDetails = async (id: string): Promise<StaffDTO> => {
   try {
-    const response = await axios.get<StaffDetailDTO>(`${API_URL}/${id}`);
+    const response = await axios.get<StaffDTO>(`${API_URL}/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching staff details:', error);

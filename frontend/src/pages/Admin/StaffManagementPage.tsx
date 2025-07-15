@@ -1,4 +1,3 @@
-// src/pages/Admin/StaffManagementPage.tsx
 import React, { useEffect, useState } from 'react';
 import {
   getStaffs,
@@ -8,7 +7,6 @@ import {
   resetStaffPassword,
   PagedResult,
   StaffDTO,
-  StaffDetailDTO,
   CreateStaffDTO,
   UpdateStaffStatusDTO,
 } from '../../services/staffService';
@@ -19,8 +17,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -44,7 +40,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
   const [localSearch, setLocalSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedStaff, setSelectedStaff] = useState<StaffDetailDTO | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<StaffDTO | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [updateError, setUpdateError] = useState<string | null>(null);
@@ -94,7 +90,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
     try {
       const dto: UpdateStaffStatusDTO = { status: newStatus };
       const updated = await updateStaffStatus(selectedStaff.id, dto);
-      setSelectedStaff({ ...selectedStaff, ...updated });
+      setSelectedStaff({ ...selectedStaff, status: updated.status });
       fetchStaffs();
       toast({
         title: "Success",
@@ -115,6 +111,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
   const handleResetPassword = async () => {
     if (!selectedStaff) return;
     try {
+      console.log('Resetting password for staff ID:', selectedStaff.id);
       const tempPassword = await resetStaffPassword(selectedStaff.id);
       toast({
         title: "Success",
@@ -122,6 +119,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
         duration: 5000,
       });
     } catch (err) {
+      console.error('Failed to reset password:', err);
       toast({
         variant: "destructive",
         title: "Error",
@@ -240,7 +238,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
             />
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-700">Filters:</span>
@@ -257,6 +255,8 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
                 <SelectItem value="Suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
+
+            <span className="text-sm font-medium text-gray-700">Total Accounts: {staffs.totalCount}</span>
           </div>
         </div>
 
@@ -353,92 +353,16 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
       {/* Details Dialog */}
       {selectedStaff && (
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Staff Details: {selectedStaff.displayName}</DialogTitle>
               <DialogDescription>{selectedStaff.email}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Status</Label>
-                  <p className="text-sm">{selectedStaff.status}</p>
-                </div>
+              <div>
+                <Label>Status</Label>
+                <p className="text-sm">{selectedStaff.status}</p>
               </div>
-
-              <Tabs defaultValue="transactions" className="mt-4">
-                <TabsList>
-                  <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                  <TabsTrigger value="mockSessions">Mock Sessions</TabsTrigger>
-                  <TabsTrigger value="usageLogs">Usage Logs</TabsTrigger>
-                </TabsList>
-                <TabsContent value="transactions">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Currency</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Created At</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedStaff.transactions.map((tx) => (
-                        <TableRow key={tx.id}>
-                          <TableCell>{tx.id}</TableCell>
-                          <TableCell>{tx.amount}</TableCell>
-                          <TableCell>{tx.currency}</TableCell>
-                          <TableCell>{tx.status}</TableCell>
-                          <TableCell>{new Date(tx.createdAt).toLocaleString()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-                <TabsContent value="mockSessions">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Started At</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedStaff.mockSessions.map((session) => (
-                        <TableRow key={session.id}>
-                          <TableCell>{session.id}</TableCell>
-                          <TableCell>{session.sessionType}</TableCell>
-                          <TableCell>{session.status}</TableCell>
-                          <TableCell>{new Date(session.startedAt).toLocaleString()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-                <TabsContent value="usageLogs">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Action Type</TableHead>
-                        <TableHead>Timestamp</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedStaff.usageLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell>{log.id}</TableCell>
-                          <TableCell>{log.actionType}</TableCell>
-                          <TableCell>{new Date(log.usageTimestamp).toLocaleString()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-              </Tabs>
 
               <div className="mt-6">
                 <h3 className="font-semibold mb-2">Update Status</h3>

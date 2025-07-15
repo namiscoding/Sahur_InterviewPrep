@@ -240,7 +240,7 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
             />
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-700">Filters:</span>
@@ -257,6 +257,8 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
                 <SelectItem value="Suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
+
+            <span className="text-sm font-medium text-gray-700">Total Accounts: {customers.totalCount}</span>
           </div>
         </div>
 
@@ -361,7 +363,7 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
       {/* Details Dialog */}
       {selectedCustomer && (
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Customer Details: {selectedCustomer.displayName}</DialogTitle>
               <DialogDescription>{selectedCustomer.email}</DialogDescription>
@@ -389,70 +391,76 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
                   <TabsTrigger value="usageLogs">Usage Logs</TabsTrigger>
                 </TabsList>
                 <TabsContent value="transactions">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Currency</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Created At</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedCustomer.transactions.map((tx) => (
-                        <TableRow key={tx.id}>
-                          <TableCell>{tx.id}</TableCell>
-                          <TableCell>{tx.amount}</TableCell>
-                          <TableCell>{tx.currency}</TableCell>
-                          <TableCell>{tx.status}</TableCell>
-                          <TableCell>{new Date(tx.createdAt).toLocaleString()}</TableCell>
+                  <div className="overflow-auto max-h-40">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Currency</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Created At</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedCustomer.transactions.map((tx) => (
+                          <TableRow key={tx.id}>
+                            <TableCell>{tx.id}</TableCell>
+                            <TableCell>{tx.amount}</TableCell>
+                            <TableCell>{tx.currency}</TableCell>
+                            <TableCell>{tx.status}</TableCell>
+                            <TableCell>{new Date(tx.createdAt).toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </TabsContent>
                 <TabsContent value="mockSessions">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Started At</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedCustomer.mockSessions.map((session) => (
-                        <TableRow key={session.id}>
-                          <TableCell>{session.id}</TableCell>
-                          <TableCell>{session.sessionType}</TableCell>
-                          <TableCell>{session.status}</TableCell>
-                          <TableCell>{new Date(session.startedAt).toLocaleString()}</TableCell>
+                  <div className="overflow-auto max-h-40">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Started At</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedCustomer.mockSessions.map((session) => (
+                          <TableRow key={session.id}>
+                            <TableCell>{session.id}</TableCell>
+                            <TableCell>{session.sessionType}</TableCell>
+                            <TableCell>{session.status}</TableCell>
+                            <TableCell>{new Date(session.startedAt).toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </TabsContent>
                 <TabsContent value="usageLogs">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Action Type</TableHead>
-                        <TableHead>Timestamp</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedCustomer.usageLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell>{log.id}</TableCell>
-                          <TableCell>{log.actionType}</TableCell>
-                          <TableCell>{new Date(log.usageTimestamp).toLocaleString()}</TableCell>
+                  <div className="overflow-auto max-h-40">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Action Type</TableHead>
+                          <TableHead>Timestamp</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedCustomer.usageLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell>{log.id}</TableCell>
+                            <TableCell>{log.actionType}</TableCell>
+                            <TableCell>{new Date(log.usageTimestamp).toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </TabsContent>
               </Tabs>
 
