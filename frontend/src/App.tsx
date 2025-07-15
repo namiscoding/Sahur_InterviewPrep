@@ -5,18 +5,20 @@ import { RegisterForm } from './pages/Auth/Register';
 import { ForgotPasswordForm } from './pages/Auth/ForgotPasswordForm';
 import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import { UserProfile } from './pages/profile/update-profile';
-
+import { ChangePassword } from './pages/profile/change-password';
+import { Toaster } from "react-hot-toast"
+import { PracticeHistory } from './pages/history/practice-history';
 type Page =
   | "home"
   | "categories"
   | "login"
   | "register"
   | "forgot-password"
-  | "reset-password"|"update-profile"
+  | "reset-password" | "update-profile" | "change-password" | "practice-history"
 
 
 function App() {
- const [currentPage, setCurrentPage] = useState<String>("login")
+  const [currentPage, setCurrentPage] = useState<String>("login")
   const [resetParams, setResetParams] = useState<{ email: string; token: string }>({
     email: "",
     token: ""
@@ -27,47 +29,53 @@ function App() {
     if (page === "reset-password" && data) {
       setResetParams({ email: data.email, token: data.token })
     }
-     if (page === "update-profile" && data?.token) {
-    localStorage.setItem("token", data.token); // 👈 đảm bảo token được lưu
-  }
+    if (page === "update-profile" && data?.token) {
+      localStorage.setItem("token", data.token); // 👈 đảm bảo token được lưu
+    }
     setCurrentPage(page)
   }
-useEffect(() => {
-  const searchParams = new URLSearchParams(window.location.search)
-  const email = searchParams.get("email")
-  const token = searchParams.get("token")
-  const path = window.location.pathname
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const email = searchParams.get("email")
+    const token = searchParams.get("token")
+    const path = window.location.pathname
 
-  // Ưu tiên reset-password nếu có token
-  if (email && token) {
-    navigate("reset-password", { email, token })
-    return
-  }
+    // Ưu tiên reset-password nếu có token
+    if (email && token) {
+      navigate("reset-password", { email, token })
+      return
+    }
 
-  // Còn lại map path sang page
-  switch (path) {
-    case "/update-profile":
-      navigate("update-profile")
-      break
-    case "/categories":
-      navigate("categories")
-      break
-    case "/home":
-      navigate("home")
-      break
-    case "/login":
-      navigate("login")
-      break
-    case "/register":
-      navigate("register")
-      break
-    case "/forgot-password":
-      navigate("forgot-password")
-      break
-    default:
-      navigate("login") // fallback
-  }
-}, []);
+    // Còn lại map path sang page
+    switch (path) {
+      case "/update-profile":
+        navigate("update-profile")
+        break
+      case "/categories":
+        navigate("categories")
+        break
+      case "/home":
+        navigate("home")
+        break
+      case "/login":
+        navigate("login")
+        break
+      case "/register":
+        navigate("register")
+        break
+      case "/forgot-password":
+        navigate("forgot-password")
+        break
+      case "/change-password":
+        navigate("change-password")
+        break
+      case "/practice-history":
+        navigate("practice-history")
+        break
+      default:
+        navigate("login") // fallback
+    }
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -95,15 +103,24 @@ useEffect(() => {
       case "forgot-password":
         return <ForgotPasswordForm onNavigate={navigate} />
 
-   case "reset-password":
+      case "reset-password":
         return <ResetPasswordPage onNavigate={navigate} resetParams={resetParams} />
-    case "update-profile":
-      return <UserProfile onNavigate={navigate} />;
+      case "update-profile":
+        return <UserProfile onNavigate={navigate} />;
+      case "change-password":
+        return <ChangePassword onNavigate={navigate} />
+      case "practice-history":
+  return <PracticeHistory onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }
   };
-
+  return (
+    <div className="min-h-screen w-full">
+      <Toaster position="top-right" reverseOrder={false} toastOptions={{ duration: 4000 }} />
+      {renderPage()}
+    </div>
+  );
   // Add w-full to ensure full width
   return <div className="min-h-screen w-full">{renderPage()}</div>;
 }

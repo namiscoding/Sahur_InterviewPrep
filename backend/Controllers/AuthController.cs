@@ -82,7 +82,7 @@ namespace InterviewPrep.API.Controllers
         }
 
         [Authorize]
-        [HttpPut("update-profile")]
+        [HttpPut("user/update-profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
             if (!ModelState.IsValid)
@@ -161,7 +161,7 @@ namespace InterviewPrep.API.Controllers
                 return BadRequest(new { errors });
             }
 
-            return Ok("Password changed successfully");
+            return Ok(new { message = "Password changed successfully" });
         }
     }
 }

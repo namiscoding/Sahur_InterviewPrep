@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import toast from "react-hot-toast"
 
 interface ResetPasswordPageProps {
   onNavigate: (page: string) => void
@@ -19,26 +20,22 @@ export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPass
 
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [message, setMessage] = useState("")
-  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!email || !token) {
-      setError("❌ Link không hợp lệ hoặc thiếu thông tin.")
+      toast.error("❌ Link không hợp lệ hoặc thiếu thông tin.")
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError("❌ Mật khẩu xác nhận không khớp.")
+      toast.error("❌ Mật khẩu xác nhận không khớp.")
       return
     }
 
     setLoading(true)
-    setError("")
-    setMessage("")
 
     try {
       const res = await fetch("https://localhost:2004/api/reset-password", {
@@ -55,19 +52,19 @@ export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPass
       const data = await res.json()
 
       if (!res.ok) {
-        if (data.error) setError(data.error)
+        if (data.error) toast.error(data.error)
         else if (data.errors) {
           const errMsg = Object.values(data.errors).flat().join("\n")
-          setError(errMsg)
+          toast.error(errMsg)
         } else {
-          setError("❌ Đặt lại mật khẩu thất bại.")
+          toast.error("❌ Changing passoword fail.")
         }
       } else {
-        setMessage("✅ Mật khẩu đã được đặt lại thành công.")
-        setTimeout(() => onNavigate("login"), 3000)
+        toast.success("✅Password change")
+        setTimeout(() => onNavigate("login"), 2500)
       }
     } catch (err) {
-      setError("❌ Đã xảy ra lỗi. Vui lòng thử lại sau.")
+      toast.error("❌ Đã xảy ra lỗi. Vui lòng thử lại sau.")
     } finally {
       setLoading(false)
     }
@@ -88,11 +85,7 @@ export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPass
                 type="password"
                 placeholder="Enter new password"
                 value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value)
-                  setError("")
-                  setMessage("")
-                }}
+                onChange={(e) => setNewPassword(e.target.value)}
                 required
               />
             </div>
@@ -103,11 +96,7 @@ export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPass
                 type="password"
                 placeholder="Confirm password"
                 value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value)
-                  setError("")
-                  setMessage("")
-                }}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
@@ -115,12 +104,6 @@ export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPass
               {loading ? "Resetting..." : "Reset Password"}
             </Button>
           </form>
-          {message && (
-            <p className="mt-4 text-sm text-center text-green-600 whitespace-pre-line">{message}</p>
-          )}
-          {error && (
-            <p className="mt-4 text-sm text-center text-red-500 whitespace-pre-line">{error}</p>
-          )}
         </CardContent>
       </Card>
     </div>

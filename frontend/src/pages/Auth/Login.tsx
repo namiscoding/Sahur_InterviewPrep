@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { jwtDecode } from "jwt-decode"
+import { jwtDecode } from "jwt-decode";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Page } from "@/types";
+import toast from "react-hot-toast"; // ✅ import toast
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -28,7 +29,6 @@ export function LoginForm({ onLogin, onNavigate }: LoginFormProps) {
     emailOrUserName: "",
     password: "",
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,52 +36,48 @@ export function LoginForm({ onLogin, onNavigate }: LoginFormProps) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const res = await fetch("https://localhost:2004/api/user/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentials),
-    });
+    try {
+      const res = await fetch("https://localhost:2004/api/user/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      // xử lý lỗi...
-      return;
+      if (!res.ok) {
+        const message =
+          data?.error ||
+          (data?.errors
+            ? Object.values(data.errors).flat().join("\n")
+            : "Invalid username or password.");
+        toast.error(message); // ✅ show error toast
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      const decoded: any = jwtDecode(data.token);
+      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+      toast.success("Login Successfull!"); // ✅ show success
+
+      if (role === "Admin") {
+        onNavigate("categories");
+      } else {
+        onNavigate("home");
+      }
+
+      onLogin(); // gọi callback nếu cần
+    } catch (err) {
+      toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    // 👉 Decode token để lấy role
-const decoded: any = jwtDecode(data.token);
-const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-    // 👉 Điều hướng theo role
-    if (role === "Admin") {
-      onNavigate("categories"); // hoặc dashboard admin
-    } else if (role === "User") {
-      onNavigate("home");
-    } else {
-      onNavigate("home"); // fallback
-    }
-
-  } catch (err) {
-    setError("Đã xảy ra lỗi. Vui lòng thử lại sau.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const autofillDemo = () => {
-    setCredentials({
-      emailOrUserName: "admin@example.com",
-      password: "admin123",
-    });
   };
 
   return (
@@ -123,16 +119,11 @@ const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/ro
                 />
                 <Button
                   type="button"
-             
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
@@ -149,9 +140,8 @@ const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/ro
                 </Label>
               </div>
               <a
-                type="button"
                 onClick={() => onNavigate("forgot-password")}
-                className="text-sm text-blue-600 hover:text-blue-500"
+                className="text-sm text-blue-600 hover:text-blue-500 cursor-pointer"
               >
                 Forgot password?
               </a>
@@ -160,21 +150,13 @@ const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/ro
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
             </Button>
-
-            {error && (
-              <p className="text-sm text-red-500 text-center whitespace-pre-line">
-                {error}
-              </p>
-            )}
-
-      
           </form>
 
           <div className="text-center text-sm">
             Don’t have an account?{" "}
             <a
               onClick={() => onNavigate("register")}
-              className="text-blue-600 hover:text-blue-500 font-medium"
+              className="text-blue-600 hover:text-blue-500 font-medium cursor-pointer"
             >
               Sign up
             </a>

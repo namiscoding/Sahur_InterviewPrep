@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Eye, EyeOff } from "lucide-react"
+import React, { useState } from "react";
+import toast from "react-hot-toast"; // ✅ import toast
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
 
 interface RegisterFormProps {
-  onRegister: () => void
-  onNavigate: (page: string) => void
+  onRegister: () => void;
+  onNavigate: (page: string) => void;
 }
 
 export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
@@ -19,37 +20,51 @@ export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
     displayName: "",
     password: "",
     confirmPassword: ""
-  })
+  });
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const res = await fetch("https://localhost:2004/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || "Registration failed")
-      }
-
-      alert("🎉 Đăng ký thành công!")
-      onRegister()
-    } catch (err: any) {
-      alert("Lỗi: " + err.message)
-    } finally {
-      setLoading(false)
+  try {
+    if (formData.password !== formData.confirmPassword) {
+      throw new Error("❌ Password and confirmPassword does not match");
     }
+
+    const res = await fetch("https://localhost:2004/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    const contentType = res.headers.get("content-type");
+    let resultMessage = "";
+
+    if (!res.ok) {
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        resultMessage =
+          data?.error ||
+          (data?.errors ? Object.values(data.errors).flat().join("\n") : JSON.stringify(data));
+      } else {
+        resultMessage = await res.text();
+      }
+      throw new Error(resultMessage || "Đăng ký thất bại");
+    }
+
+    toast.success("🎉 Đăng ký thành công!");
+    onRegister();
+  } catch (err: any) {
+    toast.error(err.message || "Đã có lỗi xảy ra.");
+  } finally {
+    setLoading(false);
   }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -111,7 +126,6 @@ export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
                 />
                 <Button
                   type="button"
-             
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                   onClick={() => setShowPassword(!showPassword)}
@@ -134,7 +148,6 @@ export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
                 />
                 <Button
                   type="button"
-         
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -161,5 +174,5 @@ export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
