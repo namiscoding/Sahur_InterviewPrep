@@ -1,7 +1,9 @@
-﻿namespace InterviewPrep.API.Application.Services
+using System.Threading.Tasks;
+
+namespace InterviewPrep.API.Application.Services
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(string toEmail, string subject, string htmlMessage);
+        Task SendEmailAsync(string toEmail, string subject, string message);
     }
 }
