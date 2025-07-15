@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'https://localhost:63303/api/staff/categories'; 
+const API_URL = 'https://localhost:2004/api/staff/categories'; 
 
 export interface Category {
   id: number;

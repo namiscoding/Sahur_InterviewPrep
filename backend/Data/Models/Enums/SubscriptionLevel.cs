@@ -3,7 +3,6 @@
     public enum SubscriptionLevel
     {
         Free = 1,
-        Basic = 2,
-        Premium = 3,
+        Premium = 2,
     }
 }

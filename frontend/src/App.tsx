@@ -1,14 +1,18 @@
+// File: src/App.tsx (Updated to include new pages)
 import React, { useState } from 'react';
 import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
+import CustomerManagementPage from './pages/Admin/CustomerManagementPage';
+import StaffManagementPage from './pages/Admin/StaffManagementPage';
 
-type Page = "home" | "categories";
+type Page = "home" | "categories" | "customers" | "staffs";
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
 
-  const navigate = (page: Page) => {
-    setCurrentPage(page);
-  };
+  const navigate = (page: string) => {
+  setCurrentPage(page as Page);
+};
+
 
   const renderPage = () => {
     switch (currentPage) {
@@ -16,12 +20,15 @@ function App() {
         return <HomePage onNavigate={navigate} />;
       case "categories":
         return <CategoryManagementPage onNavigate={navigate} />;
+      case "customers":
+        return <CustomerManagementPage onNavigate={navigate} />;
+      case "staffs":
+        return <StaffManagementPage onNavigate={navigate} />;
       default:
         return <HomePage onNavigate={navigate} />;
     }
   };
 
-  // Add w-full to ensure full width
   return <div className="min-h-screen w-full">{renderPage()}</div>;
 }
 
@@ -62,17 +69,50 @@ function HomePage({ onNavigate }: { onNavigate: (page: Page) => void }) {
             </div>
           </div>
 
-          {/* Placeholder for future features */}
-          <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-400 mb-2">Questions</h3>
-              <p className="text-gray-400 text-sm">Coming soon...</p>
+          {/* Customer Management Card */}
+          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
+               onClick={() => onNavigate("customers")}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Customers</h3>
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Management
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Manage customer accounts in the system
+            </p>
+            <div className="flex items-center text-blue-600 hover:text-blue-800">
+              <span className="text-sm font-medium">Manage Customers</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
           </div>
 
+          {/* Staff Management Card */}
+          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
+               onClick={() => onNavigate("staffs")}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Staff Accounts</h3>
+              <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                Management
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Manage staff accounts in the system
+            </p>
+            <div className="flex items-center text-blue-600 hover:text-blue-800">
+              <span className="text-sm font-medium">Manage Staff</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Placeholder for future features like Questions */}
           <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6">
             <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-400 mb-2">Users</h3>
+              <h3 className="text-lg font-medium text-gray-400 mb-2">Questions</h3>
               <p className="text-gray-400 text-sm">Coming soon...</p>
             </div>
           </div>

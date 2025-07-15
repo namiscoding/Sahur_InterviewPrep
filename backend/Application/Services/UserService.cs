@@ -31,7 +31,7 @@ namespace InterviewPrep.API.Application.Services
             var dtos = _mapper.Map<IEnumerable<UserDTO>>(users);
             return new PagedResult<UserDTO>
             {
-                Data = dtos,
+                Items = dtos,
                 TotalCount = total,
                 Page = page,
                 PageSize = pageSize

@@ -25,7 +25,7 @@ namespace InterviewPrep.API.Data.Repositories
                             u.SubscriptionLevel == SubscriptionLevel.Premium) // All levels 1-3
                 .AsQueryable();
 
-            var userAdminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "UserAdmin");
+            var userAdminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
             if (userAdminRole != null)
             {
                 var adminIds = await _context.UserRoles

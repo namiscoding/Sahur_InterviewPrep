@@ -1,0 +1,518 @@
+// src/pages/Admin/CustomerManagementPage.tsx (Updated)
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  getCustomers,
+  getCustomerDetails,
+  updateCustomerStatus,
+  updateCustomerSubscription,
+  PagedResult,
+  UserDTO,
+  UserDetailDTO,
+  UpdateUserStatusDTO,
+  UpdateSubscriptionDTO,
+} from '../../services/customerService';
+
+// Shadcn UI components
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+
+// Icons
+import { ArrowLeft, Search, Filter, Eye, AlertCircle } from "lucide-react";
+
+interface CustomerManagementPageProps {
+  onNavigate: (page: string) => void;
+}
+
+const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavigate }) => {
+  const [customers, setCustomers] = useState<PagedResult<UserDTO>>({
+    items: [],
+    totalCount: 0,
+    page: 1,
+    pageSize: 10,
+  });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [localSearch, setLocalSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedCustomer, setSelectedCustomer] = useState<UserDetailDTO | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+  const [newSubscriptionLevel, setNewSubscriptionLevel] = useState("");
+  const [newSubscriptionExpiry, setNewSubscriptionExpiry] = useState("");
+  const [reason, setReason] = useState("");
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const fetchCustomers = async () => {
+    setLoading(true);
+    try {
+      const data = await getCustomers(
+        searchTerm,
+        selectedStatus === "all" ? "" : selectedStatus,
+        customers.page,
+        customers.pageSize
+      );
+      setCustomers(data);
+    } catch (err) {
+      console.error("Error fetching customers:", err);
+      setError('Failed to fetch customers. Please ensure the backend is running and accessible.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [searchTerm, selectedStatus, customers.page]);
+
+  const handleViewDetails = async (id: string) => {
+    try {
+      const details = await getCustomerDetails(id);
+      setSelectedCustomer(details);
+      setNewStatus(details.status);
+      setNewSubscriptionLevel(details.subscriptionLevel);
+      setNewSubscriptionExpiry(details.subscriptionExpiryDate ? new Date(details.subscriptionExpiryDate).toISOString().split('T')[0] : "");
+      setIsDetailsOpen(true);
+    } catch (err) {
+      setError('Failed to fetch customer details.');
+    }
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!selectedCustomer) return;
+    setUpdateError(null);
+    try {
+      const dto: UpdateUserStatusDTO = { status: newStatus };
+      const updated = await updateCustomerStatus(selectedCustomer.id, dto);
+      setSelectedCustomer({ ...selectedCustomer, ...updated });
+      fetchCustomers();
+      toast({
+        title: "Success",
+        description: "Customer status updated successfully.",
+      });
+    } catch (err) {
+      setUpdateError('Failed to update status.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update customer status.",
+      });
+    }
+  };
+
+  const calculateDefaultExpiry = useCallback(() => {
+    const now = new Date('2025-07-14'); // Current date as per system
+    now.setMonth(now.getMonth() + 1);
+    return now.toISOString().split('T')[0];
+  }, []);
+
+  useEffect(() => {
+    if (newSubscriptionLevel === 'Free') {
+      setNewSubscriptionExpiry('');
+    } else if (newSubscriptionLevel === 'Premium' && selectedCustomer?.subscriptionLevel !== 'Premium') {
+      setNewSubscriptionExpiry(calculateDefaultExpiry());
+    } else if (newSubscriptionLevel === 'Premium' && selectedCustomer?.subscriptionLevel === 'Premium') {
+      // Keep current or allow change
+      setNewSubscriptionExpiry(selectedCustomer.subscriptionExpiryDate ? new Date(selectedCustomer.subscriptionExpiryDate).toISOString().split('T')[0] : calculateDefaultExpiry());
+    }
+  }, [newSubscriptionLevel, selectedCustomer, calculateDefaultExpiry]);
+
+  const handleUpdateSubscription = async () => {
+    if (!selectedCustomer) return;
+    setUpdateError(null);
+    try {
+      const dto: UpdateSubscriptionDTO = {
+        subscriptionLevel: newSubscriptionLevel,
+        subscriptionExpiryDate: newSubscriptionLevel === 'Free' ? undefined : (newSubscriptionExpiry || undefined),
+        reason,
+      };
+      const updated = await updateCustomerSubscription(selectedCustomer.id, dto);
+      setSelectedCustomer({ ...selectedCustomer, ...updated });
+      fetchCustomers();
+      setReason("");
+      toast({
+        title: "Success",
+        description: "Customer subscription updated successfully.",
+      });
+    } catch (err) {
+      setUpdateError('Failed to update subscription.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update customer subscription.",
+      });
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active': return "bg-green-100 text-green-800";
+      case 'inactive': return "bg-yellow-100 text-yellow-800";
+      case 'suspended': return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getSubscriptionColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'premium': return "bg-purple-100 text-purple-800";
+      case 'basic': return "bg-blue-100 text-blue-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setSearchTerm(localSearch);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading customers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+        <div className="text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+          <Button onClick={fetchCustomers}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Customer Management</h1>
+              <p className="mt-2 text-gray-600">Manage customer accounts in your interview system</p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => onNavigate("home")}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search customers by name or email..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="pl-10"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Filters:</span>
+            </div>
+
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+                <SelectItem value="Suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Customer Cards */}
+        {customers.items.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="bg-white rounded-lg shadow-sm border p-8">
+              <div className="text-gray-400 mb-4">
+                <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <p className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm || selectedStatus !== "all" ? "No customers match your filters" : "No customers found"}
+              </p>
+              <p className="text-gray-600 mb-4">
+                {searchTerm || selectedStatus !== "all" 
+                  ? "Try adjusting your search or filters" 
+                  : "There are no customer accounts yet"}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            {customers.items.map((customer) => (
+              <Card key={customer.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{customer.displayName}</CardTitle>
+                      <CardDescription className="mt-1">{customer.email}</CardDescription>
+                    </div>
+                    <Badge className={getStatusColor(customer.status)}>
+                      {customer.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center mt-2 gap-2">
+                    <Badge variant="secondary" className={getSubscriptionColor(customer.subscriptionLevel)}>
+                      {customer.subscriptionLevel}
+                    </Badge>
+                    <span className="text-sm text-gray-500">
+                      Expiry: {customer.subscriptionExpiryDate ? new Date(customer.subscriptionExpiryDate).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-end">
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(customer.id)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="flex justify-between items-center mt-4">
+          <Button 
+            variant="outline" 
+            disabled={customers.page === 1}
+            onClick={() => setCustomers(prev => ({ ...prev, page: prev.page - 1 }))}
+          >
+            Previous
+          </Button>
+          <span>Page {customers.page} of {Math.ceil(customers.totalCount / customers.pageSize)}</span>
+          <Button 
+            variant="outline" 
+            disabled={customers.page * customers.pageSize >= customers.totalCount}
+            onClick={() => setCustomers(prev => ({ ...prev, page: prev.page + 1 }))}
+          >
+            Next
+          </Button>
+        </div>
+
+        {/* Results Summary */}
+        {customers.items.length > 0 && (
+          <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
+            <p>
+              Showing <span className="font-medium">{customers.items.length}</span> of{" "}
+              <span className="font-medium">{customers.totalCount}</span> customers
+            </p>
+            {(searchTerm || selectedStatus !== "all") && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setLocalSearch("");
+                  setSearchTerm("");
+                  setSelectedStatus("all");
+                }}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Details Dialog */}
+      {selectedCustomer && (
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Customer Details: {selectedCustomer.displayName}</DialogTitle>
+              <DialogDescription>{selectedCustomer.email}</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <p className="text-sm">{selectedCustomer.status}</p>
+                </div>
+                <div>
+                  <Label>Subscription Level</Label>
+                  <p className="text-sm">{selectedCustomer.subscriptionLevel}</p>
+                </div>
+                <div>
+                  <Label>Subscription Expiry</Label>
+                  <p className="text-sm">{selectedCustomer.subscriptionExpiryDate ? new Date(selectedCustomer.subscriptionExpiryDate).toLocaleDateString() : 'N/A'}</p>
+                </div>
+              </div>
+
+              <Tabs defaultValue="transactions" className="mt-4">
+                <TabsList>
+                  <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                  <TabsTrigger value="mockSessions">Mock Sessions</TabsTrigger>
+                  <TabsTrigger value="usageLogs">Usage Logs</TabsTrigger>
+                </TabsList>
+                <TabsContent value="transactions">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Currency</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created At</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCustomer.transactions.map((tx) => (
+                        <TableRow key={tx.id}>
+                          <TableCell>{tx.id}</TableCell>
+                          <TableCell>{tx.amount}</TableCell>
+                          <TableCell>{tx.currency}</TableCell>
+                          <TableCell>{tx.status}</TableCell>
+                          <TableCell>{new Date(tx.createdAt).toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+                <TabsContent value="mockSessions">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Started At</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCustomer.mockSessions.map((session) => (
+                        <TableRow key={session.id}>
+                          <TableCell>{session.id}</TableCell>
+                          <TableCell>{session.sessionType}</TableCell>
+                          <TableCell>{session.status}</TableCell>
+                          <TableCell>{new Date(session.startedAt).toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+                <TabsContent value="usageLogs">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Action Type</TableHead>
+                        <TableHead>Timestamp</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCustomer.usageLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell>{log.id}</TableCell>
+                          <TableCell>{log.actionType}</TableCell>
+                          <TableCell>{new Date(log.usageTimestamp).toLocaleString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+              </Tabs>
+
+              <div className="mt-6">
+                <h3 className="font-semibold mb-2">Update Status</h3>
+                <Select value={newStatus} onValueChange={setNewStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Inactive">Inactive</SelectItem>
+                    <SelectItem value="Suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button className="mt-2" onClick={handleUpdateStatus}>Update Status</Button>
+              </div>
+
+              <div className="mt-6">
+                <h3 className="font-semibold mb-2">Update Subscription</h3>
+                <Select value={newSubscriptionLevel} onValueChange={setNewSubscriptionLevel}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Free">Free</SelectItem>
+                    <SelectItem value="Basic">Basic</SelectItem>
+                    <SelectItem value="Premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
+                {newSubscriptionLevel !== 'Free' && (
+                  <Input
+                    type="date"
+                    value={newSubscriptionExpiry}
+                    onChange={(e) => setNewSubscriptionExpiry(e.target.value)}
+                    className="mt-2"
+                    placeholder="Subscription Expiry Date"
+                  />
+                )}
+                <Textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="mt-2"
+                  placeholder="Reason for update"
+                />
+                <Button className="mt-2" onClick={handleUpdateSubscription}>Update Subscription</Button>
+              </div>
+
+              {updateError && (
+                <div className="flex items-center text-red-600 mt-2">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  {updateError}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default CustomerManagementPage;
