@@ -1,4 +1,5 @@
-﻿using InterviewPrep.API.Application.DTOs.Category;
+﻿using InterviewPrep.API.Application.DTOs;
+using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.Services;
 using Microsoft.AspNetCore.Http;
@@ -35,7 +36,7 @@ namespace InterviewPrep.API.Controllers
                 return await GetAllQuestions();
             }
 
-            var questions = await _questionService.SearchQuestionAsync(content, isActive, difficultyLevel);
+            var questions = await _questionService.SearchQuestionsAsync(content, isActive, difficultyLevel);
 
             if (!questions.Any())
             {
@@ -57,7 +58,6 @@ namespace InterviewPrep.API.Controllers
 
             return Ok(questions);
         }
-
         [HttpPost("staff/questions")]
         public async Task<ActionResult<QuestionDTO>> AddQuestion([FromBody] CreateQuestionDTO createDto)
         {
@@ -65,12 +65,12 @@ namespace InterviewPrep.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B"; 
-                if (string.IsNullOrEmpty(userId)) 
+                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
                 }
@@ -78,11 +78,11 @@ namespace InterviewPrep.API.Controllers
 
             var newQuestion = await _questionService.AddQuestionAsync(createDto, userId);
 
-            return CreatedAtAction(nameof(GetAllQuestions), newQuestion);
+            return CreatedAtAction(nameof(GetAllQuestions), new { id = newQuestion.Id }, newQuestion);
         }
 
         [HttpPost("staff/questions/import-excel")]
-        [Consumes("multipart/form-data")] // Chỉ định kiểu dữ liệu đầu vào là form-data
+        [Consumes("multipart/form-data")]
         public async Task<ActionResult<IEnumerable<QuestionDTO>>> ImportQuestions([FromForm] IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -98,7 +98,6 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                // Tạm thời cho dev/test, hãy thay bằng ID user thực sự trong DB
                 userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -111,6 +110,7 @@ namespace InterviewPrep.API.Controllers
                 using (var stream = new MemoryStream())
                 {
                     await file.CopyToAsync(stream);
+                    stream.Position = 0;
                     var importedQuestions = await _excelImporterService.ImportQuestionsFromExcelAsync(stream, userId);
                     return Ok(importedQuestions);
                 }
@@ -121,23 +121,11 @@ namespace InterviewPrep.API.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (use a logging framework like Serilog/NLog)
                 Console.WriteLine($"Error importing Excel: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error importing questions from Excel file.");
             }
         }
-
-        [HttpGet("staff/questions/{id}")]
-        public async Task<ActionResult<QuestionDTO>> GetQuestionById(long id)
-        {
-            var question = await _questionService.GetQuestionByIdAsync(id);
-            if (question == null)
-            {
-                return NotFound($"Question with ID {id} not found.");
-            }
-            return Ok(question);
-        }
-
 
         [HttpPut("staff/questions/{id}")]
         public async Task<ActionResult<QuestionDTO>> UpdateQuestionInfo(long id, [FromBody] UpdateQuestionInfoDTO updateDto)
@@ -147,7 +135,17 @@ namespace InterviewPrep.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var updatedQuestion = await _questionService.UpdateQuestionInfoAsync(id, updateDto);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User is not authenticated or user ID not found.");
+                }
+            }
+
+            var updatedQuestion = await _questionService.UpdateQuestionInfoAsync(id, updateDto, userId);
 
             if (updatedQuestion == null)
             {
@@ -157,7 +155,7 @@ namespace InterviewPrep.API.Controllers
             return Ok(updatedQuestion);
         }
 
-        [HttpPatch("staff/questions/{id}/status")] 
+        [HttpPatch("staff/questions/{id}/status")]
         public async Task<ActionResult<QuestionDTO>> UpdateQuestionStatus(long id, [FromBody] UpdateQuestionStatusDTO updateDto)
         {
             if (!ModelState.IsValid)
@@ -165,7 +163,17 @@ namespace InterviewPrep.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var updatedQuestion = await _questionService.UpdateQuestionStatusAsync(id, updateDto);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User is not authenticated or user ID not found.");
+                }
+            }
+
+            var updatedQuestion = await _questionService.UpdateQuestionStatusAsync(id, updateDto, userId);
 
             if (updatedQuestion == null)
             {
@@ -173,6 +181,83 @@ namespace InterviewPrep.API.Controllers
             }
 
             return Ok(updatedQuestion);
+        }
+
+
+        [HttpGet("staff/questions/analytics/trends")]
+        public async Task<ActionResult<IEnumerable<CategoryUsageTrendDTO>>> GetCategoryUsageTrends(
+             [FromQuery] List<int>? categoryIds,
+             [FromQuery] DateTime? startDate,
+             [FromQuery] DateTime? endDate,
+             [FromQuery] string timeUnit = "month") 
+        {
+            if (!new[] { "month", "year", "quarter" }.Contains(timeUnit.ToLower()))
+            {
+                return BadRequest("Invalid timeUnit. Accepted values are 'month', 'year', 'quarter'.");
+            }
+
+            var trends = await _questionService.GetCategoryUsageTrendsAsync(
+                categoryIds,
+                startDate,
+                endDate,
+                timeUnit
+            );
+
+            if (!trends.Any())
+            {
+                return NotFound("No usage trend data found for the given criteria.");
+            }
+
+            return Ok(trends);
+        }
+
+        [HttpGet("staff/questions/analytics")]
+        public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestionAnalytics(
+            [FromQuery] List<int>? categoryIds,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] bool orderByUsageDescending = true,
+            [FromQuery] int? topN = null)
+        {
+            var analyticsData = await _questionService.GetQuestionsForAnalyticsAsync(
+                categoryIds,
+                startDate,
+                endDate,
+                orderByUsageDescending,
+                topN
+            );
+
+            if (!analyticsData.Any())
+            {
+                return NotFound("No analytics data found for the given criteria.");
+            }
+
+            return Ok(analyticsData);
+        }
+
+        [HttpGet("questions")]
+        public async Task<ActionResult<PaginatedResultDto<QuestionForCustomerDto>>> GetQuestions(
+           [FromQuery] string? search,
+           [FromQuery] int? categoryId,
+           [FromQuery] string? difficultyLevel,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+        {
+            var result = await _questionService.GetQuestionsAsync(search, categoryId, difficultyLevel, pageNumber, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet("questions/{id}")]
+        public async Task<ActionResult<QuestionForCustomerDto>> GetQuestionByIdForCustomer(long id)
+        {
+            var question = await _questionService.GetActiveQuestionByIdAsync(id);
+
+            if (question == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(question);
         }
     }
 }

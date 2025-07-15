@@ -1,124 +1,38 @@
-// File: src/App.tsx (Updated to include new pages)
-import React, { useState } from 'react';
-import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
-import CustomerManagementPage from './pages/Admin/CustomerManagementPage';
-import StaffManagementPage from './pages/Admin/StaffManagementPage';
+// File: src/App.tsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-type Page = "home" | "categories" | "customers" | "staffs";
+// Import all necessary page components
+import HomePage from './pages/HomePage'; // From develop (assuming a similar HomePage will exist)
+import CategoryManagementPage from './pages/Staff/CategoryManagementPage'; // Exists in both, taking from user-admin structure
+import CustomerManagementPage from './pages/Admin/CustomerManagementPage'; // From user-admin
+import StaffManagementPage from './pages/Admin/StaffManagementPage'; // From user-admin
+import QuestionBankPage from './pages/customer/QuestionBankPage'; // From develop
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>("home");
-
-  const navigate = (page: string) => {
-  setCurrentPage(page as Page);
-};
-
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case "home":
-        return <HomePage onNavigate={navigate} />;
-      case "categories":
-        return <CategoryManagementPage onNavigate={navigate} />;
-      case "customers":
-        return <CustomerManagementPage onNavigate={navigate} />;
-      case "staffs":
-        return <StaffManagementPage onNavigate={navigate} />;
-      default:
-        return <HomePage onNavigate={navigate} />;
-    }
-  };
-
-  return <div className="min-h-screen w-full">{renderPage()}</div>;
-}
-
-function HomePage({ onNavigate }: { onNavigate: (page: Page) => void }) {
   return (
-    <div className="min-h-screen bg-gray-50 w-full">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b w-full">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Interview Prep System</h1>
-              <p className="mt-2 text-gray-600">Manage your interview preparation platform</p>
-            </div>
-          </div>
-        </div>
-      </header>
+    <Router>
+      <div className="min-h-screen w-full">
+        <Routes>
+          {/* Main home route */}
+          <Route path="/" element={<HomePage />} />
 
-      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Category Management Card */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
-               onClick={() => onNavigate("categories")}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
-              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                Management
-              </div>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Manage question categories for the interview system
-            </p>
-            <div className="flex items-center text-blue-600 hover:text-blue-800">
-              <span className="text-sm font-medium">Manage Categories</span>
-              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
+          {/* Admin routes */}
+          <Route path="/admin/customers" element={<CustomerManagementPage />} />
+          <Route path="/admin/staffs" element={<StaffManagementPage />} />
 
-          {/* Customer Management Card */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
-               onClick={() => onNavigate("customers")}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Customers</h3>
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                Management
-              </div>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Manage customer accounts in the system
-            </p>
-            <div className="flex items-center text-blue-600 hover:text-blue-800">
-              <span className="text-sm font-medium">Manage Customers</span>
-              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
+          {/* Staff routes */}
+          <Route path="/staff/categories" element={<CategoryManagementPage />} />
+          {/* Assuming staff-related management for questions might be under staff as well, or a different role */}
 
-          {/* Staff Management Card */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
-               onClick={() => onNavigate("staffs")}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Staff Accounts</h3>
-              <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                Management
-              </div>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Manage staff accounts in the system
-            </p>
-            <div className="flex items-center text-blue-600 hover:text-blue-800">
-              <span className="text-sm font-medium">Manage Staff</span>
-              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
+          {/* Customer routes (e.g., viewing questions) */}
+          <Route path="/questions" element={<QuestionBankPage />} />
 
-          {/* Placeholder for future features like Questions */}
-          <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-400 mb-2">Questions</h3>
-              <p className="text-gray-400 text-sm">Coming soon...</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+          {/* Optionally, add a catch-all route for 404 Not Found */}
+          {/* <Route path="*" element={<NotFoundPage />} /> */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Application.Profiles;
+using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Data;
 using InterviewPrep.API.Data.Models;
@@ -12,17 +12,8 @@ using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cấu hình EPPlus License (cho phiên bản 8.0+)
-// Chọn một trong các cách sau:
-
 // Cách 1: Sử dụng cho cá nhân/học tập (non-commercial)
 ExcelPackage.License.SetNonCommercialPersonal("Your Name");
-
-// Cách 2: Sử dụng cho tổ chức phi lợi nhuận (non-commercial)
-// ExcelPackage.License.SetNonCommercialOrganization("Your Organization Name");
-
-// Cách 3: Sử dụng cho thương mại (cần license key)
-// ExcelPackage.License.SetCommercial("Your License Key Here");
 
 var configuration = builder.Configuration;
 
@@ -48,6 +39,7 @@ builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
 
 // Add Services
 builder.Services.AddScoped<IExcelImporterService, ExcelImporterService>();
@@ -58,7 +50,7 @@ builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
 // Add AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(Program));
 
 // 3. Cấu hình Authorization Services (bắt buộc)
 builder.Services.AddAuthorization();
@@ -100,6 +92,11 @@ builder.Services.AddCors(options =>
                           .AllowAnyMethod());
 });
 
+
+// Swagger services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -123,5 +120,4 @@ app.UseAuthorization();
 
 // 5. Ánh xạ các Controller
 app.MapControllers();
-
 app.Run();

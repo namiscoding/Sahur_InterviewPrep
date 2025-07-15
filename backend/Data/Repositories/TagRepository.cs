@@ -16,5 +16,17 @@ namespace InterviewPrep.API.Data.Repositories
         {
             return await _context.Tags.ToListAsync();
         }
+
+        public async Task<Tag?> GetTagByNameAsync(string name)
+        {
+            return await _context.Tags.FirstOrDefaultAsync(t => t.Name.ToLower() == name.ToLower());
+        }
+
+        public async Task<Tag> AddTagAsync(Tag tag)
+        {
+            _context.Tags.Add(tag);
+            await _context.SaveChangesAsync();
+            return tag;
+        }
     }
 }
