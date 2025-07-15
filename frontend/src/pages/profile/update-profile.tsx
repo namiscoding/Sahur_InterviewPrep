@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Edit3, Save, X, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import { useNavigate } from 'react-router-dom'; // Thêm import này
 
 interface UpdateProfileDto {
   displayName?: string;
@@ -14,11 +15,9 @@ interface UpdateProfileDto {
   email?: string;
 }
 
-interface UserProfileProps {
-  onNavigate: (page: string) => void;
-}
+export function UserProfile() { // Sửa signature của component
+  const navigate = useNavigate(); // Khởi tạo hook
 
-export function UserProfile({ onNavigate }: UserProfileProps) {
   const [formData, setFormData] = useState<UpdateProfileDto>({});
   const [originalData, setOriginalData] = useState<UpdateProfileDto>({});
   const [isEditing, setIsEditing] = useState(false);
@@ -29,6 +28,7 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("❌ Token không tồn tại.");
+        // Có thể thêm navigate("/login") ở đây nếu muốn chuyển hướng người dùng chưa đăng nhập
         return;
       }
 
@@ -102,7 +102,8 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <Button variant="ghost" onClick={() => onNavigate("home")}>
+          {/* Thay thế onNavigate bằng navigate */}
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
           </Button>
           <h1 className="text-3xl font-bold mt-4">Profile Settings</h1>
@@ -165,7 +166,8 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                 <Button onClick={() => setIsEditing(true)}>
                   <Edit3 className="h-4 w-4 mr-1" /> Edit
                 </Button>
-                <Button variant="secondary" onClick={() => onNavigate("change-password")}>
+                {/* Thay thế onNavigate bằng navigate */}
+                <Button variant="secondary" onClick={() => navigate("/change-password")}>
                   🔐 Change Password
                 </Button>
               </div>

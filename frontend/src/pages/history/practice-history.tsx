@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, Target, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react"
+import { useNavigate } from 'react-router-dom'; // Thêm import này
 
 const sessions = [
   {
@@ -59,11 +60,15 @@ const getScoreColor = (score: number) => {
   return "bg-red-100 text-red-800"
 }
 
-interface PracticeHistoryProps {
-  onNavigate: (page: string) => void
-}
+// Xóa interface PracticeHistoryProps vì không còn cần thiết
+// interface PracticeHistoryProps {
+//   onNavigate: (page: string) => void
+// }
 
-export function PracticeHistory({ onNavigate }: PracticeHistoryProps) {
+// Sửa signature của component
+export function PracticeHistory() {
+  const navigate = useNavigate(); // Khởi tạo hook
+
   const averageScore = Math.round(sessions.reduce((sum, session) => sum + session.totalScore, 0) / sessions.length)
 
   return (
@@ -76,7 +81,8 @@ export function PracticeHistory({ onNavigate }: PracticeHistoryProps) {
               <h1 className="text-3xl font-bold text-gray-900">Practice History</h1>
               <p className="mt-2 text-gray-600">Track your progress and review past sessions</p>
             </div>
-            <Button variant="outline" onClick={() => onNavigate("dashboard")}>
+            {/* Thay thế onNavigate bằng navigate */}
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
               Back to Dashboard
             </Button>
           </div>
@@ -175,7 +181,8 @@ export function PracticeHistory({ onNavigate }: PracticeHistoryProps) {
                     </div>
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={() => onNavigate("session-detail")}>
+                  {/* Thay thế onNavigate bằng navigate và thêm ID vào URL nếu cần */}
+                  <Button variant="outline" size="sm" onClick={() => navigate(`/session-detail/${session.id}`)}>
                     View Details
                   </Button>
                 </div>

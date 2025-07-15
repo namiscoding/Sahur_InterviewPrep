@@ -11,6 +11,9 @@ import {
   UpdateStaffStatusDTO,
 } from '../../services/staffService';
 
+// Import useNavigate from react-router-dom
+import { useNavigate } from 'react-router-dom'; // <--- THÊM DÒNG NÀY
+
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,11 +27,16 @@ import { useToast } from "@/hooks/use-toast";
 // Icons
 import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle } from "lucide-react";
 
-interface StaffManagementPageProps {
-  onNavigate: (page: string) => void;
-}
+// XÓA HOẶC BỎ COMMENT INTERFACE NÀY
+// interface StaffManagementPageProps {
+//   onNavigate: (page: string) => void;
+// }
 
-const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate }) => {
+// Cập nhật kiểu cho React.FC và bỏ destructuring prop onNavigate
+const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
+  // Khởi tạo useNavigate hook
+  const navigate = useNavigate(); // <--- THÊM DÒNG NÀY
+
   const [staffs, setStaffs] = useState<PagedResult<StaffDTO>>({
     items: [],
     totalCount: 0,
@@ -47,7 +55,7 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [newPassword, setNewPassword] = useState(""); // Not used in CreateStaffDTO
   const [createError, setCreateError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -222,7 +230,8 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
               <p className="mt-2 text-gray-600">UserAdmin manage staff accounts in InterviewPrep system</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => onNavigate("home")}>
+              {/* Thay đổi onClick: từ onNavigate("home") thành navigate("/") */}
+              <Button variant="outline" onClick={() => navigate("/")}> {/* <--- SỬA DÒNG NÀY */}
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
@@ -284,8 +293,8 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
                 {searchTerm || selectedStatus !== "all" ? "No staffs match your filters" : "No staffs found"}
               </p>
               <p className="text-gray-600 mb-4">
-                {searchTerm || selectedStatus !== "all" 
-                  ? "Try adjusting your search or filters" 
+                {searchTerm || selectedStatus !== "all"
+                  ? "Try adjusting your search or filters"
                   : "There are no staff accounts yet"}
               </p>
             </div>
@@ -320,16 +329,16 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             disabled={staffs.page === 1}
             onClick={() => setStaffs(prev => ({ ...prev, page: prev.page - 1 }))}
           >
             Previous
           </Button>
           <span>Page {staffs.page} of {Math.ceil(staffs.totalCount / staffs.pageSize)}</span>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             disabled={staffs.page * staffs.pageSize >= staffs.totalCount}
             onClick={() => setStaffs(prev => ({ ...prev, page: prev.page + 1 }))}
           >
@@ -345,9 +354,9 @@ const StaffManagementPage: React.FC<StaffManagementPageProps> = ({ onNavigate })
               <span className="font-medium">{staffs.totalCount}</span> staffs
             </p>
             {(searchTerm || selectedStatus !== "all") && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setLocalSearch("");
                   setSearchTerm("");

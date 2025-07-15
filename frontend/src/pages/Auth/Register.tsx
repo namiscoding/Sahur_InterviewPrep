@@ -1,19 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import toast from "react-hot-toast"; // ✅ import toast
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from 'react-router-dom'; // Thêm import này
 
-interface RegisterFormProps {
-  onRegister: () => void;
-  onNavigate: (page: string) => void;
-}
+export function RegisterForm() { // Sửa signature của component
+  const navigate = useNavigate(); // Khởi tạo hook
 
-export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
@@ -27,43 +25,43 @@ export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    if (formData.password !== formData.confirmPassword) {
-      throw new Error("❌ Password and confirmPassword does not match");
-    }
-
-    const res = await fetch("https://localhost:2004/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData)
-    });
-
-    const contentType = res.headers.get("content-type");
-    let resultMessage = "";
-
-    if (!res.ok) {
-      if (contentType && contentType.includes("application/json")) {
-        const data = await res.json();
-        resultMessage =
-          data?.error ||
-          (data?.errors ? Object.values(data.errors).flat().join("\n") : JSON.stringify(data));
-      } else {
-        resultMessage = await res.text();
+    try {
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error("❌ Password and confirmPassword does not match");
       }
-      throw new Error(resultMessage || "Đăng ký thất bại");
-    }
 
-    toast.success("🎉 Đăng ký thành công!");
-    onRegister();
-  } catch (err: any) {
-    toast.error(err.message || "Đã có lỗi xảy ra.");
-  } finally {
-    setLoading(false);
-  }
-};
+      const res = await fetch("https://localhost:2004/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+
+      const contentType = res.headers.get("content-type");
+      let resultMessage = "";
+
+      if (!res.ok) {
+        if (contentType && contentType.includes("application/json")) {
+          const data = await res.json();
+          resultMessage =
+            data?.error ||
+            (data?.errors ? Object.values(data.errors).flat().join("\n") : JSON.stringify(data));
+        } else {
+          resultMessage = await res.text();
+        }
+        throw new Error(resultMessage || "Đăng ký thất bại");
+      }
+
+      toast.success("🎉 Đăng ký thành công!");
+      navigate("/login"); // Thay thế onRegister() và onNavigate("login")
+    } catch (err: any) {
+      toast.error(err.message || "Đã có lỗi xảy ra.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -165,8 +163,8 @@ export function RegisterForm({ onRegister, onNavigate }: RegisterFormProps) {
           <div className="text-center text-sm">
             Already have an account?{" "}
             <a
-              onClick={() => onNavigate("login")}
-              className="text-blue-600 hover:text-blue-500 font-medium"
+              onClick={() => navigate("/login")} // Thay thế onNavigate("login")
+              className="text-blue-600 hover:text-blue-500 font-medium cursor-pointer"
             >
               Sign in
             </a>

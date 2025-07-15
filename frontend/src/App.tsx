@@ -1,11 +1,10 @@
 // File: src/App.tsx
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from "react-hot-toast"; // Keep Toaster for notifications
 
 // Import all necessary page components from both branches
 import HomePage from './pages/HomePage'; // Assuming this component exists and is now route-driven
-import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
+import CategoryManagementPage from './pages/staff/CategoryManagementPage';
 import CustomerManagementPage from './pages/Admin/CustomerManagementPage';
 import StaffManagementPage from './pages/Admin/StaffManagementPage';
 import QuestionBankPage from './pages/customer/QuestionBankPage';

@@ -1,6 +1,8 @@
+"use client"
+
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getStaffCategories, deleteCategory, createCategory, Category, CreateCategoryDTO } from '../../services/categoryService'; // Import createCategory và CreateCategoryDTO
+import { useNavigate } from 'react-router-dom'; // Thêm import này
+import { getStaffCategories, createCategory, Category, CreateCategoryDTO } from '../../services/categoryService'; // Import createCategory và CreateCategoryDTO
 
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
@@ -8,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import { toast } from "sonner"; // Removed - not installed
+// import { toast } from "sonner"; // Removed - not installed, use react-hot-toast if needed
 
 // Component Form mới
 import CategoryForm from '@/components/CategoryForm'; // Adjust path if necessary
@@ -17,6 +19,8 @@ import CategoryForm from '@/components/CategoryForm'; // Adjust path if necessar
 import { PlusCircle, Edit, Trash2, ArrowLeft, Search, Filter, RefreshCw } from "lucide-react";
 
 const CategoryManagementPage: React.FC = () => {
+  const navigate = useNavigate(); // Khởi tạo hook
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -85,7 +89,7 @@ const CategoryManagementPage: React.FC = () => {
       setErrorMessage(null);
       // await deleteCategory(id); // Uncomment this line when you have deleteCategory in service
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call for delete
-      
+
       // Remove from state
       setCategories(prev => prev.filter(cat => cat.id !== id));
 
@@ -110,7 +114,7 @@ const CategoryManagementPage: React.FC = () => {
       setSuccessMessage(`Category "${createdCategory.name}" created successfully!`);
       setShowCreateForm(false); // Đóng form sau khi tạo thành công
       setTimeout(() => setSuccessMessage(null), 5000);
-    } catch (error) {
+    } catch (error: any) { // Thêm : any để xử lý lỗi tốt hơn
       console.error('Error creating category:', error);
       setErrorMessage(error.message || 'Failed to create category. Please check your input.');
       setTimeout(() => setErrorMessage(null), 5000);
@@ -188,12 +192,11 @@ const CategoryManagementPage: React.FC = () => {
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Refresh
               </Button>
-              <Link to="/">
-                <Button variant="outline">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Dashboard
-                </Button>
-              </Link>
+              {/* Sử dụng navigate thay vì Link to "/" */}
+              <Button variant="outline" onClick={() => navigate("/")}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
               <Button onClick={() => setShowCreateForm(true)}> {/* Kích hoạt hiển thị form */}
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New Category
@@ -238,7 +241,7 @@ const CategoryManagementPage: React.FC = () => {
             />
           </div>
         )}
-        
+
         {/* Search and Filters */}
         {!showCreateForm && ( // Ẩn tìm kiếm/lọc khi form đang hiển thị
           <div className="mb-6 space-y-4">
@@ -333,8 +336,19 @@ const CategoryManagementPage: React.FC = () => {
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
                       </Button>
-
-                      
+                      <Button
+                        variant="destructive" // Sử dụng variant destructive cho nút xóa
+                        size="sm"
+                        onClick={() => handleDeleteCategory(category.id, category.name)}
+                        disabled={deleteLoading === category.id}
+                      >
+                        {deleteLoading === category.id ? (
+                          <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 mr-1" />
+                        )}
+                        Delete
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
