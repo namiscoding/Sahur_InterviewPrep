@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using InterviewPrep.API.Application.DTOs.Audit;
 using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.DTOs.Question;
+using InterviewPrep.API.Application.DTOs.Staff;
+using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
 
@@ -10,7 +13,7 @@ namespace InterviewPrep.API.Application.Profiles
     {
         public MappingProfile()
         {
-            
+
             CreateMap<Category, CategoryDTO>();
             CreateMap<CreateCategoryDTO, Category>();
             CreateMap<UpdateCategoryInfoDTO, Category>();
@@ -21,7 +24,6 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.QuestionCategories, opt => opt.Ignore())
                 .ForMember(dest => dest.QuestionTags, opt => opt.Ignore());
-
             CreateMap<UpdateQuestionInfoDTO, Question>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UsageCount, opt => opt.Ignore())
@@ -29,7 +31,31 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.IsActive, opt => opt.Ignore())
                 .ForMember(dest => dest.QuestionCategories, opt => opt.Ignore())
                 .ForMember(dest => dest.QuestionTags, opt => opt.Ignore());
-            CreateMap<CategoryUsageTrend, CategoryUsageTrendDTO>();
+            CreateMap<ApplicationUser, UserDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.SubscriptionLevel, opt => opt.MapFrom(src => src.SubscriptionLevel.ToString()));
+
+            CreateMap<ApplicationUser, UserDetailDTO>()
+                .IncludeBase<ApplicationUser, UserDTO>();
+
+            CreateMap<Transaction, TransactionDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            CreateMap<MockSession, MockSessionDTO>()
+                .ForMember(dest => dest.SessionType, opt => opt.MapFrom(src => src.SessionType.ToString()))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            CreateMap<UsageLog, UsageLogDTO>();
+            CreateMap<UpdateSubscriptionDTO, ApplicationUser>()
+                .ForMember(dest => dest.SubscriptionLevel, opt => opt.MapFrom(src => Enum.Parse<SubscriptionLevel>(src.SubscriptionLevel)));
+            CreateMap<UpdateUserStatusDTO, ApplicationUser>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
+            CreateMap<ApplicationUser, StaffDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            CreateMap<UpdateStaffStatusDTO, ApplicationUser>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
+            CreateMap<AuditLog, AuditLogDTO>();
         }
     }
 }
