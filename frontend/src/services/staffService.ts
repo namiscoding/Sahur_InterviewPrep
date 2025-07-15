@@ -1,3 +1,4 @@
+// src/services/staffService.ts
 import axios from 'axios';
 
 const API_URL = 'https://localhost:2004/api/useradmin/staff';
@@ -16,10 +17,36 @@ export interface PagedResult<T> {
   pageSize: number;
 }
 
+export interface StaffDetailDTO extends StaffDTO {
+  transactions: TransactionDTO[];
+  mockSessions: MockSessionDTO[];
+  usageLogs: UsageLogDTO[];
+}
+
+export interface TransactionDTO {
+  id: number;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface MockSessionDTO {
+  id: number;
+  sessionType: string;
+  status: string;
+  startedAt: string;
+}
+
+export interface UsageLogDTO {
+  id: number;
+  actionType: string;
+  usageTimestamp: string;
+}
+
 export interface CreateStaffDTO {
   displayName: string;
   email: string;
-  password: string;
 }
 
 export interface UpdateStaffStatusDTO {
@@ -43,9 +70,9 @@ export const getStaffs = async (
   }
 };
 
-export const getStaffDetails = async (id: string): Promise<StaffDTO> => {
+export const getStaffDetails = async (id: string): Promise<StaffDetailDTO> => {
   try {
-    const response = await axios.get<StaffDTO>(`${API_URL}/${id}`);
+    const response = await axios.get<StaffDetailDTO>(`${API_URL}/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching staff details:', error);
@@ -57,9 +84,10 @@ export const createStaff = async (dto: CreateStaffDTO): Promise<StaffDTO> => {
   try {
     const response = await axios.post<StaffDTO>(API_URL, dto);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating staff:', error);
-    throw error;
+    const message = error?.response?.data?.title || error?.response?.data?.message || error.message || 'Unknown error';
+    throw new Error(message);
   }
 };
 
