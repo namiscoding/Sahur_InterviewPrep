@@ -5,6 +5,7 @@ using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Data.Models;
+using InterviewPrep.API.Data.Models.Enums;
 using InterviewPrep.API.Data.Repositories;
 
 namespace InterviewPrep.API.Application.Profiles
