@@ -2,5 +2,7 @@
 {
     public enum SubscriptionPlanLevel
     {
+        Free = 0,
+        Premium = 2
     }
 }

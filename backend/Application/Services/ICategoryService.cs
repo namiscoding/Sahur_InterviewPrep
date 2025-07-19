@@ -1,5 +1,5 @@
-﻿using InterviewPrep.API.Application.DTOs;
-using InterviewPrep.API.Application.DTOs.Category;
+﻿using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Data.Models;
 
 namespace InterviewPrep.API.Application.Services

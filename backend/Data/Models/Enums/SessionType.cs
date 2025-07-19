@@ -2,5 +2,7 @@
 {
     public enum SessionType
     {
+        SingleQuestion,
+        MockInterview,
     }
 }

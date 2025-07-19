@@ -6,7 +6,7 @@ namespace InterviewPrep.API.Data.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public SubscriptionPlanLevel Level { get; set; }
+        public SubscriptionLevel Level { get; set; }
         public int DurationMonths { get; set; }
         public decimal Price { get; set; }
         public string Currency { get; set; }

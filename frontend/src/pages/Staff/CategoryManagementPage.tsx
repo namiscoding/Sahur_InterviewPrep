@@ -1,8 +1,17 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Thêm import này
-import { getStaffCategories, createCategory, Category, CreateCategoryDTO } from '../../services/categoryService'; // Import createCategory và CreateCategoryDTO
+import { Link } from 'react-router-dom';
+import { 
+  getStaffCategories, 
+  createCategory, 
+  updateCategoryStatus,
+  updateCategoryInfo,
+  Category, 
+  CreateCategoryDTO,
+  UpdateCategoryStatusDTO,
+  UpdateCategoryInfoDTO
+} from '../../services/categoryService';
 
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
@@ -10,13 +19,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import { toast } from "sonner"; // Removed - not installed, use react-hot-toast if needed
+import { Switch } from "@/components/ui/switch";
 
 // Component Form mới
-import CategoryForm from '@/components/CategoryForm'; // Adjust path if necessary
+import CategoryForm from '@/components/CategoryForm';
 
 // Icons
-import { PlusCircle, Edit, Trash2, ArrowLeft, Search, Filter, RefreshCw } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ArrowLeft, Search, Filter, RefreshCw, Power } from "lucide-react";
 
 const CategoryManagementPage: React.FC = () => {
   const navigate = useNavigate(); // Khởi tạo hook
@@ -27,14 +36,16 @@ const CategoryManagementPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [deleteLoading, setDeleteLoading] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // State mới cho chức năng thêm/sửa
+  // State cho chức năng thêm/sửa
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState<boolean>(false);
-  // const [editingCategory, setEditingCategory] = useState<Category | null>(null); // Dành cho chức năng chỉnh sửa
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  // State cho toggle status
+  const [statusToggleLoading, setStatusToggleLoading] = useState<number | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -77,32 +88,7 @@ const CategoryManagementPage: React.FC = () => {
     setFilteredCategories(filtered);
   }, [categories, searchTerm, selectedStatus]);
 
-  const handleDeleteCategory = async (id: number, name: string) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the category "${name}"?\n\nThis action cannot be undone and may affect related questions.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setDeleteLoading(id);
-      setErrorMessage(null);
-      // await deleteCategory(id); // Uncomment this line when you have deleteCategory in service
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call for delete
-
-      // Remove from state
-      setCategories(prev => prev.filter(cat => cat.id !== id));
-
-      setSuccessMessage(`Category "${name}" deleted successfully`);
-      setTimeout(() => setSuccessMessage(null), 5000);
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      setErrorMessage('Failed to delete category. Please try again.');
-      setTimeout(() => setErrorMessage(null), 5000);
-    } finally {
-      setDeleteLoading(null);
-    }
-  };
+  
 
   const handleCreateNewCategory = async (newCategory: CreateCategoryDTO) => {
     setIsSubmittingForm(true);
@@ -110,11 +96,11 @@ const CategoryManagementPage: React.FC = () => {
     setSuccessMessage(null);
     try {
       const createdCategory = await createCategory(newCategory);
-      setCategories(prev => [...prev, createdCategory]); // Thêm danh mục mới vào danh sách
+      setCategories(prev => [...prev, createdCategory]);
       setSuccessMessage(`Category "${createdCategory.name}" created successfully!`);
-      setShowCreateForm(false); // Đóng form sau khi tạo thành công
+      setShowCreateForm(false);
       setTimeout(() => setSuccessMessage(null), 5000);
-    } catch (error: any) { // Thêm : any để xử lý lỗi tốt hơn
+    } catch (error: any) {
       console.error('Error creating category:', error);
       setErrorMessage(error.message || 'Failed to create category. Please check your input.');
       setTimeout(() => setErrorMessage(null), 5000);
@@ -123,15 +109,75 @@ const CategoryManagementPage: React.FC = () => {
     }
   };
 
+  const handleUpdateCategory = async (updatedCategory: CreateCategoryDTO) => {
+    if (!editingCategory) return;
+    
+    setIsSubmittingForm(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      const updateDto: UpdateCategoryInfoDTO = {
+        name: updatedCategory.name,
+        description: updatedCategory.description
+      };
+      
+      const updated = await updateCategoryInfo(editingCategory.id, updateDto);
+      setCategories(prev => prev.map(cat => cat.id === editingCategory.id ? updated : cat));
+      setSuccessMessage(`Category "${updated.name}" updated successfully!`);
+      setEditingCategory(null);
+      setShowCreateForm(false);
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      setErrorMessage(error.message || 'Failed to update category. Please check your input.');
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setIsSubmittingForm(false);
+    }
+  };
+
+  const handleToggleStatus = async (category: Category) => {
+    setStatusToggleLoading(category.id);
+    setErrorMessage(null);
+    try {
+      const statusDto: UpdateCategoryStatusDTO = {
+        isActive: !category.isActive
+      };
+      
+      const updatedCategory = await updateCategoryStatus(category.id, statusDto);
+      setCategories(prev => prev.map(cat => cat.id === category.id ? updatedCategory : cat));
+      
+      const statusText = updatedCategory.isActive ? 'activated' : 'deactivated';
+      setSuccessMessage(`Category "${updatedCategory.name}" ${statusText} successfully!`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error: any) {
+      console.error('Error toggling category status:', error);
+      setErrorMessage(error.message || 'Failed to update category status. Please try again.');
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setStatusToggleLoading(null);
+    }
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setShowCreateForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCategory(null);
+    setShowCreateForm(false);
+  };
+
   const getStatusColor = (isActive: boolean) => {
     return isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
   };
 
   const handleRefresh = () => {
     fetchCategories();
-    clearFilters(); // Xóa bộ lọc khi làm mới
-    setShowCreateForm(false); // Đảm bảo form đóng khi làm mới
-    // setEditingCategory(null);
+    clearFilters();
+    setShowCreateForm(false);
+    setEditingCategory(null);
   };
 
   const clearFilters = () => {
@@ -192,12 +238,13 @@ const CategoryManagementPage: React.FC = () => {
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Refresh
               </Button>
-              {/* Sử dụng navigate thay vì Link to "/" */}
-              <Button variant="outline" onClick={() => navigate("/")}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-              <Button onClick={() => setShowCreateForm(true)}> {/* Kích hoạt hiển thị form */}
+              <Link to="/">
+                <Button variant="outline">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <Button onClick={() => setShowCreateForm(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New Category
               </Button>
@@ -230,20 +277,20 @@ const CategoryManagementPage: React.FC = () => {
           </div>
         )}
 
-        {/* Category Form - Hiển thị khi showCreateForm là true */}
+        {/* Category Form */}
         {showCreateForm && (
-          <div className="mb-6 max-w-lg mx-auto"> {/* Tùy chỉnh chiều rộng và căn giữa nếu muốn */}
+          <div className="mb-6 max-w-lg mx-auto">
             <CategoryForm
-              onSave={handleCreateNewCategory}
-              onCancel={() => setShowCreateForm(false)}
+              onSave={editingCategory ? handleUpdateCategory : handleCreateNewCategory}
+              onCancel={handleCancelEdit}
               isSubmitting={isSubmittingForm}
-              // initialData={editingCategory} // Dành cho chức năng chỉnh sửa
+              initialData={editingCategory}
             />
           </div>
         )}
 
         {/* Search and Filters */}
-        {!showCreateForm && ( // Ẩn tìm kiếm/lọc khi form đang hiển thị
+        {!showCreateForm && (
           <div className="mb-6 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -282,7 +329,7 @@ const CategoryManagementPage: React.FC = () => {
         )}
 
         {/* Category Cards */}
-        {!showCreateForm && ( // Ẩn danh sách khi form đang hiển thị
+        {!showCreateForm && (
           filteredCategories.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-white rounded-lg shadow-sm border p-8">
@@ -327,28 +374,29 @@ const CategoryManagementPage: React.FC = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {/* TODO: Implement edit functionality */ }}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive" // Sử dụng variant destructive cho nút xóa
-                        size="sm"
-                        onClick={() => handleDeleteCategory(category.id, category.name)}
-                        disabled={deleteLoading === category.id}
-                      >
-                        {deleteLoading === category.id ? (
-                          <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 mr-1" />
-                        )}
-                        Delete
-                      </Button>
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={category.isActive}
+                          onCheckedChange={() => handleToggleStatus(category)}
+                          disabled={statusToggleLoading === category.id}
+                        />
+                        <span className="text-sm text-gray-600">
+                          {statusToggleLoading === category.id ? 'Updating...' : 'Active'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditCategory(category)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -356,7 +404,6 @@ const CategoryManagementPage: React.FC = () => {
             </div>
           )
         )}
-
 
         {/* Results Summary */}
         {filteredCategories.length > 0 && !showCreateForm && (
@@ -387,3 +434,4 @@ const CategoryManagementPage: React.FC = () => {
 };
 
 export default CategoryManagementPage;
+

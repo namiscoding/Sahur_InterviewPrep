@@ -13,18 +13,18 @@ namespace InterviewPrep.API.Application.Services
         Task<QuestionDTO?> UpdateQuestionStatusAsync(long id, UpdateQuestionStatusDTO updateDto, string userId); 
         Task<IEnumerable<QuestionDTO>> SearchQuestionsAsync(string? quesContent, bool? isActive, int? quesDifficultyLevel);
         Task<IEnumerable<QuestionDTO>> GetQuestionsSortedByUsageCountAsync(bool descending = true);
-        Task<IEnumerable<QuestionDTO>> GetQuestionsForAnalyticsAsync(
-            List<int>? categoryIds,
-            DateTime? startDate,
-            DateTime? endDate,
-            bool orderByUsageDescending,
-            int? topN);
-
         Task<IEnumerable<CategoryUsageTrendDTO>> GetCategoryUsageTrendsAsync(
+        List<int>? categoryIds,
+        DateTime? startDate,
+        DateTime? endDate,
+        string timeUnit = "month");
+
+        Task<IEnumerable<QuestionDTO>> GetQuestionsUsageRankingAsync(
             List<int>? categoryIds,
             DateTime? startDate,
             DateTime? endDate,
-            string timeUnit = "month");
+            bool orderByUsageDescending = true,
+            int? topN = null);
 
         Task<PaginatedResultDto<QuestionForCustomerDto>> GetQuestionsAsync(string? search, int? categoryId, string? difficultyLevel, int pageNumber, int pageSize);
         Task<QuestionForCustomerDto?> GetActiveQuestionByIdAsync(long id);

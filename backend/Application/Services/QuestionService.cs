@@ -84,18 +84,26 @@ namespace InterviewPrep.API.Application.Services
         }
 
         public async Task<IEnumerable<CategoryUsageTrendDTO>> GetCategoryUsageTrendsAsync(
-             List<int>? categoryIds,
-             DateTime? startDate,
-             DateTime? endDate,
-             string timeUnit = "month")
+       List<int>? categoryIds,
+       DateTime? startDate,
+       DateTime? endDate,
+       string timeUnit = "month")
         {
-            var trends = await _questionRepository.GetCategoryUsageTrendsAsync(categoryIds, startDate, endDate, timeUnit);
+            var trends = await _questionRepository.GetCategoryUsageTrendsAsync(
+                categoryIds, startDate, endDate, timeUnit);
             return _mapper.Map<IEnumerable<CategoryUsageTrendDTO>>(trends);
         }
 
-        public async Task<IEnumerable<QuestionDTO>> GetQuestionsForAnalyticsAsync(List<int>? categoryIds, DateTime? startDate, DateTime? endDate, bool orderByUsageDescending, int? topN)
+        // NEW: Usage ranking using existing QuestionDTO
+        public async Task<IEnumerable<QuestionDTO>> GetQuestionsUsageRankingAsync(
+            List<int>? categoryIds,
+            DateTime? startDate,
+            DateTime? endDate,
+            bool orderByUsageDescending = true,
+            int? topN = null)
         {
-            var questions = await _questionRepository.GetQuestionsForAnalyticsAsync(categoryIds, startDate, endDate, orderByUsageDescending, topN);
+            var questions = await _questionRepository.GetQuestionsUsageRankingAsync(
+                categoryIds, startDate, endDate, orderByUsageDescending, topN);
             return _mapper.Map<IEnumerable<QuestionDTO>>(questions);
         }
 

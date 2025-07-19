@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { jwtDecode } from "jwt-decode";
 import {
   Card,
   CardContent,
@@ -14,20 +13,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import toast from "react-hot-toast"; // ✅ import toast
+import toast from "react-hot-toast";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext'; // 1. Import useAuth
 
-// Import useNavigate from react-router-dom
-import { useNavigate } from 'react-router-dom'; // <--- THÊM DÒNG NÀY
+export function LoginForm() {
+  const navigate = useNavigate();
+  const { login } = useAuth(); // 2. Lấy hàm login từ AuthContext
 
-export function LoginForm() { // <--- SỬA DÒNG NÀY
-  // Khởi tạo useNavigate hook
-  const navigate = useNavigate(); // <--- THÊM DÒNG NÀY
-
- 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [credentials, setCredentials] = useState({
-    emailOrUserName: "",
+    emailOrUserName: "", 
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -41,44 +38,21 @@ export function LoginForm() { // <--- SỬA DÒNG NÀY
     setLoading(true);
 
     try {
-      const res = await fetch("https://localhost:2004/api/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
+      // 3. Gọi hàm login từ context
+      // Hàm này sẽ tự động gọi API, lưu token và cập nhật state
+      await login(credentials);
 
-      const data = await res.json();
+      toast.success("Đăng nhập thành công!");
 
-      if (!res.ok) {
-        const message =
-          data?.error ||
-          (data?.errors
-            ? Object.values(data.errors).flat().join("\n")
-            : "Invalid username or password.");
-        toast.error(message); // ✅ show error toast
-        return;
-      }
+      // 4. Chuyển hướng người dùng sau khi đăng nhập
+      // Logic chuyển hướng dựa trên vai trò có thể được xử lý ở đây
+      // hoặc trong một component riêng biệt lắng nghe trạng thái đăng nhập.
+      // Ở đây, chúng ta sẽ chuyển hướng đến trang dashboard mặc định.
+      navigate("/dashboard");
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      const decoded: any = jwtDecode(data.token);
-      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-      toast.success("Login Successfull!"); // ✅ show success
-
-      // THAY THẾ onNavigate bằng navigate từ react-router-dom
-      if (role === "Admin") {
-        navigate("/categories"); // <--- SỬA ĐƯỜNG DẪN TƯƠNG ỨNG
-      } else {
-        navigate("/"); // <--- SỬA ĐƯỜNG DẪN TƯƠNG ỨNG (home thường là '/')
-      }
-
-      // onLogin(); // Nếu bạn có một context hoặc callback login ở App.tsx, nó sẽ được gọi ở đây.
-                   // Với react-router-dom và AuthContext, logic này thường nằm trong AuthContext.login()
-                   // Nếu không có AuthContext, bạn có thể gọi một hàm đăng nhập cục bộ.
     } catch (err) {
-      toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      // AuthContext sẽ throw lỗi nếu đăng nhập thất bại
+      toast.error("Email hoặc mật khẩu không chính xác.");
     } finally {
       setLoading(false);
     }
@@ -89,40 +63,41 @@ export function LoginForm() { // <--- SỬA DÒNG NÀY
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Sign in to your account
+            Đăng nhập vào tài khoản
           </CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access Mock Interview Practice
+            Truy cập nền tảng Luyện Phỏng Vấn
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="emailOrUserName">Email or Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="emailOrUserName"
-                name="emailOrUserName"
-                type="text"
-                placeholder="Enter your email or username"
+                id="email"
+                name="emailOrUserName" // Sửa name
+                type="email"
+                placeholder="Nhập email của bạn"
                 value={credentials.emailOrUserName}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Mật khẩu</Label>
               <div className="relative">
                 <Input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu"
                   value={credentials.password}
                   onChange={handleChange}
                   required
                 />
                 <Button
                   type="button"
+                  variant="ghost"
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                   onClick={() => setShowPassword(!showPassword)}
@@ -140,31 +115,29 @@ export function LoginForm() { // <--- SỬA DÒNG NÀY
                   onCheckedChange={(checked) => setRememberMe(!!checked)}
                 />
                 <Label htmlFor="remember" className="text-sm">
-                  Remember me
+                  Ghi nhớ tôi
                 </Label>
               </div>
-              {/* THAY THẾ onNavigate bằng navigate từ react-router-dom */}
               <a
-                onClick={() => navigate("/forgot-password")} // <--- SỬA DÒNG NÀY
+                onClick={() => navigate("/forgot-password")}
                 className="text-sm text-blue-600 hover:text-blue-500 cursor-pointer"
               >
-                Forgot password?
+                Quên mật khẩu?
               </a>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Đang đăng nhập..." : "Đăng Nhập"}
             </Button>
           </form>
 
           <div className="text-center text-sm">
-            Don’t have an account?{" "}
-            {/* THAY THẾ onNavigate bằng navigate từ react-router-dom */}
+            Chưa có tài khoản?{" "}
             <a
-              onClick={() => navigate("/register")} // <--- SỬA DÒNG NÀY
+              onClick={() => navigate("/register")}
               className="text-blue-600 hover:text-blue-500 font-medium cursor-pointer"
             >
-              Sign up
+              Đăng ký
             </a>
           </div>
         </CardContent>

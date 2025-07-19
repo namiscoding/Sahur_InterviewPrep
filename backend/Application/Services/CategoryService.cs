@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
 namespace InterviewPrep.API.Application.Services
@@ -8,11 +8,13 @@ namespace InterviewPrep.API.Application.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IQuestionRepository _questionRepository;
         private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryService(ICategoryRepository categoryRepository, IQuestionRepository questionRepository, IMapper mapper)
         {
             _categoryRepository = categoryRepository;
+            _questionRepository = questionRepository; 
             _mapper = mapper;
         }
 
@@ -66,9 +68,21 @@ namespace InterviewPrep.API.Application.Services
                 return null;
             }
 
+            bool oldStatus = existingCategory.IsActive; 
             existingCategory.IsActive = updateDto.IsActive;
 
             var updatedCategory = await _categoryRepository.UpdateCategoryAsync(existingCategory, userId);
+
+           
+            if (oldStatus == true && updateDto.IsActive == false)
+            {
+                var relatedQuestions = await _questionRepository.GetQuestionsByCategoryIdAsync(id);
+                if (relatedQuestions.Any())
+                {
+                    var questionIdsToUpdate = relatedQuestions.Select(q => q.Id).ToList();
+                    await _questionRepository.UpdateQuestionsStatusAsync(questionIdsToUpdate, false); 
+                }
+            }
 
             return _mapper.Map<CategoryDTO>(updatedCategory);
         }

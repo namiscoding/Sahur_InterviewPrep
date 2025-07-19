@@ -1,17 +1,16 @@
-// components/CategoryForm.tsx
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { CreateCategoryDTO, Category } from '../services/categoryService'; // Import CreateCategoryDTO
-import { PlusCircle, Save, XCircle } from "lucide-react";
+import { CreateCategoryDTO, Category } from '../services/categoryService';
+import { PlusCircle, Save, XCircle, RefreshCw } from "lucide-react";
 
 interface CategoryFormProps {
   onSave: (category: CreateCategoryDTO) => void;
   onCancel: () => void;
-  initialData?: Category; // Dùng cho trường hợp chỉnh sửa, không cần cho tạo mới
+  initialData?: Category; // Dùng cho trường hợp chỉnh sửa
   isSubmitting: boolean;
 }
 
@@ -22,12 +21,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onSave, onCancel, initialDa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newCategory: CreateCategoryDTO = {
+    const categoryData: CreateCategoryDTO = {
       name,
       description: description || undefined, // Gửi undefined nếu mô tả trống
       isActive,
     };
-    onSave(newCategory);
+    onSave(categoryData);
   };
 
   useEffect(() => {
@@ -43,10 +42,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onSave, onCancel, initialDa
     }
   }, [initialData]);
 
+  const isEditMode = !!initialData;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white rounded-lg shadow-md border">
       <h3 className="text-xl font-semibold mb-4">
-        {initialData ? 'Edit Category' : 'Create New Category'}
+        {isEditMode ? 'Edit Category' : 'Create New Category'}
       </h3>
 
       <div>
@@ -76,15 +77,32 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onSave, onCancel, initialDa
         />
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="isActive"
-          checked={isActive}
-          onCheckedChange={setIsActive}
-          disabled={isSubmitting}
-        />
-        <Label htmlFor="isActive">Active Category</Label>
-      </div>
+      {/* Only show isActive switch for create mode, not edit mode */}
+      {!isEditMode && (
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="isActive"
+            checked={isActive}
+            onCheckedChange={setIsActive}
+            disabled={isSubmitting}
+          />
+          <Label htmlFor="isActive">Active Category</Label>
+        </div>
+      )}
+
+      {/* Show current status for edit mode */}
+      {isEditMode && (
+        <div className="p-3 bg-gray-50 rounded-md">
+          <p className="text-sm text-gray-600">
+            Current Status: <span className={`font-medium ${isActive ? 'text-green-600' : 'text-red-600'}`}>
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Use the toggle switch in the category list to change the status.
+          </p>
+        </div>
+      )}
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
@@ -95,12 +113,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onSave, onCancel, initialDa
           {isSubmitting ? (
             <>
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Saving...
+              {isEditMode ? 'Updating...' : 'Creating...'}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              {initialData ? 'Update Category' : 'Create Category'}
+              {isEditMode ? 'Update Category' : 'Create Category'}
             </>
           )}
         </Button>
@@ -111,5 +129,3 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onSave, onCancel, initialDa
 
 export default CategoryForm;
 
-// Thêm icon RefreshCw nếu chưa có trong imports của file CategoryManagementPage
-import { RefreshCw } from "lucide-react";
