@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -26,6 +28,8 @@ import CategoryForm from '@/components/CategoryForm';
 import { PlusCircle, Edit, Trash2, ArrowLeft, Search, Filter, RefreshCw, Power } from "lucide-react";
 
 const CategoryManagementPage: React.FC = () => {
+  const navigate = useNavigate(); // Khởi tạo hook
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -284,7 +288,7 @@ const CategoryManagementPage: React.FC = () => {
             />
           </div>
         )}
-        
+
         {/* Search and Filters */}
         {!showCreateForm && (
           <div className="mb-6 space-y-4">

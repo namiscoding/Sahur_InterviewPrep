@@ -10,7 +10,7 @@ import {
   UpdateUserStatusDTO,
   UpdateSubscriptionDTO,
 } from '../../services/customerService';
-
+import { useNavigate } from 'react-router-dom'
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,14 +24,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-// Icons
 import { ArrowLeft, Search, Filter, Eye, AlertCircle } from "lucide-react";
-
-interface CustomerManagementPageProps {
-  onNavigate: (page: string) => void;
-}
-
-const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavigate }) => {
+const CustomerManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState<PagedResult<UserDTO>>({
     items: [],
     totalCount: 0,
@@ -217,7 +212,7 @@ const CustomerManagementPage: React.FC<CustomerManagementPageProps> = ({ onNavig
               <p className="mt-2 text-gray-600">UserAdmin manage customer accounts in InterviewPrep system</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => onNavigate("home")}>
+              <Button variant="outline" onClick={() => navigate("/")}> 
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>

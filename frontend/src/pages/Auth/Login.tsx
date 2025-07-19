@@ -14,15 +14,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Page } from "@/types";
 import toast from "react-hot-toast"; // ✅ import toast
 
-interface LoginFormProps {
-  onLogin: () => void;
-  onNavigate: (page: Page) => void;
-}
+// Import useNavigate from react-router-dom
+import { useNavigate } from 'react-router-dom'; // <--- THÊM DÒNG NÀY
 
-export function LoginForm({ onLogin, onNavigate }: LoginFormProps) {
+export function LoginForm() { // <--- SỬA DÒNG NÀY
+  // Khởi tạo useNavigate hook
+  const navigate = useNavigate(); // <--- THÊM DÒNG NÀY
+
+  // Nếu bạn vẫn cần một hàm onLogin cho callback sau khi đăng nhập thành công
+  // thì hàm này có thể được cung cấp thông qua AuthContext hoặc chỉ cần được gọi nội bộ
+  // Ví dụ: const { login } = useAuth(); nếu bạn dùng Context API
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -66,13 +70,16 @@ export function LoginForm({ onLogin, onNavigate }: LoginFormProps) {
 
       toast.success("Login Successfull!"); // ✅ show success
 
+      // THAY THẾ onNavigate bằng navigate từ react-router-dom
       if (role === "Admin") {
-        onNavigate("categories");
+        navigate("/categories"); // <--- SỬA ĐƯỜNG DẪN TƯƠNG ỨNG
       } else {
-        onNavigate("home");
+        navigate("/"); // <--- SỬA ĐƯỜNG DẪN TƯƠNG ỨNG (home thường là '/')
       }
 
-      onLogin(); // gọi callback nếu cần
+      // onLogin(); // Nếu bạn có một context hoặc callback login ở App.tsx, nó sẽ được gọi ở đây.
+                   // Với react-router-dom và AuthContext, logic này thường nằm trong AuthContext.login()
+                   // Nếu không có AuthContext, bạn có thể gọi một hàm đăng nhập cục bộ.
     } catch (err) {
       toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
     } finally {
@@ -139,8 +146,9 @@ export function LoginForm({ onLogin, onNavigate }: LoginFormProps) {
                   Remember me
                 </Label>
               </div>
+              {/* THAY THẾ onNavigate bằng navigate từ react-router-dom */}
               <a
-                onClick={() => onNavigate("forgot-password")}
+                onClick={() => navigate("/forgot-password")} // <--- SỬA DÒNG NÀY
                 className="text-sm text-blue-600 hover:text-blue-500 cursor-pointer"
               >
                 Forgot password?
@@ -154,8 +162,9 @@ export function LoginForm({ onLogin, onNavigate }: LoginFormProps) {
 
           <div className="text-center text-sm">
             Don’t have an account?{" "}
+            {/* THAY THẾ onNavigate bằng navigate từ react-router-dom */}
             <a
-              onClick={() => onNavigate("register")}
+              onClick={() => navigate("/register")} // <--- SỬA DÒNG NÀY
               className="text-blue-600 hover:text-blue-500 font-medium cursor-pointer"
             >
               Sign up

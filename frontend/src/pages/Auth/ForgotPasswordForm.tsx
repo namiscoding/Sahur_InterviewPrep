@@ -1,17 +1,25 @@
 "use client"
 
 import React, { useState } from "react"
+// Import useNavigate từ react-router-dom
+import { useNavigate } from 'react-router-dom'; // <--- THÊM DÒNG NÀY
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 
-interface ForgotPasswordFormProps {
-  onNavigate: (page: string) => void
-}
+// XÓA HOẶC BỎ COMMENT INTERFACE NÀY
+// interface ForgotPasswordFormProps {
+//   onNavigate: (page: string) => void
+// }
 
-export function ForgotPasswordForm({ onNavigate }: ForgotPasswordFormProps) {
+// Cập nhật kiểu cho component và bỏ destructuring prop onNavigate
+export function ForgotPasswordForm() { // <--- SỬA DÒNG NÀY
+  // Khởi tạo useNavigate hook
+  const navigate = useNavigate(); // <--- THÊM DÒNG NÀY
+
   const [emailOrUserName, setEmailOrUserName] = useState("")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
@@ -42,7 +50,8 @@ export function ForgotPasswordForm({ onNavigate }: ForgotPasswordFormProps) {
         } else setError("Đã xảy ra lỗi không xác định.")
       } else {
         setMessage(data.message || "Nếu email tồn tại, hướng dẫn đã được gửi.")
-        setTimeout(() => onNavigate("login"), 3000)
+        // THAY THẾ onNavigate("login") bằng navigate("/login")
+        setTimeout(() => navigate("/login"), 3000) // <--- SỬA DÒNG NÀY
       }
     } catch (err) {
       setError("Lỗi mạng. Vui lòng thử lại sau.")
@@ -88,8 +97,8 @@ export function ForgotPasswordForm({ onNavigate }: ForgotPasswordFormProps) {
 
           <div className="text-center">
             <a
-              onClick={() => onNavigate("login")}
-              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
+              onClick={() => navigate("/login")} // <--- SỬA DÒNG NÀY
+              className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 cursor-pointer" // Thêm cursor-pointer để hiển thị đây là một hành động click
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back to sign in

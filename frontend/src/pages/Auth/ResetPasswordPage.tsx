@@ -1,38 +1,50 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react" // Thêm useEffect
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import toast from "react-hot-toast"
+import { useNavigate, useSearchParams } from 'react-router-dom'; // Thêm import này
 
-interface ResetPasswordPageProps {
-  onNavigate: (page: string) => void
-  resetParams: {
-    email: string
-    token: string
-  }
-}
+export default function ResetPasswordPage() { // Sửa signature của component
+  const navigate = useNavigate(); // Khởi tạo hook
+  const [searchParams] = useSearchParams(); // Khởi tạo hook để đọc query params
 
-export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPasswordPageProps) {
-  const { email, token } = resetParams
+  const [email, setEmail] = useState<string>(''); // Quản lý email và token trong state
+  const [token, setToken] = useState<string>('');
 
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    // Lấy email và token từ URL query parameters
+    const emailParam = searchParams.get('email');
+    const tokenParam = searchParams.get('token');
+
+    if (emailParam) setEmail(emailParam);
+    if (tokenParam) setToken(tokenParam);
+
+    if (!emailParam || !tokenParam) {
+      toast.error("❌ Link không hợp lệ hoặc thiếu thông tin.");
+      // Tùy chọn: chuyển hướng về trang login nếu link không hợp lệ
+      navigate("/login");
+    }
+  }, [searchParams, navigate]); // Dependencies cho useEffect
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!email || !token) {
-      toast.error("❌ Link không hợp lệ hoặc thiếu thông tin.")
-      return
+      toast.error("❌ Link không hợp lệ hoặc thiếu thông tin.");
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("❌ Mật khẩu xác nhận không khớp.")
-      return
+      toast.error("❌ Mật khẩu xác nhận không khớp.");
+      return;
     }
 
     setLoading(true)
@@ -61,7 +73,7 @@ export default function ResetPasswordPage({ onNavigate, resetParams }: ResetPass
         }
       } else {
         toast.success("✅Password change")
-        setTimeout(() => onNavigate("login"), 2500)
+        setTimeout(() => navigate("/login"), 2500) // Thay thế onNavigate
       }
     } catch (err) {
       toast.error("❌ Đã xảy ra lỗi. Vui lòng thử lại sau.")

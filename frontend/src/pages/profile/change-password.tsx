@@ -9,12 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Check, X, ArrowLeft, Shield, CheckCircle, AlertCircle } from "lucide-react"
+import { useNavigate } from 'react-router-dom'; // Thêm import này
 
-interface ChangePasswordProps {
-  onNavigate: (page: string) => void
-}
+// Xóa interface này vì không còn cần thiết
+// interface ChangePasswordProps {
+//   onNavigate: (page: string) => void
+// }
 
-export function ChangePassword({ onNavigate }: ChangePasswordProps) {
+export function ChangePassword() { // Sửa signature của component
+  const navigate = useNavigate(); // Khởi tạo hook
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -27,7 +31,7 @@ export function ChangePassword({ onNavigate }: ChangePasswordProps) {
   const [errorMessage, setErrorMessage] = useState("")
 
   // Password strength calculation
- const calculatePasswordStrength = (password: string) => {
+  const calculatePasswordStrength = (password: string) => {
     let score = 0;
     const checks = {
       length: password.length >= 8,
@@ -105,7 +109,7 @@ export function ChangePassword({ onNavigate }: ChangePasswordProps) {
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
-        onNavigate("profile");
+        navigate("/profile"); // Thay thế onNavigate
       }, 2000);
     } catch (error: any) {
       setErrorMessage(error.message || "An error occurred");
@@ -124,7 +128,8 @@ export function ChangePassword({ onNavigate }: ChangePasswordProps) {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={() => onNavigate("profile")}>
+            {/* Thay thế onNavigate bằng navigate */}
+            <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Profile
             </Button>

@@ -1,5 +1,4 @@
 // File: src/App.tsx
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from "react-hot-toast"; // Keep Toaster for notifications
 
