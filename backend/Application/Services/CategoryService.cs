@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
 namespace InterviewPrep.API.Application.Services

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { PaginatedResult, Question } from '../types/question.types';
 
-const API_URL = 'https://localhost:2004/api'; 
+const API_URL = 'https://localhost:2004/api/customer'; 
 
 const apiClient = axios.create({
   baseURL: API_URL,
