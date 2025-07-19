@@ -5,6 +5,7 @@ export interface Question {
   id: number;
   content: string;
   difficultyLevel: string;
+  sampleAnswer?: string;
   categories: CategoryForCustomer[];
   tags: Tag[];
 }

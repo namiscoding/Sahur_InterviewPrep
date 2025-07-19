@@ -302,7 +302,7 @@ namespace InterviewPrep.API.Controllers
             return await GetQuestionsUsageRanking(categoryIds, startDate, endDate, orderByUsageDescending, topN);
         }
 
-        [HttpGet("questions")]
+        [HttpGet("customer/questions")]
         public async Task<ActionResult<PaginatedResultDto<QuestionForCustomerDto>>> GetQuestions(
            [FromQuery] string? search,
            [FromQuery] int? categoryId,
@@ -314,7 +314,7 @@ namespace InterviewPrep.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("questions/{id}")]
+        [HttpGet("customer/questions/{id}")]
         public async Task<ActionResult<QuestionForCustomerDto>> GetQuestionByIdForCustomer(long id)
         {
             var question = await _questionService.GetActiveQuestionByIdAsync(id);

@@ -2,6 +2,7 @@
 using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Audit;
 using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.MockSessions;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.Subscription;
@@ -61,6 +62,20 @@ namespace InterviewPrep.API.Application.Profiles
             CreateMap<UpdateStaffStatusDTO, ApplicationUser>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
             CreateMap<AuditLog, AuditLogDTO>();
+            CreateMap<MockSession, MockSessionDto>()
+               .ForMember(
+                   dest => dest.Status,
+                   opt => opt.MapFrom(src => src.Status.ToString())
+               )
+               .ForMember(
+                   dest => dest.SessionType,
+                   opt => opt.MapFrom(src => src.SessionType.ToString())
+               )
+               // AutoMapper sẽ tự động dùng map "Question -> QuestionForCustomerDto" đã có
+               .ForMember(
+                   dest => dest.Questions,
+                   opt => opt.MapFrom(src => src.SessionAnswers.Select(sa => sa.Question))
+               );
 
             CreateMap<Question, QuestionDTO>()
             .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>

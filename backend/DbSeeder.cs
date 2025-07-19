@@ -14,7 +14,7 @@ namespace InterviewPrep.API
 
             // --- 1. Seed Roles và Users (như cũ) ---
             await SeedRolesAndUsers(userManager, roleManager);
-
+            await SeedSystemSettings(context);
             // --- 2. Seed Categories, Tags, và Questions ---
             // Chỉ seed nếu chưa có câu hỏi nào
             if (!await context.Questions.AnyAsync())
@@ -87,6 +87,31 @@ namespace InterviewPrep.API
             };
 
             context.Questions.AddRange(questions);
+            await context.SaveChangesAsync();
+        }
+        private static async Task SeedSystemSettings(ApplicationDbContext context)
+        {
+            // Chỉ seed nếu chưa có key nào tồn tại
+            if (!await context.SystemSettings.AnyAsync(s => s.SettingKey == "FreeUser.SingleQuestion.DailyLimit"))
+            {
+                context.SystemSettings.Add(new SystemSetting
+                {
+                    SettingKey = "FreeUser.SingleQuestion.DailyLimit",
+                    SettingValue = "5",
+                    Description = "Số lượt luyện tập câu hỏi đơn tối đa mỗi ngày cho tài khoản miễn phí."
+                });
+            }
+
+            if (!await context.SystemSettings.AnyAsync(s => s.SettingKey == "FreeUser.FullSession.DailyLimit"))
+            {
+                context.SystemSettings.Add(new SystemSetting
+                {
+                    SettingKey = "FreeUser.FullSession.DailyLimit",
+                    SettingValue = "2",
+                    Description = "Số lượt làm bài phỏng vấn đầy đủ tối đa mỗi ngày cho tài khoản miễn phí."
+                });
+            }
+
             await context.SaveChangesAsync();
         }
     }

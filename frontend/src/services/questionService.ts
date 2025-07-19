@@ -1,6 +1,12 @@
-import apiClient from './apiClient';
+import apiClient from './apiClient'; // Import the shared apiClient
+import { PaginatedResult } from '../types/question.types'; // Assuming PaginatedResult is still defined externally
+// Note: The 'Question' type from '../types/question.types' is NOT imported here,
+// as a more detailed 'Question' interface is defined locally below,
+// which seems to be the intended final structure for this file.
 
-// Interfaces
+// --- Interfaces ---
+
+// Merged Question interface from HEAD
 export interface Question {
   id: number;
   content: string;
@@ -10,6 +16,15 @@ export interface Question {
   usageCount: number;
   categories?: CategoryForQuestion[];
   tags?: TagForQuestion[];
+}
+
+// GetQuestionsParams from the conflicting branch (with difficultyLevel)
+export interface GetQuestionsParams {
+  pageNumber?: number;
+  pageSize?: number;
+  search?: string;
+  categoryId?: number;
+  difficultyLevel?: string; // Kept this from the conflicting branch
 }
 
 export interface CategoryForQuestion {
@@ -50,7 +65,7 @@ export interface CategoryUsageTrend {
   numberOfQuestions: number;
 }
 
-// Utility functions
+// --- Utility functions ---
 export const getDifficultyLevelText = (level: number): string => {
   switch (level) {
     case 1: return 'Easy';
@@ -66,6 +81,28 @@ export const getDifficultyLevelColor = (level: number): string => {
     case 2: return 'bg-yellow-100 text-yellow-800';
     case 3: return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// --- API Calls ---
+
+// Hàm gọi API được nâng cấp (từ file cũ)
+export const getQuestions = async (params: GetQuestionsParams): Promise<PaginatedResult<Question>> => {
+  try {
+    // Xây dựng query string một cách linh hoạt
+    const queryParams = new URLSearchParams();
+
+    if (params.pageNumber) queryParams.append('pageNumber', params.pageNumber.toString());
+    if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    if (params.search) queryParams.append('search', params.search);
+    if (params.categoryId) queryParams.append('categoryId', params.categoryId.toString());
+    if (params.difficultyLevel) queryParams.append('difficultyLevel', params.difficultyLevel);
+
+    const response = await apiClient.get<PaginatedResult<Question>>(`customer/questions?${queryParams.toString()}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch questions:', error);
+    throw error;
   }
 };
 
@@ -124,10 +161,10 @@ export const importQuestionsFromExcel = async (file: File): Promise<{ message: s
   try {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const response = await apiClient.post<{ message: string }>('/staff/questions/import-excel', formData, {
       headers: {
-        'Content-Type': 'multipart/form-Type',
+        'Content-Type': 'multipart/form-data', // Corrected 'multipart/form-Type' to 'multipart/form-data'
       },
     });
     return response.data;
@@ -147,7 +184,7 @@ export const getQuestionsUsageRanking = async (
 ): Promise<Question[]> => {
   try {
     const params = new URLSearchParams();
-    
+
     if (categoryIds && categoryIds.length > 0) {
       categoryIds.forEach(id => params.append('categoryIds', id.toString()));
     }
@@ -172,7 +209,7 @@ export const getCategoryUsageTrends = async (
 ): Promise<CategoryUsageTrend[]> => {
   try {
     const params = new URLSearchParams();
-    
+
     if (categoryIds && categoryIds.length > 0) {
       categoryIds.forEach(id => params.append('categoryIds', id.toString()));
     }

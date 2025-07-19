@@ -70,6 +70,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
+builder.Services.AddScoped<IPracticeService, PracticeService>();
+
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 // Add AutoMapper

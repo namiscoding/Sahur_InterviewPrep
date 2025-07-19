@@ -1,4 +1,4 @@
-﻿namespace InterviewPrep.API.Application.DTOs
+﻿namespace InterviewPrep.API.Application.DTOs.Question
 {
     public class CategoryForCustomerDto
     {

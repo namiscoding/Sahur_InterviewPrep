@@ -2,5 +2,9 @@
 {
     public enum SessionStatus
     {
+        NotStarted,
+        InProgress,
+        Completed,
+        Cancelled
     }
 }
