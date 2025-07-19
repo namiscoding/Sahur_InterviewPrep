@@ -1,13 +1,7 @@
 import apiClient from './apiClient'; // Import the shared apiClient
-import { PaginatedResult } from '../types/question.types'; // Assuming PaginatedResult is still defined externally
-// Note: The 'Question' type from '../types/question.types' is NOT imported here,
-// as a more detailed 'Question' interface is defined locally below,
-// which seems to be the intended final structure for this file.
+import { PaginatedResult, Question } from '../types/question.types'; // Assuming PaginatedResult is still defined externally
 
-// --- Interfaces ---
-
-// Merged Question interface from HEAD
-export interface Question {
+export interface QuestionForStaff {
   id: number;
   content: string;
   sampleAnswer?: string;
@@ -107,9 +101,9 @@ export const getQuestions = async (params: GetQuestionsParams): Promise<Paginate
 };
 
 // --- CRUD Operations for Staff ---
-export const getStaffQuestions = async (): Promise<Question[]> => {
+export const getStaffQuestions = async (): Promise<QuestionForStaff[]> => {
   try {
-    const response = await apiClient.get<Question[]>('/staff/questions');
+    const response = await apiClient.get<QuestionForStaff[]>('/staff/questions');
     return response.data;
   } catch (error) {
     console.error('Error fetching staff questions:', error);
@@ -117,9 +111,9 @@ export const getStaffQuestions = async (): Promise<Question[]> => {
   }
 };
 
-export const getQuestionById = async (id: number): Promise<Question> => {
+export const getQuestionById = async (id: number): Promise<QuestionForStaff> => {
   try {
-    const response = await apiClient.get<Question>(`/staff/questions/${id}`);
+    const response = await apiClient.get<QuestionForStaff>(`/staff/questions/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching question:', error);
@@ -127,9 +121,9 @@ export const getQuestionById = async (id: number): Promise<Question> => {
   }
 };
 
-export const createQuestion = async (question: CreateQuestionDTO): Promise<Question> => {
+export const createQuestion = async (question: CreateQuestionDTO): Promise<QuestionForStaff> => {
   try {
-    const response = await apiClient.post<Question>('/staff/questions', question);
+    const response = await apiClient.post<QuestionForStaff>('/staff/questions', question);
     return response.data;
   } catch (error) {
     console.error('Error creating question:', error);
@@ -137,9 +131,9 @@ export const createQuestion = async (question: CreateQuestionDTO): Promise<Quest
   }
 };
 
-export const updateQuestionInfo = async (id: number, question: UpdateQuestionInfoDTO): Promise<Question> => {
+export const updateQuestionInfo = async (id: number, question: UpdateQuestionInfoDTO): Promise<QuestionForStaff> => {
   try {
-    const response = await apiClient.put<Question>(`/staff/questions/${id}`, question);
+    const response = await apiClient.put<QuestionForStaff>(`/staff/questions/${id}`, question);
     return response.data;
   } catch (error) {
     console.error('Error updating question:', error);
@@ -147,9 +141,9 @@ export const updateQuestionInfo = async (id: number, question: UpdateQuestionInf
   }
 };
 
-export const updateQuestionStatus = async (id: number, status: UpdateQuestionStatusDTO): Promise<Question> => {
+export const updateQuestionStatus = async (id: number, status: UpdateQuestionStatusDTO): Promise<QuestionForStaff> => {
   try {
-    const response = await apiClient.patch<Question>(`/staff/questions/${id}/status`, status);
+    const response = await apiClient.patch<QuestionForStaff>(`/staff/questions/${id}/status`, status);
     return response.data;
   } catch (error) {
     console.error('Error updating question status:', error);
@@ -181,7 +175,7 @@ export const getQuestionsUsageRanking = async (
   endDate?: string,
   orderByUsageDescending: boolean = true,
   topN: number = 10
-): Promise<Question[]> => {
+): Promise<QuestionForStaff[]> => {
   try {
     const params = new URLSearchParams();
 
@@ -193,7 +187,7 @@ export const getQuestionsUsageRanking = async (
     params.append('orderByUsageDescending', orderByUsageDescending.toString());
     params.append('topN', topN.toString());
 
-    const response = await apiClient.get<Question[]>(`/staff/questions/usage-ranking?${params.toString()}`);
+    const response = await apiClient.get<QuestionForStaff[]>(`/staff/questions/usage-ranking?${params.toString()}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching questions usage ranking:', error);

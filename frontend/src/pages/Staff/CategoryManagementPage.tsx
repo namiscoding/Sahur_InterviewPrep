@@ -28,8 +28,6 @@ import CategoryForm from '@/components/CategoryForm';
 import { PlusCircle, Edit, Trash2, ArrowLeft, Search, Filter, RefreshCw, Power } from "lucide-react";
 
 const CategoryManagementPage: React.FC = () => {
-  const navigate = useNavigate(); // Khởi tạo hook
-
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

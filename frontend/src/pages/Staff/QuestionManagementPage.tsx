@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   getStaffQuestions, 
-  searchQuestions,
   createQuestion, 
   updateQuestionStatus,
   updateQuestionInfo,
   importQuestionsFromExcel,
-  Question, 
+  QuestionForStaff, 
   CreateQuestionDTO,
   UpdateQuestionStatusDTO,
   UpdateQuestionInfoDTO,
@@ -44,8 +43,8 @@ import {
 } from "lucide-react";
 
 const QuestionManagementPage: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuestionForStaff[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<QuestionForStaff[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +56,7 @@ const QuestionManagementPage: React.FC = () => {
   // State for add/edit function
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState<boolean>(false);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<QuestionForStaff | null>(null);
   const [fetchingEditQuestion, setFetchingEditQuestion] = useState<boolean>(false); // New loading state
 
   // State for toggle status
@@ -169,7 +168,7 @@ const QuestionManagementPage: React.FC = () => {
     }
   };
 
-  const handleToggleStatus = async (question: Question) => {
+  const handleToggleStatus = async (question: QuestionForStaff) => {
     // Add ID check before calling API
     if (question.id === undefined || question.id === null) {
       console.error('Error: Question ID is undefined. Cannot update status.');
@@ -209,7 +208,7 @@ const QuestionManagementPage: React.FC = () => {
     }
   };
 
-  const handleEditQuestion = async (question: Question) => {
+  const handleEditQuestion = async (question: QuestionForStaff) => {
     setFetchingEditQuestion(true);
     setErrorMessage(null);
     try {

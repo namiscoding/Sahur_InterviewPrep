@@ -6,7 +6,7 @@ import { submitAnswer } from '../../services/practiceService';
 // UI components
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 // Icons - Dọn dẹp các import bị trùng lặp
