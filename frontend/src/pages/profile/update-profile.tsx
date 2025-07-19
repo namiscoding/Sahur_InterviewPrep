@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit3, Save, X, ArrowLeft } from "lucide-react";
+import { Edit3, Save, X, ArrowLeft, Crown, Calendar, BarChart3, Zap } from "lucide-react";
 import toast from "react-hot-toast";
-import { useNavigate } from 'react-router-dom'; // Thêm import này
+import { useNavigate } from 'react-router-dom';
 
 interface UpdateProfileDto {
   displayName?: string;
@@ -15,40 +15,108 @@ interface UpdateProfileDto {
   email?: string;
 }
 
-export function UserProfile() { // Sửa signature của component
-  const navigate = useNavigate(); // Khởi tạo hook
+interface AccountStatus {
+  accountType: 'Free' | 'Premium';
+  expirationDate?: string;
+  usageStats: {
+    apiCallsUsed: number;
+    apiCallsLimit: number;
+    storageUsed: number; // in MB
+    storageLimit: number; // in MB
+    featuresUsed: string[];
+  };
+  remainingLimits: {
+    apiCalls: number;
+    storage: number;
+    daysUntilExpiration?: number;
+  };
+}
+
+export function UserProfile() {
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<UpdateProfileDto>({});
   const [originalData, setOriginalData] = useState<UpdateProfileDto>({});
+  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("❌ Token không tồn tại.");
-        // Có thể thêm navigate("/login") ở đây nếu muốn chuyển hướng người dùng chưa đăng nhập
-        return;
-      }
-
-      try {
-        const res = await fetch("https://localhost:2004/api/user/full-profile", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!res.ok) throw new Error("❌ Không thể lấy thông tin người dùng.");
-
-        const data = await res.json();
-        setOriginalData(data);
-        setFormData(data);
-      } catch (err: any) {
-        toast.error(err.message || "❌ Lỗi khi tải thông tin người dùng.");
-      }
-    };
-
+    // Chame suas funções de fetch aqui
     fetchProfile();
+    fetchAccountStatus();
   }, []);
+
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("❌ Token không tồn tại.");
+      return;
+    }
+
+    try {
+      const res = await fetch("https://localhost:2004/api/user/full-profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error("❌ Không thể lấy thông tin người dùng.");
+
+      const data = await res.json();
+      setOriginalData(data);
+      setFormData(data);
+    } catch (err: any) {
+      toast.error(err.message || "❌ Lỗi khi tải thông tin người dùng.");
+    }
+  };
+
+  const fetchAccountStatus = async () => {
+    setIsLoadingStatus(true);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoadingStatus(false);
+      return;
+    }
+  
+    try {
+      const res = await fetch("https://localhost:2004/api/user/subribtionPlan", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    
+      if (!res.ok) throw new Error("❌ Không thể lấy thông tin gói đăng ký.");
+    
+      const data = await res.json();
+    
+      const transformed: AccountStatus = {
+        accountType: data.subscriptionLevel === 2 ? "Premium" : "Free",
+        expirationDate: data.subscriptionExpiryDate,
+        usageStats: {
+          apiCallsUsed: data.apiCallsUsed ?? 0,
+          apiCallsLimit: data.apiCallsLimit ?? 1000,
+          storageUsed: data.storageUsed ?? 0,
+          storageLimit: data.storageLimit ?? 500,
+          featuresUsed: data.featuresUsed ?? [],
+        },
+        remainingLimits: {
+          apiCalls: data.apiCallsLimit - data.apiCallsUsed,
+          storage: data.storageLimit - data.storageUsed,
+          daysUntilExpiration: data.subscriptionExpiryDate
+            ? Math.ceil(
+                (new Date(data.subscriptionExpiryDate).getTime() - Date.now()) /
+                  (1000 * 60 * 60 * 24)
+              )
+            : undefined,
+        },
+      };
+    
+      setAccountStatus(transformed);
+    } catch (err: any) {
+      toast.error(err.message || "❌ Lỗi khi tải thông tin gói đăng ký.");
+    } finally {
+      setIsLoadingStatus(false);
+    }
+  };
+    
 
   const handleInputChange = (field: keyof UpdateProfileDto, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -96,13 +164,30 @@ export function UserProfile() { // Sửa signature của component
     setIsEditing(false);
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getUsagePercentage = (used: number, limit: number) => {
+    return Math.round((used / limit) * 100);
+  };
+
+  const getUsageColor = (percentage: number) => {
+    if (percentage >= 90) return 'text-red-600';
+    if (percentage >= 70) return 'text-yellow-600';
+    return 'text-green-600';
+  };
+
   const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* Thay thế onNavigate bằng navigate */}
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
           </Button>
@@ -112,6 +197,150 @@ export function UserProfile() { // Sửa signature của component
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Account Status Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5" />
+              Account Status
+            </CardTitle>
+            <CardDescription>Your current plan and usage information</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingStatus ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span className="ml-2">Loading account status...</span>
+              </div>
+            ) : accountStatus ? (
+              <div className="space-y-6">
+                {/* Account Type & Expiration */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${accountStatus.accountType === 'Premium' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100'}`}>
+                      <Crown className={`h-5 w-5 ${accountStatus.accountType === 'Premium' ? 'text-white' : 'text-gray-600'}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Account Type</p>
+                      <p className={`text-lg font-semibold ${accountStatus.accountType === 'Premium' ? 'text-purple-600' : 'text-gray-700'}`}>
+                        {accountStatus.accountType}
+                      </p>
+                    </div>
+                  </div>
+
+                  {accountStatus.accountType === 'Premium' && accountStatus.expirationDate && (
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-100">
+                        <Calendar className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Expires On</p>
+                        <p className="text-lg font-semibold text-gray-700">
+                          {formatDate(accountStatus.expirationDate)}
+                        </p>
+                        {accountStatus.remainingLimits.daysUntilExpiration && (
+                          <p className="text-sm text-gray-500">
+                            {accountStatus.remainingLimits.daysUntilExpiration} days remaining
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Usage Statistics */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Usage Statistics
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* API Calls Usage */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">API Calls</span>
+                        <span className="text-sm text-gray-500">
+                          {accountStatus.usageStats.apiCallsUsed} / {accountStatus.usageStats.apiCallsLimit}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${getUsagePercentage(accountStatus.usageStats.apiCallsUsed, accountStatus.usageStats.apiCallsLimit)}%` }}
+                        ></div>
+                      </div>
+                      <p className={`text-sm mt-1 ${getUsageColor(getUsagePercentage(accountStatus.usageStats.apiCallsUsed, accountStatus.usageStats.apiCallsLimit))}`}>
+                        {accountStatus.remainingLimits.apiCalls} calls remaining
+                      </p>
+                    </div>
+
+                    {/* Storage Usage */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">Storage</span>
+                        <span className="text-sm text-gray-500">
+                          {accountStatus.usageStats.storageUsed} MB / {accountStatus.usageStats.storageLimit} MB
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${getUsagePercentage(accountStatus.usageStats.storageUsed, accountStatus.usageStats.storageLimit)}%` }}
+                        ></div>
+                      </div>
+                      <p className={`text-sm mt-1 ${getUsageColor(getUsagePercentage(accountStatus.usageStats.storageUsed, accountStatus.usageStats.storageLimit))}`}>
+                        {accountStatus.remainingLimits.storage} MB remaining
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features Used */}
+                {accountStatus.usageStats.featuresUsed.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <Zap className="h-5 w-5" />
+                      Active Features
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {accountStatus.usageStats.featuresUsed.map((feature, index) => (
+                        <span 
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upgrade Button for Free users */}
+                {accountStatus.accountType === 'Free' && (
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-lg text-white">
+                    <h3 className="text-lg font-semibold mb-2">Upgrade to Pro</h3>
+                    <p className="text-sm mb-3 opacity-90">
+                      Unlock unlimited API calls, increased storage, and premium features
+                    </p>
+                    <Button 
+                      variant="secondary" 
+                      onClick={() => navigate("/upgrade")}
+                      className="bg-white text-purple-600 hover:bg-gray-100"
+                    >
+                      Upgrade Now
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Failed to load account status
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Personal Information Section */}
         <Card>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
@@ -166,7 +395,6 @@ export function UserProfile() { // Sửa signature của component
                 <Button onClick={() => setIsEditing(true)}>
                   <Edit3 className="h-4 w-4 mr-1" /> Edit
                 </Button>
-                {/* Thay thế onNavigate bằng navigate */}
                 <Button variant="secondary" onClick={() => navigate("/change-password")}>
                   🔐 Change Password
                 </Button>

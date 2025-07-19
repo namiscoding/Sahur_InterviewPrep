@@ -23,10 +23,7 @@ export function LoginForm() { // <--- SỬA DÒNG NÀY
   // Khởi tạo useNavigate hook
   const navigate = useNavigate(); // <--- THÊM DÒNG NÀY
 
-  // Nếu bạn vẫn cần một hàm onLogin cho callback sau khi đăng nhập thành công
-  // thì hàm này có thể được cung cấp thông qua AuthContext hoặc chỉ cần được gọi nội bộ
-  // Ví dụ: const { login } = useAuth(); nếu bạn dùng Context API
-
+ 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [credentials, setCredentials] = useState({

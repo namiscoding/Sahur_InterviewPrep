@@ -18,6 +18,8 @@ import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
 
+import { SessionQuestionList } from './pages/history/question-list-answer';
+
 function App() {
   return (
     <Router>
@@ -26,6 +28,8 @@ function App() {
         <Routes>
           {/* Public Routes (accessible to everyone) */}
           <Route path="/" element={<HomePage />} />
+
+          <Route path="/session-detail/:id" element={<SessionQuestionList />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/forgot-password" element={<ForgotPasswordForm />} />

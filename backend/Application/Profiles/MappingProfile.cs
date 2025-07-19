@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Audit;
 using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.MockSession;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.User;
@@ -14,12 +15,21 @@ namespace InterviewPrep.API.Application.Profiles
     {
         public MappingProfile()
         {
+            CreateMap<SessionAnswer, SessionAnswerDTO>()
+          .ForMember(dest => dest.Question, opt => opt.MapFrom(src => src.Question));
+
+
+            CreateMap<MockSession, DTOs.MockSession.MockSessionDTO>();
 
             CreateMap<Category, CategoryDTO>();
             CreateMap<CreateCategoryDTO, Category>();
             CreateMap<UpdateCategoryInfoDTO, Category>();
             CreateMap<UpdateCategoryStatusDTO, Category>();
-            CreateMap<Question, QuestionDTO>();
+            CreateMap<Question, QuestionDTO>()
+     .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
+         src.QuestionCategories.Select(qc => qc.Category)));
+            CreateMap<Category, CategoryDTO>();
+
             CreateMap<CreateQuestionDTO, Question>()
                 .ForMember(dest => dest.UsageCount, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -42,7 +52,7 @@ namespace InterviewPrep.API.Application.Profiles
             CreateMap<Transaction, TransactionDTO>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
-            CreateMap<MockSession, MockSessionDTO>()
+            CreateMap<MockSession,MockSession>()
                 .ForMember(dest => dest.SessionType, opt => opt.MapFrom(src => src.SessionType.ToString()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
