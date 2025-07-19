@@ -188,7 +188,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
             // Lưu ý: UserId trong model Transaction phải là kiểu 'string'
             entity.HasOne(e => e.User).WithMany(u => u.Transactions).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(e => e.Plan).WithMany(p => p.Transactions).HasForeignKey(e => e.PlanId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.SubscriptionPlan) // Sửa từ 'Plan' thành 'SubscriptionPlan'
+      .WithMany(p => p.Transactions)
+      .HasForeignKey(e => e.SubscriptionPlanId) // Sửa từ 'PlanId' thành 'SubscriptionPlanId'
+      .OnDelete(DeleteBehavior.Restrict);
         });
 
         // =================================================================

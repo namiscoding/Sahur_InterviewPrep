@@ -17,7 +17,7 @@ function HomePage() {
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Category Management Card - Dùng Link để điều hướng */}
+          {/* Category Management Card */}
           <Link to="/staff/categories" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
@@ -36,20 +36,63 @@ function HomePage() {
             </div>
           </Link>
 
-          {/* Placeholder for future features */}
-          <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-400 mb-2">Questions</h3>
-              <p className="text-gray-400 text-sm">Coming soon...</p>
+          {/* Question Management Card */}
+          <Link to="/staff/questions" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Questions</h3>
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Management
+              </div>
             </div>
-          </div>
+            <p className="text-gray-600 mb-4">
+              Manage interview questions and their properties
+            </p>
+            <div className="flex items-center text-green-600 hover:text-green-800">
+              <span className="text-sm font-medium">Manage Questions</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
 
-          <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-6">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-400 mb-2">Users</h3>
-              <p className="text-gray-400 text-sm">Coming soon...</p>
+          {/* Question Analytics Card */}
+          <Link to="/staff/questions/analytics" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
+              <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                Insights
+              </div>
             </div>
-          </div>
+            <p className="text-gray-600 mb-4">
+              View question usage statistics and trends
+            </p>
+            <div className="flex items-center text-purple-600 hover:text-purple-800">
+              <span className="text-sm font-medium">View Analytics</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+  {/* Account Upgrade Card */}
+<Link to="/upgrade" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Upgrade Account</h3>
+              <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                Premium
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Upgrade to premium for unlimited access and advanced features
+            </p>
+            <div className="flex items-center text-yellow-600 hover:text-yellow-800">
+              <span className="text-sm font-medium">Upgrade Now</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
         </div>
       </main>
     </div>

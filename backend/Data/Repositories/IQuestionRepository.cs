@@ -10,23 +10,25 @@ namespace InterviewPrep.API.Data.Repositories
         Task<IEnumerable<Question>> GetAllQuestionsAsync();
         Task<Question> AddQuestionAsync(Question question, List<int>? categoryIds, List<string>? tagNames, string userId);
         Task<Question?> GetQuestionByIdAsync(long id);
+        Task UpdateQuestionsStatusAsync(List<long> questionIds, bool isActive);
+        Task<IEnumerable<Question>> GetQuestionsByCategoryIdAsync(int categoryId);
         Task<Question> UpdateQuestionAsync(Question question, List<int>? categoryIds, List<string>? tagNames, string userId);
         Task<IEnumerable<Question>> SearchQuestionsAsync(string? quesContent, bool? isActive, int? quesDifficultyLevel);
         Task<IEnumerable<Question>> GetQuestionsSortedByUsageCountAsync(bool descending = true);
-        Task<IEnumerable<Question>> GetQuestionsForAnalyticsAsync(
-            List<int>? categoryIds,
-            DateTime? startDate,
-            DateTime? endDate,
-            bool orderByUsageDescending,
-            int? topN);
+        Task<IEnumerable<Question>> GetQuestionsUsageRankingAsync(
+        List<int>? categoryIds,
+        DateTime? startDate,
+        DateTime? endDate,
+        bool orderByUsageDescending = true,
+        int? topN = null);
 
 
         Task<IEnumerable<CategoryUsageTrend>> GetCategoryUsageTrendsAsync(
-            List<int>? categoryIds,
-            DateTime? startDate,
-            DateTime? endDate,
-            string timeUnit = "month");
-      
+       List<int>? categoryIds,
+       DateTime? startDate,
+       DateTime? endDate,
+       string timeUnit = "month");
+
         IQueryable<Question> GetActiveQuestionsQuery();
         Task<Question?> GetActiveQuestionByIdAsync(long id);
     }

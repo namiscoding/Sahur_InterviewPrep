@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getQuestions, GetQuestionsParams } from '../../services/questionService';
+import { getPublicQuestions } from '../services/questionService';
 import { Question, PaginatedResult } from '../../types/question.types';
 import QuestionList from '../../components/QuestionList';
 import Pagination from '../../components/Pagination';

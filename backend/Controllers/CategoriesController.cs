@@ -61,7 +61,7 @@ namespace InterviewPrep.API.Controllers
             if (string.IsNullOrEmpty(userId))
             {
                 // TẠM THỜI cho dev/test, hãy thay bằng ID user thật sự trong DB khi có Auth
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
@@ -85,7 +85,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
@@ -113,7 +113,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");

@@ -18,7 +18,11 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage'; // This page wil
 import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
-
+import QuestionManagementPage from './pages/Staff/QuestionManagementPage';
+import QuestionAnalyticsPage from './pages/Staff/QuestionAnalyticsPage';
+import SubscriptionUpgradePage from './pages/customer/SubscriptionUpgradePage';
+import PaymentFailurePage from './pages/customer/PaymentFailurePage';
+import PaymentSuccessPage from './pages/customer/PaymentSuccessPage';
 function App() {
   return (
     <Router>
@@ -33,7 +37,10 @@ function App() {
           {/* ResetPasswordPage will read email and token from URL search params internally using useSearchParams */}
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/questions" element={<QuestionBankPage />} />
-
+          {/* User upgrade account */}
+          <Route path="/upgrade" element={<SubscriptionUpgradePage />} />
+          <Route path="/upgrade/fail" element={<PaymentFailurePage />} />
+          <Route path="/upgrade/success" element={<PaymentSuccessPage />} />
           {/* User Profile & History Routes (typically for authenticated users) */}
           <Route path="/update-profile" element={<UserProfile />} />
           <Route path="/change-password" element={<ChangePassword />} />
@@ -41,6 +48,8 @@ function App() {
 
           {/* Staff Routes (e.g., requires 'staff' or 'admin' role) */}
           <Route path="/staff/categories" element={<CategoryManagementPage />} />
+           <Route path="/staff/questions" element={<QuestionManagementPage />} />
+           <Route path="/staff/questions/analytics" element={<QuestionAnalyticsPage />} />
           {/* Add more staff routes as needed */}
 
           {/* Admin Routes (e.g., requires 'admin' role) */}

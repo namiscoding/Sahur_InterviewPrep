@@ -166,124 +166,149 @@ namespace InterviewPrep.API.Data.Repositories
             return _context.Questions.Where(q => q.IsActive).AsQueryable();
         }
 
-        public async Task<IEnumerable<Question>> GetQuestionsForAnalyticsAsync(
+        public async Task<IEnumerable<CategoryUsageTrend>> GetCategoryUsageTrendsAsync(
+    List<int>? categoryIds,
+    DateTime? startDate,
+    DateTime? endDate,
+    string timeUnit = "month")
+        {
+            try
+            {
+                // First, let's check if we have any SessionAnswers data
+                var sessionAnswersQuery = _context.SessionAnswers.AsQueryable();
+
+                // Apply date filters first
+                if (startDate.HasValue)
+                {
+                    sessionAnswersQuery = sessionAnswersQuery.Where(sa => sa.AnsweredAt >= startDate.Value);
+                }
+                if (endDate.HasValue)
+                {
+                    sessionAnswersQuery = sessionAnswersQuery.Where(sa => sa.AnsweredAt <= endDate.Value.AddDays(1).AddTicks(-1));
+                }
+
+                // Include related entities
+                var query = sessionAnswersQuery
+                    .Include(sa => sa.Question)
+                        .ThenInclude(q => q.QuestionCategories)
+                            .ThenInclude(qc => qc.Category)
+                    .Where(sa => sa.Question != null && sa.AnsweredAt.HasValue); // Ensure we have valid data
+
+                // Apply category filter if provided
+                if (categoryIds != null && categoryIds.Any())
+                {
+                    query = query.Where(sa => sa.Question.QuestionCategories.Any(qc => categoryIds.Contains(qc.CategoryId)));
+                }
+
+                // Get the data and then group it
+                var sessionAnswers = await query.ToListAsync();
+
+                // Group and aggregate in memory to avoid complex SQL generation
+                var trends = sessionAnswers
+                    .SelectMany(sa => sa.Question.QuestionCategories, (sa, qc) => new { SessionAnswer = sa, Category = qc.Category })
+                    .Where(x => x.Category != null)
+                    .GroupBy(x => new
+                    {
+                        CategoryId = x.Category.Id,
+                        CategoryName = x.Category.Name,
+                        Period = GetPeriodString(x.SessionAnswer.AnsweredAt.Value, timeUnit)
+                    })
+                    .Select(g => new CategoryUsageTrend
+                    {
+                        CategoryId = g.Key.CategoryId,
+                        CategoryName = g.Key.CategoryName,
+                        Period = g.Key.Period,
+                        TotalUsageCount = g.Count(),
+                        NumberOfQuestions = g.Select(x => x.SessionAnswer.QuestionId).Distinct().Count()
+                    })
+                    .OrderBy(t => t.Period)
+                    .ThenBy(t => t.CategoryName)
+                    .ToList();
+
+                return trends;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                Console.WriteLine($"Error in GetCategoryUsageTrendsAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Return empty list instead of throwing
+                return new List<CategoryUsageTrend>();
+            }
+        }
+
+        public async Task<IEnumerable<Question>> GetQuestionsUsageRankingAsync(
             List<int>? categoryIds,
             DateTime? startDate,
             DateTime? endDate,
-            bool orderByUsageDescending,
-            int? topN)
+            bool orderByUsageDescending = true,
+            int? topN = null)
         {
             var query = _context.Questions
                                 .Include(q => q.QuestionCategories)
                                     .ThenInclude(qc => qc.Category)
-                                .Include(q => q.SessionAnswers) // Bao gồm SessionAnswers để tính UsageCount
+                                .Include(q => q.SessionAnswers)
                                 .AsQueryable();
 
-            // Lọc theo Category ID
             if (categoryIds != null && categoryIds.Any())
             {
                 query = query.Where(q => q.QuestionCategories.Any(qc => categoryIds.Contains(qc.CategoryId)));
             }
 
-            // Lọc theo khoảng thời gian trả lời (AnsweredAt) của SessionAnswer
-            if (startDate.HasValue)
-            {
-                query = query.Where(q => q.SessionAnswers.Any(sa => sa.AnsweredAt >= startDate.Value));
-            }
-            if (endDate.HasValue)
-            {
-                // Lọc đến cuối ngày của endDate
-                query = query.Where(q => q.SessionAnswers.Any(sa => sa.AnsweredAt <= endDate.Value.AddDays(1).AddTicks(-1)));
-            }
-
-            // Ánh xạ sang một dạng ẩn danh để tính UsageCount và sắp xếp
             var questionsWithUsage = query.Select(q => new
             {
                 Question = q,
                 CalculatedUsageCount = q.SessionAnswers
-                                        .Where(sa => (!startDate.HasValue || sa.AnsweredAt >= startDate.Value) &&
-                                                     (!endDate.HasValue || sa.AnsweredAt <= endDate.Value.AddDays(1).AddTicks(-1)))
-                                        .Count()
+                    .Where(sa => sa.AnsweredAt.HasValue &&
+                               (!startDate.HasValue || sa.AnsweredAt >= startDate.Value) &&
+                               (!endDate.HasValue || sa.AnsweredAt <= endDate.Value.AddDays(1).AddTicks(-1)))
+                    .Count()
             });
 
-            // Sắp xếp theo CalculatedUsageCount
             if (orderByUsageDescending)
             {
-                questionsWithUsage = questionsWithUsage.OrderByDescending(x => x.CalculatedUsageCount);
+                questionsWithUsage = questionsWithUsage.OrderByDescending(x => x.CalculatedUsageCount).ThenBy(x => x.Question.Id); ;
             }
             else
             {
-                questionsWithUsage = questionsWithUsage.OrderBy(x => x.CalculatedUsageCount);
+                questionsWithUsage = questionsWithUsage.OrderBy(x => x.CalculatedUsageCount).ThenBy(x => x.Question.Id); ;
             }
 
-            // Lọc Top N
             if (topN.HasValue && topN.Value > 0)
             {
                 questionsWithUsage = questionsWithUsage.Take(topN.Value);
             }
 
-            // Lấy lại các đối tượng Question đầy đủ
-            return await questionsWithUsage.Select(x => x.Question).ToListAsync();
-        }
+            var result = await questionsWithUsage.ToListAsync();
 
-        // Cập nhật: GetCategoryUsageTrendsAsync - tính TotalUsageCount từ SessionAnswer
-        public async Task<IEnumerable<CategoryUsageTrend>> GetCategoryUsageTrendsAsync(
-            List<int>? categoryIds,
-            DateTime? startDate,
-            DateTime? endDate,
-            string timeUnit = "month")
+            foreach (var item in result)
+            {
+                item.Question.UsageCount = item.CalculatedUsageCount;
+            }
+
+            return result.Select(x => x.Question);
+        }
+        private static string GetPeriodString(DateTime date, string timeUnit)
         {
-            var query = _context.SessionAnswers
-                                .Include(sa => sa.Question)
-                                    .ThenInclude(q => q.QuestionCategories)
-                                        .ThenInclude(qc => qc.Category)
-                                .AsQueryable();
-
-            // Lọc theo khoảng thời gian trả lời (AnsweredAt)
-            if (startDate.HasValue)
+            return timeUnit.ToLower() switch
             {
-                query = query.Where(sa => sa.AnsweredAt >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                query = query.Where(sa => sa.AnsweredAt <= endDate.Value.AddDays(1).AddTicks(-1));
-            }
-
-            // Lọc theo Category ID của câu hỏi trong session answer
-            if (categoryIds != null && categoryIds.Any())
-            {
-                query = query.Where(sa => sa.Question.QuestionCategories.Any(qc => categoryIds.Contains(qc.CategoryId)));
-            }
-
-            // Thực hiện Grouping và Aggregation
-            var trends = await query
-                .SelectMany(sa => sa.Question.QuestionCategories, (sa, qc) => new { SessionAnswer = sa, Category = qc.Category })
-                .Where(x => x.Category != null) // Đảm bảo Category không null
-                .GroupBy(x => new
-                {
-                    CategoryId = x.Category!.Id,
-                    CategoryName = x.Category!.Name,
-                    Period = timeUnit.ToLower() == "year" ?
-                                (x.SessionAnswer.AnsweredAt.HasValue ? x.SessionAnswer.AnsweredAt.Value.Year.ToString() : "Unknown Year") :
-                             timeUnit.ToLower() == "quarter" ?
-                                (x.SessionAnswer.AnsweredAt.HasValue ? $"{x.SessionAnswer.AnsweredAt.Value.Year}-Q{(x.SessionAnswer.AnsweredAt.Value.Month - 1) / 3 + 1}" : "Unknown Quarter") :
-                                (x.SessionAnswer.AnsweredAt.HasValue ? $"{x.SessionAnswer.AnsweredAt.Value.Year}-{x.SessionAnswer.AnsweredAt.Value.Month:D2}" : "Unknown Month")
-                })
-                .Select(g => new CategoryUsageTrend
-                {
-                    CategoryId = g.Key.CategoryId,
-                    CategoryName = g.Key.CategoryName,
-                    Period = g.Key.Period,
-                    TotalUsageCount = g.Count(), // Tổng số SessionAnswer trong nhóm
-                    NumberOfQuestions = g.Select(x => x.SessionAnswer.QuestionId).Distinct().Count() // Số câu hỏi duy nhất đã được trả lời
-                })
-                .OrderBy(t => t.Period) // Sắp xếp theo thời gian
-                .ThenBy(t => t.CategoryName) // Sau đó theo tên Category
-                .ToListAsync();
-
-            return trends;
+                "year" => date.Year.ToString(),
+                "quarter" => $"{date.Year}-Q{(date.Month - 1) / 3 + 1}",
+                "month" => $"{date.Year}-{date.Month:D2}",
+                "week" => $"{date.Year}-W{GetWeekOfYear(date)}",
+                "day" => date.ToString("yyyy-MM-dd"),
+                _ => $"{date.Year}-{date.Month:D2}"
+            };
         }
 
+        private static int GetWeekOfYear(DateTime date)
+        {
+            var culture = System.Globalization.CultureInfo.CurrentCulture;
+            return culture.Calendar.GetWeekOfYear(date,
+                culture.DateTimeFormat.CalendarWeekRule,
+                culture.DateTimeFormat.FirstDayOfWeek);
+        }
         public async Task<Question?> GetActiveQuestionByIdAsync(long id)
         {
             return await _context.Questions
@@ -291,5 +316,33 @@ namespace InterviewPrep.API.Data.Repositories
                 .Include(q => q.QuestionTags).ThenInclude(qt => qt.Tag)
                 .FirstOrDefaultAsync(q => q.Id == id && q.IsActive);
         }
+
+        public async Task<IEnumerable<Question>> GetQuestionsByCategoryIdAsync(int categoryId)
+        {
+            return await _context.Questions
+                                 .Where(q => q.QuestionCategories.Any(qc => qc.CategoryId == categoryId))
+                                 .ToListAsync();
+        }
+
+        public async Task UpdateQuestionsStatusAsync(List<long> questionIds, bool isActive)
+        {
+            if (questionIds == null || !questionIds.Any())
+            {
+                return;
+            }
+
+            var questionsToUpdate = await _context.Questions
+                                                  .Where(q => questionIds.Contains(q.Id))
+                                                  .ToListAsync();
+
+            foreach (var question in questionsToUpdate)
+            {
+                question.IsActive = isActive;
+            }
+
+            await _context.SaveChangesAsync();
+            
+        }
+
     }
 }

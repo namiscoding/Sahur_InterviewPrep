@@ -2,6 +2,7 @@
 using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -69,7 +70,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
@@ -98,7 +99,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
@@ -126,7 +127,17 @@ namespace InterviewPrep.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error importing questions from Excel file.");
             }
         }
-
+        [HttpGet("staff/questions/{id}")] 
+        public async Task<ActionResult<QuestionDTO>> GetQuestionById(long id)
+        {
+            var question = await _questionService.GetQuestionByIdAsync(id);
+            if (question == null)
+            {
+                return NotFound();
+            }
+            // Đảm bảo rằng GetQuestionByIdAsync trả về QuestionDTO hoặc bạn ánh xạ nó ở đây
+            return Ok(question);
+        }
         [HttpPut("staff/questions/{id}")]
         public async Task<ActionResult<QuestionDTO>> UpdateQuestionInfo(long id, [FromBody] UpdateQuestionInfoDTO updateDto)
         {
@@ -138,7 +149,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
@@ -166,7 +177,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "A96EA2FC-E8C7-44DB-9862-9BC87C0B583B";
+                userId = "user3_id";
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User is not authenticated or user ID not found.");
@@ -184,34 +195,102 @@ namespace InterviewPrep.API.Controllers
         }
 
 
-        [HttpGet("staff/questions/analytics/trends")]
+        [HttpGet("staff/questions/category-trends")]
         public async Task<ActionResult<IEnumerable<CategoryUsageTrendDTO>>> GetCategoryUsageTrends(
-             [FromQuery] List<int>? categoryIds,
-             [FromQuery] DateTime? startDate,
-             [FromQuery] DateTime? endDate,
-             [FromQuery] string timeUnit = "month") 
+    [FromQuery] List<int>? categoryIds,
+    [FromQuery] DateTime? startDate,
+    [FromQuery] DateTime? endDate,
+    [FromQuery] string timeUnit = "month")
         {
-            if (!new[] { "month", "year", "quarter" }.Contains(timeUnit.ToLower()))
+            try
             {
-                return BadRequest("Invalid timeUnit. Accepted values are 'month', 'year', 'quarter'.");
+                // Validate timeUnit parameter
+                var validTimeUnits = new[] { "year", "quarter", "month", "week", "day" };
+                if (!validTimeUnits.Contains(timeUnit.ToLower()))
+                {
+                    return BadRequest(new { message = $"Invalid timeUnit. Valid values are: {string.Join(", ", validTimeUnits)}" });
+                }
+
+                // Validate date range
+                if (startDate.HasValue && endDate.HasValue && startDate.Value > endDate.Value)
+                {
+                    return BadRequest(new { message = "Start date cannot be greater than end date" });
+                }
+
+                Console.WriteLine($"GetCategoryUsageTrends called with:");
+                Console.WriteLine($"  CategoryIds: {(categoryIds?.Any() == true ? string.Join(",", categoryIds) : "None")}");
+                Console.WriteLine($"  StartDate: {startDate?.ToString("yyyy-MM-dd") ?? "None"}");
+                Console.WriteLine($"  EndDate: {endDate?.ToString("yyyy-MM-dd") ?? "None"}");
+                Console.WriteLine($"  TimeUnit: {timeUnit}");
+
+                var trends = await _questionService.GetCategoryUsageTrendsAsync(
+                    categoryIds, startDate, endDate, timeUnit);
+
+                Console.WriteLine($"Retrieved {trends.Count()} trends");
+
+                if (!trends.Any())
+                {
+                    return Ok(new List<CategoryUsageTrendDTO>());
+                }
+
+                return Ok(trends);
             }
-
-            var trends = await _questionService.GetCategoryUsageTrendsAsync(
-                categoryIds,
-                startDate,
-                endDate,
-                timeUnit
-            );
-
-            if (!trends.Any())
+            catch (ArgumentException ex)
             {
-                return NotFound("No usage trend data found for the given criteria.");
+                Console.WriteLine($"ArgumentException in GetCategoryUsageTrends: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in GetCategoryUsageTrends: {ex.Message}");
+                Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
 
-            return Ok(trends);
+                return StatusCode(500, new
+                {
+                    message = "Internal server error occurred",
+                    details = ex.Message // Remove this in production
+                });
+            }
         }
 
+        // NEW: Usage ranking endpoint using existing QuestionDTO
+        [HttpGet("staff/questions/usage-ranking")]
+        //[Authorize(Roles = "Staff,Admin")]
+        public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestionsUsageRanking(
+            [FromQuery] List<int>? categoryIds,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] bool orderByUsageDescending = true,
+            [FromQuery] int? topN = null)
+        {
+            try
+            {
+                if (topN.HasValue && topN.Value <= 0)
+                {
+                    return BadRequest(new { message = "TopN must be a positive number" });
+                }
+
+                var ranking = await _questionService.GetQuestionsUsageRankingAsync(
+                    categoryIds, startDate, endDate, orderByUsageDescending, topN);
+
+                if (!ranking.Any())
+                {
+                    return Ok(new List<QuestionDTO>());
+                }
+
+                return Ok(ranking);
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Error retrieving questions usage ranking");
+                return StatusCode(500, new { message = "Internal server error occurred" });
+            }
+        }
+
+        // DEPRECATED: Keep for backward compatibility
         [HttpGet("staff/questions/analytics")]
+        //[Obsolete("Use /staff/questions/category-trends and /staff/questions/usage-ranking instead")]
         public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestionAnalytics(
             [FromQuery] List<int>? categoryIds,
             [FromQuery] DateTime? startDate,
@@ -219,20 +298,8 @@ namespace InterviewPrep.API.Controllers
             [FromQuery] bool orderByUsageDescending = true,
             [FromQuery] int? topN = null)
         {
-            var analyticsData = await _questionService.GetQuestionsForAnalyticsAsync(
-                categoryIds,
-                startDate,
-                endDate,
-                orderByUsageDescending,
-                topN
-            );
-
-            if (!analyticsData.Any())
-            {
-                return NotFound("No analytics data found for the given criteria.");
-            }
-
-            return Ok(analyticsData);
+            // Redirect to new usage ranking endpoint
+            return await GetQuestionsUsageRanking(categoryIds, startDate, endDate, orderByUsageDescending, topN);
         }
 
         [HttpGet("questions")]

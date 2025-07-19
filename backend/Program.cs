@@ -1,5 +1,7 @@
 using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
+using InterviewPrep.API.Application.Services.Momo;
+using InterviewPrep.API.Application.Util;
 using InterviewPrep.API.Data;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
@@ -7,12 +9,26 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using OfficeOpenXml;
-using InterviewPrep.API.Application.Util;
 using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// connect momo API
+builder.Services.Configure<InterviewPrep.API.Application.Services.Momo.MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
+
+// In program.cs or Startup.cs, add debug-level logging for MoMo-related services
+builder.Services.AddLogging(logging =>
+{
+    logging.AddFilter("InterviewPrep.API.Application.Services.Momo.MomoOptionModel", LogLevel.Debug);
+    logging.AddFilter("InterviewPrep.API.Controllers.PaymentController", LogLevel.Debug);
+    // Add console for development environment
+    logging.AddConsole();
+    logging.AddDebug();
+});
 
 // Cách 1: Sử dụng cho cá nhân/học tập (non-commercial)
 ExcelPackage.License.SetNonCommercialPersonal("Your Name");
@@ -54,6 +70,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
