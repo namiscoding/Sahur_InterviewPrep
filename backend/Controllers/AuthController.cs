@@ -108,6 +108,29 @@ namespace InterviewPrep.API.Controllers
         }
 
         [Authorize]
+        [HttpGet("user/subribtionPlan")]
+        public async Task<IActionResult> subribtionPlan()
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { message = "Token is invalid or has expired." });
+
+            try
+            {
+                var plan = await _authService.GetCurrentUserWithDetailsAsync(userId);
+                return Ok(plan);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+
+        [Authorize]
         [HttpGet("user/full-profile")]
         public async Task<IActionResult> GetFullProfile()
         {

@@ -10,5 +10,6 @@ namespace InterviewPrep.API.Application.Services
         Task<UserWithDetailsDto> GetCurrentUserWithDetailsAsync(string userId);
         Task SendResetPasswordTokenAsync(ForgotPasswordDto dto);
         Task ResetPasswordAsync(ResetPasswordDto dto);
+       
     }
 }

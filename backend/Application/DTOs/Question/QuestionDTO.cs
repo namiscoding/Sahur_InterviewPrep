@@ -1,4 +1,4 @@
-﻿using InterviewPrep.API.Application.DTOs.Category;
+using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
 using System.Text.Json.Serialization;

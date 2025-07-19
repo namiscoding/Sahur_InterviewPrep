@@ -1,4 +1,6 @@
-﻿namespace InterviewPrep.API.Data.Models.Enums
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace InterviewPrep.API.Data.Models.Enums
 {
     public enum SessionStatus
     {
