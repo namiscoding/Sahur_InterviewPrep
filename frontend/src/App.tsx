@@ -5,14 +5,16 @@ import { Toaster } from "react-hot-toast";
 import { SessionQuestionList } from './pages/history/question-list-answer';
 import { AuthProvider } from './contexts/AuthContext';
 import MockInterviewSetupPage from './pages/customer/MockInterviewSetupPage';
-import QuestionManagementPage from './pages/Staff/QuestionManagementPage';
-import QuestionAnalyticsPage from './pages/Staff/QuestionAnalyticsPage';
+import InterviewSessionPage from './pages/customer/InterviewSessionPage';
+import InterviewResultPage from './pages/customer/InterviewResultPage';
+import QuestionManagementPage from './pages/staff/QuestionManagementPage';
+import QuestionAnalyticsPage from './pages/staff/QuestionAnalyticsPage';
 import SubscriptionUpgradePage from './pages/customer/SubscriptionUpgradePage';
 import PaymentFailurePage from './pages/customer/PaymentFailurePage';
 import PaymentSuccessPage from './pages/customer/PaymentSuccessPage';
 import Layout from './components/layout/Layout'
 import HomePage from './pages/HomePage';
-import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
+import CategoryManagementPage from './pages/staff/CategoryManagementPage';
 import CustomerManagementPage from './pages/Admin/CustomerManagementPage';
 import StaffManagementPage from './pages/Admin/StaffManagementPage';
 import QuestionBankPage from './pages/customer/QuestionBankPage';
@@ -25,6 +27,7 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
+
 
 
 function App() {
@@ -74,6 +77,8 @@ function App() {
                 <Route path="/practice/session/:sessionId" element={<PracticePage />} />
                 <Route path="/practice/result/:sessionId" element={<ResultPage />} />
                 <Route path="/interview/setup" element={<MockInterviewSetupPage />} />
+                <Route path="/interview/session/:sessionId" element={<InterviewSessionPage />} />
+                <Route path="/interview/result/:sessionId" element={<InterviewResultPage />} />
             </Route>
 
             {/* Optional: Catch-all route for 404 Not Found */}

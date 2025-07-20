@@ -1,4 +1,5 @@
 ﻿using InterviewPrep.API.Application.DTOs;
+using InterviewPrep.API.Application.DTOs.Subscription;
 
 namespace InterviewPrep.API.Application.Services.Momo
 {

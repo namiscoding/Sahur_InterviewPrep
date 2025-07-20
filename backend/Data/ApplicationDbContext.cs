@@ -66,7 +66,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.ToTable("Categories");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Description).HasColumnType("TEXT");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
             // Mối quan hệ với ApplicationUser
@@ -91,8 +90,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("Questions");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Content).IsRequired().HasColumnType("TEXT");
-            entity.Property(e => e.SampleAnswer).HasColumnType("TEXT");
+            entity.Property(e => e.Content).IsRequired();
             entity.Property(e => e.DifficultyLevel).HasDefaultValue(DifficultyLevel.Medium);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UsageCount).HasDefaultValue(0);
@@ -129,7 +127,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("MockSessions");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.OverallScore).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.OverallScore).HasColumnType("decimal(5, 0)");
 
             // Lưu ý: UserId trong model MockSession phải là kiểu 'string'
             entity.HasOne(e => e.User)
@@ -142,9 +140,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("SessionAnswers");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.UserAnswer).HasColumnType("TEXT");
-            entity.Property(e => e.Score).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.Feedback).HasColumnType("TEXT");
+            entity.Property(e => e.Score).HasColumnType("decimal(5, 0)");
             entity.HasOne(e => e.MockSession).WithMany(s => s.SessionAnswers).HasForeignKey(e => e.SessionId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Question).WithMany(q => q.SessionAnswers).HasForeignKey(e => e.QuestionId).OnDelete(DeleteBehavior.Restrict);
         });
@@ -167,7 +163,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.ToTable("SubscriptionPlans");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Price).IsRequired().HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Price).IsRequired().HasColumnType("decimal(10, 0)");
             entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
@@ -176,22 +172,29 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("Transactions");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.TransactionCode).IsUnique();
-            entity.HasIndex(e => e.GatewayTransactionId);
-            entity.Property(e => e.TransactionCode).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.GatewayTransactionId).HasMaxLength(200);
-            entity.Property(e => e.Amount).IsRequired().HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
-            entity.Property(e => e.Status).IsRequired();
-            entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("GETUTCDATE()");
-            entity.Property(e => e.UpdatedAt).IsRequired().HasDefaultValueSql("GETUTCDATE()");
 
-            // Lưu ý: UserId trong model Transaction phải là kiểu 'string'
-            entity.HasOne(e => e.User).WithMany(u => u.Transactions).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(e => e.SubscriptionPlan) // Sửa từ 'Plan' thành 'SubscriptionPlan'
-      .WithMany(p => p.Transactions)
-      .HasForeignKey(e => e.SubscriptionPlanId) // Sửa từ 'PlanId' thành 'SubscriptionPlanId'
-      .OnDelete(DeleteBehavior.Restrict);
+            // Cấu hình các thuộc tính
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.SubscriptionPlanId).IsRequired();
+            entity.Property(e => e.TransactionCode).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.GatewayTransactionId).HasMaxLength(255);
+            entity.Property(e => e.Amount).IsRequired().HasColumnType("decimal(10, 0)");
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+
+            // Cấu hình các mối quan hệ
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Transactions) // Giả sử ApplicationUser có ICollection<Transaction> Transactions
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SubscriptionPlan)
+                .WithMany(p => p.Transactions) // Giả sử SubscriptionPlan có ICollection<Transaction> Transactions
+                .HasForeignKey(e => e.SubscriptionPlanId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // =================================================================
@@ -215,8 +218,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.ToTable("SystemSettings");
             entity.HasKey(e => e.SettingKey);
             entity.Property(e => e.SettingKey).HasMaxLength(100);
-            entity.Property(e => e.SettingValue).IsRequired().HasColumnType("TEXT");
-            entity.Property(e => e.Description).HasColumnType("TEXT");
+            entity.Property(e => e.SettingValue).IsRequired();
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
         });
     }
