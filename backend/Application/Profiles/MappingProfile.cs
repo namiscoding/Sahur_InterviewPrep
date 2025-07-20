@@ -7,6 +7,7 @@ using InterviewPrep.API.Application.DTOs.MockSessions;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.Subscription;
+using InterviewPrep.API.Application.DTOs.SystemSetting;
 using InterviewPrep.API.Application.DTOs.Transaction;
 using InterviewPrep.API.Application.DTOs.User; // Namespace này có thể chứa TransactionDTO thứ hai
 using InterviewPrep.API.Application.DTOs.UserAdmin;
@@ -116,6 +117,10 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User.Email))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.SubscriptionPlan.Name));
+
+            CreateMap<SystemSetting, SystemSettingDTO>();
+            CreateMap<CreateSystemSettingDTO, SystemSetting>();
+            CreateMap<UpdateSystemSettingDTO, SystemSetting>();
 
         }
     }
