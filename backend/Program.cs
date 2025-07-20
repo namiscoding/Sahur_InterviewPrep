@@ -62,9 +62,11 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IMockSessionRepository, MockSessionRepository>();
 builder.Services.AddScoped<ISessionAnswerRepository, SessionAnswerRepository>();
 builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
 builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
+
 // Add Services
 builder.Services.AddScoped<ISessionAnswerService, SessionAnswerService>();
 builder.Services.AddScoped<IExcelImporterService, ExcelImporterService>();
@@ -83,6 +85,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IUserAdminService, UserAdminService>();
 builder.Services.AddScoped<ITransactionAdminService, TransactionAdminService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
 
 // Add AutoMapper
@@ -111,6 +114,10 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
         RoleClaimType = ClaimTypes.Role
     };
+}).AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 });
 
 // Thêm Controllers
@@ -126,7 +133,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         builder => builder.WithOrigins("http://localhost:5173") // Thay đổi nếu Frontend của bạn chạy trên cổng khác
                           .AllowAnyHeader()
-                          .AllowAnyMethod());
+                          .AllowAnyMethod().AllowCredentials());
+
 });
 
 

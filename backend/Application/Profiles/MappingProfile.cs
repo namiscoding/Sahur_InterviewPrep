@@ -97,7 +97,7 @@ namespace InterviewPrep.API.Application.Profiles
             ));
             CreateMap<Tag, TagDTO>()
                 .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
-
+                
             CreateMap<SubscriptionPlan, SubscriptionPlanDTO>();
 
             CreateMap<ApplicationUser, UserAdminDTO>()
@@ -135,7 +135,6 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.SessionType, opt => opt.MapFrom(src => src.SessionType.ToString()))
                 .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.SessionAnswers));
-
         }
     }
 }

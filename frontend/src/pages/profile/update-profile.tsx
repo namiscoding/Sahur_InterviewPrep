@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit3, Save, X, ArrowLeft, Crown, Calendar, BarChart3, Zap } from "lucide-react";
+import { Edit3, Save, X, ArrowLeft, Crown, Calendar, BarChart3, Zap, LogOut } from "lucide-react"; // Import LogOut icon
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 
@@ -77,16 +77,16 @@ export function UserProfile() {
       setIsLoadingStatus(false);
       return;
     }
-  
+
     try {
       const res = await fetch("https://localhost:2004/api/user/subribtionPlan", {
         headers: { Authorization: `Bearer ${token}` },
       });
-    
+
       if (!res.ok) throw new Error("❌ Không thể lấy thông tin gói đăng ký.");
-    
+
       const data = await res.json();
-    
+
       const transformed: AccountStatus = {
         accountType: data.subscriptionLevel === 2 ? "Premium" : "Free",
         expirationDate: data.subscriptionExpiryDate,
@@ -108,7 +108,7 @@ export function UserProfile() {
             : undefined,
         },
       };
-    
+
       setAccountStatus(transformed);
     } catch (err: any) {
       toast.error(err.message || "❌ Lỗi khi tải thông tin gói đăng ký.");
@@ -116,7 +116,7 @@ export function UserProfile() {
       setIsLoadingStatus(false);
     }
   };
-    
+
 
   const handleInputChange = (field: keyof UpdateProfileDto, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -162,6 +162,31 @@ export function UserProfile() {
   const handleCancel = () => {
     setFormData(originalData);
     setIsEditing(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        // Optionally, call your backend logout endpoint if it invalidates server-side sessions/cookies
+        // This is important if your backend relies on server-side session management or cookie clearing
+        await fetch("https://localhost:2004/api/user/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
+
+      localStorage.removeItem("token"); // Clear JWT from localStorage
+      toast.success("Đăng xuất thành công!");
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+      toast.error("❌ Lỗi khi đăng xuất.");
+      localStorage.removeItem("token"); // Still clear token even if API call fails
+      navigate("/login");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -264,7 +289,7 @@ export function UserProfile() {
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${getUsagePercentage(accountStatus.usageStats.apiCallsUsed, accountStatus.usageStats.apiCallsLimit)}%` }}
                         ></div>
@@ -283,7 +308,7 @@ export function UserProfile() {
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-green-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${getUsagePercentage(accountStatus.usageStats.storageUsed, accountStatus.usageStats.storageLimit)}%` }}
                         ></div>
@@ -304,7 +329,7 @@ export function UserProfile() {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {accountStatus.usageStats.featuresUsed.map((feature, index) => (
-                        <span 
+                        <span
                           key={index}
                           className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
                         >
@@ -322,8 +347,8 @@ export function UserProfile() {
                     <p className="text-sm mb-3 opacity-90">
                       Unlock unlimited API calls, increased storage, and premium features
                     </p>
-                    <Button 
-                      variant="secondary" 
+                    <Button
+                      variant="secondary"
                       onClick={() => navigate("/upgrade")}
                       className="bg-white text-purple-600 hover:bg-gray-100"
                     >
@@ -397,6 +422,10 @@ export function UserProfile() {
                 </Button>
                 <Button variant="secondary" onClick={() => navigate("/change-password")}>
                   🔐 Change Password
+                </Button>
+                {/* New Logout Button */}
+                <Button variant="destructive" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-1" /> Logout
                 </Button>
               </div>
             )}

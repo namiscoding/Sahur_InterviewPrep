@@ -43,7 +43,6 @@ namespace InterviewPrep.API.Data.Repositories
                 .Include(u => u.CreatedQuestions)
                 .Include(u => u.MockSessions)
                 .Include(u => u.UsageLogs)
-                .Include(u => u.Transactions)
                 .Include(u => u.AuditLogs)
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
