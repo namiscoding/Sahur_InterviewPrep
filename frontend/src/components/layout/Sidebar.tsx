@@ -27,7 +27,7 @@ const Sidebar: React.FC = () => {
         return [
           ...commonItems,
           { to: '/questions', icon: BookOpen, label: 'Question Bank' },
-          { to: '/interview', icon: Play, label: 'Start Interview' },
+          { to: '/interview/setup', icon: Play, label: 'Start Interview' },
           { to: '/practice', icon: MessageSquare, label: 'Quick Practice' },
           { to: '/history', icon: History, label: 'Practice History' },
           { to: '/upgrade', icon: Crown, label: 'Upgrade Account' },

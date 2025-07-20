@@ -13,6 +13,12 @@ export interface SubmitAnswerResponse {
   feedback: Feedback;
 }
 
+export interface SessionAnswer {
+  question: Question;
+  userAnswer?: string;
+  score?: number;
+  feedback?: Feedback;
+}
 
 export interface MockSession {
   id: number;
@@ -20,10 +26,17 @@ export interface MockSession {
   sessionType: string; 
   startedAt: string;
   questions: Question[];
+  overallScore?: number;
+  answers: SessionAnswer[];
 }
 
 export interface CreateFullInterviewRequest {
   categoryIds: number[];
   difficultyLevels: string[];
   numberOfQuestions: number;
+}
+
+export interface SubmitFullInterviewAnswerRequest {
+  questionId: number;
+  userAnswer: string;
 }
