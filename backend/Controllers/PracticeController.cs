@@ -78,9 +78,6 @@ namespace InterviewPrep.API.Controllers
             return Ok(new { sessionAnswerId = answer.Id });
         }
 
-        /// <summary>
-        /// Hoàn thành một phiên phỏng vấn đầy đủ và tính lượt sử dụng.
-        /// </summary>
         [HttpPost("sessions/{sessionId}/complete")]
         public async Task<IActionResult> CompleteFullInterview(long sessionId)
         {
@@ -92,6 +89,18 @@ namespace InterviewPrep.API.Controllers
             }
 
             var sessionDto = _mapper.Map<MockSessionDto>(session);
+            return Ok(sessionDto);
+        }
+
+        [HttpGet("sessions/{sessionId}")]
+        public async Task<IActionResult> GetSessionResult(long sessionId)
+        {
+            var session = await _practiceService.GetSessionByIdAsync(sessionId);
+            if (session == null)
+            {
+                return NotFound();
+            }
+            var sessionDto = _mapper.Map<SessionResultDto>(session);
             return Ok(sessionDto);
         }
     }
