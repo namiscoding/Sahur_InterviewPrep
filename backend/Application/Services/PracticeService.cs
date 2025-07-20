@@ -38,7 +38,7 @@ namespace InterviewPrep.API.Application.Services
             // 1. KIỂM TRA GIỚI HẠN NẾU LÀ USER FREE
             if (user.SubscriptionLevel == SubscriptionLevel.Free)
             {
-                var dailyLimit = _settingsService.GetValue<int>("FreeUser.SingleQuestion.DailyLimit", 5);
+                var dailyLimit = _settingsService.GetValue<int>("FREE_USER_QUESTION_DAILY_LIMIT", 5);
                 var todayStart = DateTime.UtcNow.Date;
 
                 // THAY ĐỔI LOGIC: Đếm số UsageLog đã được ghi trong ngày
@@ -144,7 +144,7 @@ namespace InterviewPrep.API.Application.Services
             // 1. Kiểm tra giới hạn nếu là user miễn phí
             if (user.SubscriptionLevel == SubscriptionLevel.Free)
             {
-                var dailyLimit = _settingsService.GetValue<int>("FreeUser.FullSession.DailyLimit", 2);
+                var dailyLimit = _settingsService.GetValue<int>("FREE_USER_SESSION_DAILY_LIMIT", 2);
                 var todayStart = DateTime.UtcNow.Date;
 
                 var usageCount = await _context.UsageLogs
@@ -301,6 +301,23 @@ namespace InterviewPrep.API.Application.Services
             await _context.SaveChangesAsync();
 
             return (session, null);
+        }
+        public async Task<MockSession?> GetSessionByIdAsync(long sessionId)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var session = await _context.MockSessions
+                .Include(s => s.SessionAnswers)
+                    .ThenInclude(sa => sa.Question)
+                    .ThenInclude(q => q.QuestionCategories)
+                    .ThenInclude(qc => qc.Category)
+                .Include(s => s.SessionAnswers)
+                    .ThenInclude(sa => sa.Question)
+                    .ThenInclude(q => q.QuestionTags)
+                    .ThenInclude(qt => qt.Tag)
+                .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
+
+            return session;
         }
     }
 }

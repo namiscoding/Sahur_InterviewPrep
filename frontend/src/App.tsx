@@ -5,16 +5,18 @@ import { Toaster } from "react-hot-toast";
 import { SessionQuestionList } from './pages/history/question-list-answer';
 import { AuthProvider } from './contexts/AuthContext';
 import MockInterviewSetupPage from './pages/customer/MockInterviewSetupPage';
-import QuestionManagementPage from './pages/Staff/QuestionManagementPage';
-import QuestionAnalyticsPage from './pages/Staff/QuestionAnalyticsPage';
+import InterviewSessionPage from './pages/customer/InterviewSessionPage';
+import InterviewResultPage from './pages/customer/InterviewResultPage';
+import QuestionManagementPage from './pages/staff/QuestionManagementPage';
+import QuestionAnalyticsPage from './pages/staff/QuestionAnalyticsPage';
 import SubscriptionUpgradePage from './pages/customer/SubscriptionUpgradePage';
 import PaymentFailurePage from './pages/customer/PaymentFailurePage';
 import PaymentSuccessPage from './pages/customer/PaymentSuccessPage';
 import Layout from './components/layout/Layout'
 import HomePage from './pages/HomePage';
-import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
 import CustomerManagementPage from './pages/admin/CustomerManagementPage';
 import StaffManagementPage from './pages/admin/StaffManagementPage';
+import CategoryManagementPage from './pages/staff/CategoryManagementPage';
 import QuestionBankPage from './pages/customer/QuestionBankPage';
 import PracticePage from './pages/customer/PracticePage';
 import ResultPage from './pages/customer/ResultPage';
@@ -28,6 +30,7 @@ import { PracticeHistory } from './pages/history/practice-history';
 import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
 import SystemAdminTransactionsPage from './pages/systemadmin/SystemAdminTransactionsPage';
 import SystemAdminUsageLimitsPage from './pages/systemadmin/SystemAdminUsageLimitsPage';
+
 
 
 function App() {
@@ -82,6 +85,8 @@ function App() {
                 <Route path="/practice/session/:sessionId" element={<PracticePage />} />
                 <Route path="/practice/result/:sessionId" element={<ResultPage />} />
                 <Route path="/interview/setup" element={<MockInterviewSetupPage />} />
+                <Route path="/interview/session/:sessionId" element={<InterviewSessionPage />} />
+                <Route path="/interview/result/:sessionId" element={<InterviewResultPage />} />
             </Route>
 
             {/* Optional: Catch-all route for 404 Not Found */}

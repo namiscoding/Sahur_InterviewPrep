@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InterviewPrep.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250720123830_ChangeTransactionTable")]
+    partial class ChangeTransactionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -424,9 +427,6 @@ namespace InterviewPrep.API.Migrations
                     b.Property<string>("ExternalTransactionId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ExternalTransactionId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("GatewayTransactionId")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -435,6 +435,7 @@ namespace InterviewPrep.API.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -445,9 +446,6 @@ namespace InterviewPrep.API.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
