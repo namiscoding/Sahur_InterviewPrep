@@ -1,18 +1,19 @@
+// File: src/pages/systemadmin/UserAdminManagementPage.tsx
 import React, { useEffect, useState } from 'react';
 import {
-  getStaffs,
-  getStaffDetails,
-  createStaff,
-  updateStaffStatus,
-  resetStaffPassword,
+  getUserAdmins,
+  getUserAdminDetails,
+  createUserAdmin,
+  updateUserAdminStatus,
+  resetUserAdminPassword,
   PagedResult,
-  StaffDTO,
-  CreateStaffDTO,
-  UpdateStaffStatusDTO,
-} from '../../services/staffService';
+  UserAdminDTO,
+  CreateUserAdminDTO,
+  UpdateUserAdminStatusDTO,
+} from '../../services/userAdminService';
 
 // Import useNavigate from react-router-dom
-import { useNavigate } from 'react-router-dom'; // <--- THÊM DÒNG NÀY
+import { useNavigate } from 'react-router-dom';
 
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
@@ -27,17 +28,11 @@ import { useToast } from "@/hooks/use-toast";
 // Icons
 import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle } from "lucide-react";
 
-// XÓA HOẶC BỎ COMMENT INTERFACE NÀY
-// interface StaffManagementPageProps {
-//   onNavigate: (page: string) => void;
-// }
-
-// Cập nhật kiểu cho React.FC và bỏ destructuring prop onNavigate
-const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
+const UserAdminManagementPage: React.FC = () => {
   // Khởi tạo useNavigate hook
-  const navigate = useNavigate(); // <--- THÊM DÒNG NÀY
+  const navigate = useNavigate();
 
-  const [staffs, setStaffs] = useState<PagedResult<StaffDTO>>({
+  const [userAdmins, setUserAdmins] = useState<PagedResult<UserAdminDTO>>({
     items: [],
     totalCount: 0,
     page: 1,
@@ -48,76 +43,74 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
   const [localSearch, setLocalSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedStaff, setSelectedStaff] = useState<StaffDTO | null>(null);
+  const [selectedUserAdmin, setSelectedUserAdmin] = useState<UserAdminDTO | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newPassword, setNewPassword] = useState(""); // Not used in CreateStaffDTO
   const [createError, setCreateError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchStaffs = async () => {
+  const fetchUserAdmins = async () => {
     setLoading(true);
     try {
-      const data = await getStaffs(
+      const data = await getUserAdmins(
         searchTerm,
         selectedStatus === "all" ? "" : selectedStatus,
-        staffs.page,
-        staffs.pageSize
+        userAdmins.page,
+        userAdmins.pageSize
       );
-      setStaffs(data);
+      setUserAdmins(data);
     } catch (err) {
-      console.error("Error fetching staffs:", err);
-      setError('Failed to fetch staffs. Please ensure the backend is running and accessible.');
+      console.error("Error fetching user admins:", err);
+      setError('Failed to fetch user admins. Please ensure the backend is running and accessible.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStaffs();
-  }, [searchTerm, selectedStatus, staffs.page]);
+    fetchUserAdmins();
+  }, [searchTerm, selectedStatus, userAdmins.page]);
 
   const handleViewDetails = async (id: string) => {
     try {
-      const details = await getStaffDetails(id);
-      setSelectedStaff(details);
+      const details = await getUserAdminDetails(id);
+      setSelectedUserAdmin(details);
       setNewStatus(details.status);
       setIsDetailsOpen(true);
     } catch (err) {
-      setError('Failed to fetch staff details.');
+      setError('Failed to fetch user admin details.');
     }
   };
 
   const handleUpdateStatus = async () => {
-    if (!selectedStaff) return;
+    if (!selectedUserAdmin) return;
     setUpdateError(null);
-  
     try {
-      const dto: UpdateStaffStatusDTO = { status: newStatus };
-      const updated = await updateStaffStatus(selectedStaff.id, dto);
-      setSelectedStaff({ ...selectedStaff, status: updated.status });
+      const dto: UpdateUserAdminStatusDTO = { status: newStatus };
+      const updated = await updateUserAdminStatus(selectedUserAdmin.id, dto);
+      setSelectedUserAdmin({ ...selectedUserAdmin, status: updated.status });
   
       toast({
         title: "Success",
-        description: "Staff status updated successfully.",
+        description: "User admin status updated successfully.",
         duration: 2000,
       });
   
+      // Delay 1.5s để người dùng thấy toast rồi mới đóng
       setTimeout(() => {
-        setIsDetailsOpen(false);  // Đóng dialog
-        fetchStaffs();            // Làm mới danh sách
+        setIsDetailsOpen(false);
+        fetchUserAdmins(); // Làm mới danh sách sau khi cập nhật
       }, 1000);
-  
     } catch (err) {
       setUpdateError('Failed to update status.');
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update staff status.",
+        description: "Failed to update user admin status.",
         duration: 2000,
       });
     }
@@ -127,11 +120,11 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
   const [resetLoading, setResetLoading] = useState(false);
 
   const handleResetPassword = async () => {
-    if (!selectedStaff) return;
+    if (!selectedUserAdmin) return;
 
     setResetLoading(true);
     try {
-      const tempPassword = await resetStaffPassword(selectedStaff.id);
+      const tempPassword = await resetUserAdminPassword(selectedUserAdmin.id);
       toast({
         title: "Password Reset Successful",
         description: `Temporary password: ${tempPassword}`,
@@ -155,26 +148,25 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
     }
   };
 
-
-  const handleCreateStaff = async () => {
+  const handleCreateUserAdmin = async () => {
     setCreateError(null);
     try {
-      const dto: CreateStaffDTO = {
+      const dto: CreateUserAdminDTO = {
         displayName: newDisplayName,
         email: newEmail
       };
-      await createStaff(dto);
+      await createUserAdmin(dto);
       setIsCreateOpen(false);
       setNewDisplayName("");
       setNewEmail("");
-      fetchStaffs();
+      fetchUserAdmins();
       toast({
         title: "Success",
-        description: "Staff created and temporary password sent via email.",
+        description: "User admin created and temporary password sent via email.",
         duration: 4000,
       });
     } catch (err: any) {
-      const message = err.message || "Failed to create staff.";
+      const message = err.message || "Failed to create user admin.";
       setCreateError(message);
     
       const isDuplicate = message.toLowerCase().includes("already exists");
@@ -183,13 +175,12 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
         variant: "destructive",
         title: "Error",
         description: isDuplicate
-          ? "This email is already associated with a staff account."
+          ? "This email is already associated with a user admin account."
           : message,
         duration: 4000,
       });
     }
   };
-
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -211,7 +202,7 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading staffs...</p>
+          <p className="text-gray-600">Loading user admins...</p>
         </div>
       </div>
     );
@@ -224,7 +215,7 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
-          <Button onClick={fetchStaffs}>
+          <Button onClick={fetchUserAdmins}>
             Try Again
           </Button>
         </div>
@@ -239,18 +230,17 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
-              <p className="mt-2 text-gray-600">UserAdmin manage staff accounts in InterviewPrep system</p>
+              <h1 className="text-3xl font-bold text-gray-900">User Admin Management</h1>
+              <p className="mt-2 text-gray-600">SystemAdmin manage user admin accounts in InterviewPrep system</p>
             </div>
             <div className="flex gap-3">
-              {/* Thay đổi onClick: từ onNavigate("home") thành navigate("/") */}
-              <Button variant="outline" onClick={() => navigate("/")}> {/* <--- SỬA DÒNG NÀY */}
+              <Button variant="outline" onClick={() => navigate("/")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
               <Button onClick={() => setIsCreateOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create Staff
+                Create User Admin
               </Button>
             </div>
           </div>
@@ -263,7 +253,7 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search staffs by name or email..."
+              placeholder="Search user admins by name or email..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleSearchKeyDown}
@@ -289,12 +279,12 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
               </SelectContent>
             </Select>
 
-            <span className="text-sm font-medium text-gray-700">Total Accounts: {staffs.totalCount}</span>
+            <span className="text-sm font-medium text-gray-700">Total Accounts: {userAdmins.totalCount}</span>
           </div>
         </div>
 
-        {/* Staff Cards */}
-        {staffs.items.length === 0 ? (
+        {/* User Admin Cards */}
+        {userAdmins.items.length === 0 ? (
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow-sm border p-8">
               <div className="text-gray-400 mb-4">
@@ -303,33 +293,33 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
                 </svg>
               </div>
               <p className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || selectedStatus !== "all" ? "No staffs match your filters" : "No staffs found"}
+                {searchTerm || selectedStatus !== "all" ? "No user admins match your filters" : "No user admins found"}
               </p>
               <p className="text-gray-600 mb-4">
                 {searchTerm || selectedStatus !== "all"
                   ? "Try adjusting your search or filters"
-                  : "There are no staff accounts yet"}
+                  : "There are no user admin accounts yet"}
               </p>
             </div>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            {staffs.items.map((staff) => (
-              <Card key={staff.id} className="hover:shadow-md transition-shadow">
+            {userAdmins.items.map((userAdmin) => (
+              <Card key={userAdmin.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{staff.displayName}</CardTitle>
-                      <CardDescription className="mt-1">{staff.email}</CardDescription>
+                      <CardTitle className="text-lg">{userAdmin.displayName}</CardTitle>
+                      <CardDescription className="mt-1">{userAdmin.email}</CardDescription>
                     </div>
-                    <Badge className={getStatusColor(staff.status)}>
-                      {staff.status}
+                    <Badge className={getStatusColor(userAdmin.status)}>
+                      {userAdmin.status}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(staff.id)}>
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(userAdmin.id)}>
                       <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>
@@ -344,27 +334,27 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
         <div className="flex justify-between items-center mt-4">
           <Button
             variant="outline"
-            disabled={staffs.page === 1}
-            onClick={() => setStaffs(prev => ({ ...prev, page: prev.page - 1 }))}
+            disabled={userAdmins.page === 1}
+            onClick={() => setUserAdmins(prev => ({ ...prev, page: prev.page - 1 }))}
           >
             Previous
           </Button>
-          <span>Page {staffs.page} of {Math.ceil(staffs.totalCount / staffs.pageSize)}</span>
+          <span>Page {userAdmins.page} of {Math.ceil(userAdmins.totalCount / userAdmins.pageSize)}</span>
           <Button
             variant="outline"
-            disabled={staffs.page * staffs.pageSize >= staffs.totalCount}
-            onClick={() => setStaffs(prev => ({ ...prev, page: prev.page + 1 }))}
+            disabled={userAdmins.page * userAdmins.pageSize >= userAdmins.totalCount}
+            onClick={() => setUserAdmins(prev => ({ ...prev, page: prev.page + 1 }))}
           >
             Next
           </Button>
         </div>
 
         {/* Results Summary */}
-        {staffs.items.length > 0 && (
+        {userAdmins.items.length > 0 && (
           <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
             <p>
-              Showing <span className="font-medium">{staffs.items.length}</span> of{" "}
-              <span className="font-medium">{staffs.totalCount}</span> staffs
+              Showing <span className="font-medium">{userAdmins.items.length}</span> of{" "}
+              <span className="font-medium">{userAdmins.totalCount}</span> user admins
             </p>
             {(searchTerm || selectedStatus !== "all") && (
               <Button
@@ -384,17 +374,17 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
       </main>
 
       {/* Details Dialog */}
-      {selectedStaff && (
+      {selectedUserAdmin && (
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Staff Details: {selectedStaff.displayName}</DialogTitle>
-              <DialogDescription>{selectedStaff.email}</DialogDescription>
+              <DialogTitle>User Admin Details: {selectedUserAdmin.displayName}</DialogTitle>
+              <DialogDescription>{selectedUserAdmin.email}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div>
                 <Label>Status</Label>
-                <p className="text-sm">{selectedStaff.status}</p>
+                <p className="text-sm">{selectedUserAdmin.status}</p>
               </div>
 
               <div className="mt-6">
@@ -437,7 +427,7 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Staff</DialogTitle>
+            <DialogTitle>Create New User Admin</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -470,7 +460,7 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
             </div>
           )}
           <DialogFooter>
-            <Button type="submit" onClick={handleCreateStaff}>Create</Button>
+            <Button type="submit" onClick={handleCreateUserAdmin}>Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -478,4 +468,4 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
   );
 };
 
-export default StaffManagementPage;
+export default UserAdminManagementPage;

@@ -62,6 +62,9 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IMockSessionRepository, MockSessionRepository>();
 builder.Services.AddScoped<ISessionAnswerRepository, SessionAnswerRepository>();
 builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
 // Add Services
 builder.Services.AddScoped<ISessionAnswerService, SessionAnswerService>();
 builder.Services.AddScoped<IExcelImporterService, ExcelImporterService>();
@@ -77,6 +80,10 @@ builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IPracticeService, PracticeService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IUserAdminService, UserAdminService>();
+builder.Services.AddScoped<ITransactionAdminService, TransactionAdminService>();
+builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
+
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
