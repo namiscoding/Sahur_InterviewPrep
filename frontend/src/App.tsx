@@ -26,6 +26,7 @@ import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
 import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
+import SystemAdminTransactionsPage from './pages/systemadmin/SystemAdminTransactionsPage';
 
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
 
             {/* SystemAdmin Routes */}
             <Route path="/systemadmin/useradmins" element={<UserAdminManagementPage />} />
+            <Route path="/systemadmin/transactions" element={<SystemAdminTransactionsPage />} />
 
             {/* Routes wrapped in Layout (from develop, includes /questions) */}
             <Route element={<Layout/>}>

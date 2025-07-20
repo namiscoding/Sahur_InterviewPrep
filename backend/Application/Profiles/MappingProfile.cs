@@ -7,6 +7,7 @@ using InterviewPrep.API.Application.DTOs.MockSessions;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.Subscription;
+using InterviewPrep.API.Application.DTOs.Transaction;
 using InterviewPrep.API.Application.DTOs.User; // Namespace này có thể chứa TransactionDTO thứ hai
 using InterviewPrep.API.Application.DTOs.UserAdmin;
 using InterviewPrep.API.Data.Models;
@@ -103,6 +104,19 @@ namespace InterviewPrep.API.Application.Profiles
 
             CreateMap<UpdateUserAdminStatusDTO, ApplicationUser>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
+
+            CreateMap<Transaction, TransactionListDTO>()
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.User.DisplayName))
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.SubscriptionPlan.Name));
+
+            CreateMap<Transaction, TransactionDetailDTO>()
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.User.DisplayName))
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.SubscriptionPlan.Name));
+
         }
     }
 }
