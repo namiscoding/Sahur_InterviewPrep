@@ -282,7 +282,7 @@ const CategoryManagementPage: React.FC = () => {
               onSave={editingCategory ? handleUpdateCategory : handleCreateNewCategory}
               onCancel={handleCancelEdit}
               isSubmitting={isSubmittingForm}
-              initialData={editingCategory}
+              initialData={editingCategory ?? undefined}
             />
           </div>
         )}

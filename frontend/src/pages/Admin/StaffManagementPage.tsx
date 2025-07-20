@@ -170,6 +170,12 @@ const StaffManagementWithStats: React.FC = () => {
     } catch (err: any) {
       const message = err.message || "Failed to create staff."
       setCreateError(message)
+
+      const isDuplicate =
+        message.toLowerCase().includes("duplicate") ||
+        message.toLowerCase().includes("already exists") ||
+        message.toLowerCase().includes("already associated")
+        
       toast({
         variant: "destructive",
         title: "Error",
