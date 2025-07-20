@@ -103,7 +103,7 @@ namespace InterviewPrep.API.Data.Repositories
             }
 
             await _context.SaveChangesAsync();
-            await _auditLogService.LogQuestionActionAsync(userId, "Added", question.Id, question.Content, null);
+           // await _auditLogService.LogQuestionActionAsync(userId, "Added", question.Id, question.Content, null);
             return question;
         }
 

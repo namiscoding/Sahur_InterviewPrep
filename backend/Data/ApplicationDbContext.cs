@@ -91,7 +91,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.ToTable("Questions");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired();
-            entity.Property(e => e.DifficultyLevel).HasDefaultValue(DifficultyLevel.Medium);
+            entity.Property(e => e.DifficultyLevel);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UsageCount).HasDefaultValue(0);
 

@@ -27,10 +27,18 @@ namespace InterviewPrep.API.Application.Profiles
             CreateMap<UpdateCategoryInfoDTO, Category>();
             CreateMap<UpdateCategoryStatusDTO, Category>();
             CreateMap<Question, QuestionDTO>()
-               .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
-                          src.QuestionCategories.Select(qc => qc.Category)));
+                 .ForMember(dest => dest.Categories, opt => opt.MapFrom(src =>
+                     src.QuestionCategories.Select(qc => new CategoryDTO { Id = qc.Category.Id, Name = qc.Category.Name }).ToList()
+                 ))
+                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src =>
+                     src.QuestionTags.Select(qt => new TagDTO { Id = qt.Tag.Id, Name = qt.Tag.Name, Slug = qt.Tag.Slug }).ToList() // Thêm Tag.Id và Tag.Name nếu có
+                 ))
+                 // BỔ SUNG DÒNG NÀY ĐỂ ÁNH XẠ ĐÚNG DifficultyLevel TỪ ENUM SANG DTO
+                 .ForMember(dest => dest.DifficultyLevel, opt => opt.MapFrom(src => src.DifficultyLevel.ToString()));
             CreateMap<Category, CategoryDTO>();
+
             CreateMap<CreateQuestionDTO, Question>()
+                .ForMember(dest => dest.DifficultyLevel, opt => opt.MapFrom(src => src.DifficultyLevel)) // THÊM DÒNG NÀY
                 .ForMember(dest => dest.UsageCount, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.QuestionCategories, opt => opt.Ignore())
@@ -119,6 +127,11 @@ namespace InterviewPrep.API.Application.Profiles
             .ForMember(dest => dest.UserRole, opt => opt.Ignore()) // Sẽ gán thủ công trong service
             .ForMember(dest => dest.Area, opt => opt.Ignore()) // Sẽ gán thủ công trong service
             .ForMember(dest => dest.ActionType, opt => opt.Ignore());
+
+            CreateMap<Tag, TagDTO>()
+    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+    .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
         }
     }
 }
