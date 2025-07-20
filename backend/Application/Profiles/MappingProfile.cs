@@ -8,6 +8,7 @@ using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.Subscription;
 using InterviewPrep.API.Application.DTOs.User; // Namespace này có thể chứa TransactionDTO thứ hai
+using InterviewPrep.API.Application.DTOs.UserAdmin;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
 using InterviewPrep.API.Data.Repositories;
@@ -95,6 +96,13 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
 
             CreateMap<SubscriptionPlan, SubscriptionPlanDTO>();
+
+            CreateMap<ApplicationUser, UserAdminDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            CreateMap<CreateUserAdminDTO, ApplicationUser>();
+
+            CreateMap<UpdateUserAdminStatusDTO, ApplicationUser>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
         }
     }
 }

@@ -25,6 +25,7 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
+import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
 
 
 function App() {
@@ -66,6 +67,9 @@ function App() {
             <Route path="/admin/customers" element={<CustomerManagementPage />} />
             <Route path="/admin/staffs" element={<StaffManagementPage />} />
             {/* Add more admin routes as needed */}
+
+            {/* SystemAdmin Routes */}
+            <Route path="/systemadmin/useradmins" element={<UserAdminManagementPage />} />
 
             {/* Routes wrapped in Layout (from develop, includes /questions) */}
             <Route element={<Layout/>}>
