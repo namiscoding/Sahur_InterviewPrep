@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.DTOs.Audit;
 using InterviewPrep.API.Application.DTOs.Category;
@@ -7,7 +8,10 @@ using InterviewPrep.API.Application.DTOs.MockSessions;
 using InterviewPrep.API.Application.DTOs.Question;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Application.DTOs.Subscription;
+using InterviewPrep.API.Application.DTOs.SystemSetting;
+using InterviewPrep.API.Application.DTOs.Transaction;
 using InterviewPrep.API.Application.DTOs.User; // Namespace này có thể chứa TransactionDTO thứ hai
+using InterviewPrep.API.Application.DTOs.UserAdmin;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
 using InterviewPrep.API.Data.Repositories;
@@ -93,8 +97,44 @@ namespace InterviewPrep.API.Application.Profiles
             ));
             CreateMap<Tag, TagDTO>()
                 .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
+                
+            CreateMap<SubscriptionPlan, SubscriptionPlanDTO>();
 
-            CreateMap<SubscriptionPlan, DTOs.SubscriptionPlanDTO>();
+            CreateMap<ApplicationUser, UserAdminDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            CreateMap<CreateUserAdminDTO, ApplicationUser>();
+
+            CreateMap<UpdateUserAdminStatusDTO, ApplicationUser>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<UserStatus>(src.Status)));
+
+            CreateMap<Transaction, TransactionListDTO>()
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.User.DisplayName))
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.SubscriptionPlan.Name));
+
+            CreateMap<Transaction, TransactionDetailDTO>()
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.User.DisplayName))
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.SubscriptionPlan.Name));
+
+            CreateMap<SystemSetting, SystemSettingDTO>();
+            CreateMap<CreateSystemSettingDTO, SystemSetting>();
+            CreateMap<UpdateSystemSettingDTO, SystemSetting>();
+            // Mapping cho SessionAnswer -> SessionAnswerResultDto
+            CreateMap<SessionAnswer, SessionAnswerResultDto>()
+                .ForMember(dest => dest.Feedback, opt =>    
+                    opt.MapFrom(src => !string.IsNullOrEmpty(src.Feedback)
+                        ? JsonSerializer.Deserialize<FeedbackDto>(src.Feedback, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                        : null
+                    )); 
+
+            // MAPPING MỚI: Từ MockSession sang SessionResultDto
+            CreateMap<MockSession, SessionResultDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.SessionType, opt => opt.MapFrom(src => src.SessionType.ToString()))
+                .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.SessionAnswers));
         }
     }
 }

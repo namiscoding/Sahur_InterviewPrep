@@ -173,7 +173,9 @@ const StaffManagementWithStats: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: message,
+        description: isDuplicate
+          ? "This email is already associated with a staff account."
+          : message,
         duration: 4000,
       })
     }

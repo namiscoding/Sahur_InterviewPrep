@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { TrendingUp, Trophy, Calendar, Filter, RefreshCw, ArrowLeft } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { 
-  Question, 
+  QuestionForStaff, 
   CategoryUsageTrend, 
   getQuestionsUsageRanking, 
   getCategoryUsageTrends,
@@ -21,7 +21,7 @@ import { getStaffCategories, Category } from '../../services/categoryService';
 
 const QuestionAnalyticsPage: React.FC = () => {
   // State for Top N Questions
-  const [topQuestions, setTopQuestions] = useState<Question[]>([]);
+  const [topQuestions, setTopQuestions] = useState<QuestionForStaff[]>([]);
   const [topQuestionsLoading, setTopQuestionsLoading] = useState(false);
   
   // State for Category Usage Trends

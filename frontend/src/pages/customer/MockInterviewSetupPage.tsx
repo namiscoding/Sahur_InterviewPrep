@@ -20,7 +20,8 @@ const MockInterviewSetupPage: React.FC = () => {
   
   // State để quản lý lựa chọn của người dùng
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
-  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
+  // Khởi tạo rỗng cho độ khó, giống với category
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]); 
   const [numQuestions, setNumQuestions] = useState<number>(5);
 
   // State cho việc tải dữ liệu và gửi request
@@ -51,7 +52,7 @@ const MockInterviewSetupPage: React.FC = () => {
     );
   };
 
-  // Hàm xử lý khi check/uncheck difficulty
+  // Hàm xử lý khi check/uncheck difficulty (không thay đổi logic này)
   const handleDifficultyChange = (difficulty: string) => {
     setSelectedDifficulties(prev =>
       prev.includes(difficulty)
@@ -62,18 +63,18 @@ const MockInterviewSetupPage: React.FC = () => {
 
   // Hàm xử lý khi nhấn nút bắt đầu
   const handleStartInterview = async () => {
-    // Yêu cầu phải chọn ít nhất 1 độ khó
-    if (selectedDifficulties.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một mức độ khó.");
-      return;
-    }
+    // Không cần kiểm tra selectedDifficulties.length === 0 ở đây để hiển thị toast nữa.
+    // Logic mặc định 3 độ khó sẽ nằm trong requestBody.
 
     setIsStarting(true);
     try {
       const requestBody = {
-        // Nếu không chọn category nào, gửi mảng rỗng (backend sẽ hiểu là tất cả)
-        categoryIds: selectedCategoryIds,
-        difficultyLevels: selectedDifficulties,
+        categoryIds: selectedCategoryIds, // Nếu rỗng, backend hiểu là tất cả
+        // Logic mới: Nếu người dùng không chọn độ khó nào (mảng rỗng), thì gửi cả 3 độ khó Easy, Medium, Hard.
+        // Ngược lại, gửi các độ khó đã chọn.
+        difficultyLevels: selectedDifficulties.length === 0 
+                          ? ['Easy', 'Medium', 'Hard'] 
+                          : selectedDifficulties,
         numberOfQuestions: numQuestions,
       };
 
@@ -130,20 +131,20 @@ const MockInterviewSetupPage: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Mức độ khó</CardTitle>
-          <CardDescription>Chọn một hoặc nhiều mức độ khó cho các câu hỏi.</CardDescription>
+          <CardDescription>Chọn một hoặc nhiều mức độ khó cho các câu hỏi (để trống nếu muốn chọn từ tất cả).</CardDescription> {/* Cập nhật mô tả */}
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {['Easy', 'Medium', 'Hard'].map(level => (
-                 <div key={level} className="flex items-center space-x-2">
-                    <Checkbox
-                        id={`diff-${level}`}
-                        checked={selectedDifficulties.includes(level)}
-                        onCheckedChange={() => handleDifficultyChange(level)}
-                    />
-                    <label htmlFor={`diff-${level}`} className="text-sm font-medium leading-none cursor-pointer">
-                        {level}
-                    </label>
-                </div>
+                    <div key={level} className="flex items-center space-x-2">
+                      <Checkbox
+                          id={`diff-${level}`}
+                          checked={selectedDifficulties.includes(level)}
+                          onCheckedChange={() => handleDifficultyChange(level)}
+                      />
+                      <label htmlFor={`diff-${level}`} className="text-sm font-medium leading-none cursor-pointer">
+                          {level}
+                      </label>
+                    </div>
             ))}
         </CardContent>
       </Card>
@@ -152,7 +153,7 @@ const MockInterviewSetupPage: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Số lượng câu hỏi</CardTitle>
-          <CardDescription>Chọn số lượng câu hỏi bạn muốn có trong phiên (1-10).</CardDescription>
+          <CardDescription>Chọn số lượng câu hỏi bạn muốn có trong phiên (2-7).</CardDescription> 
         </CardHeader>
         <CardContent className="pt-2">
           <div className="flex justify-between text-lg font-bold mb-4">
@@ -161,8 +162,8 @@ const MockInterviewSetupPage: React.FC = () => {
           <Slider
             defaultValue={[5]}
             value={[numQuestions]}
-            max={10}
-            min={1}
+            max={7}
+            min={2} 
             step={1}
             onValueChange={(value) => setNumQuestions(value[0])}
           />

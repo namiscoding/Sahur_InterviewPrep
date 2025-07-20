@@ -21,7 +21,7 @@ namespace InterviewPrep.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("InterviewPrep.API.Models.ApplicationUser", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -82,7 +82,7 @@ namespace InterviewPrep.API.Migrations
                     b.Property<int>("SubscriptionLevel")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasDefaultValue(0);
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -104,7 +104,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.AuditLog", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.AuditLog", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -136,7 +136,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("AuditLogs", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Category", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -148,7 +148,7 @@ namespace InterviewPrep.API.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -167,7 +167,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.MockSession", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.MockSession", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -182,7 +182,7 @@ namespace InterviewPrep.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("OverallScore")
-                        .HasColumnType("decimal(5, 2)");
+                        .HasColumnType("decimal(5, 0)");
 
                     b.Property<int>("SessionType")
                         .HasColumnType("int");
@@ -204,7 +204,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("MockSessions", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Question", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Question", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -214,7 +214,7 @@ namespace InterviewPrep.API.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -223,7 +223,7 @@ namespace InterviewPrep.API.Migrations
                     b.Property<int>("DifficultyLevel")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasDefaultValue(2);
+                        .HasDefaultValue(1);
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -231,7 +231,7 @@ namespace InterviewPrep.API.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<string>("SampleAnswer")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UsageCount")
                         .ValueGeneratedOnAdd()
@@ -245,7 +245,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("Questions", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.QuestionCategory", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.QuestionCategory", b =>
                 {
                     b.Property<long>("QuestionId")
                         .HasColumnType("bigint");
@@ -260,7 +260,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("QuestionCategories", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.QuestionTag", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.QuestionTag", b =>
                 {
                     b.Property<long>("QuestionId")
                         .HasColumnType("bigint");
@@ -275,7 +275,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("QuestionTags", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.SessionAnswer", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.SessionAnswer", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -287,7 +287,7 @@ namespace InterviewPrep.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Feedback")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("QuestionId")
                         .HasColumnType("bigint");
@@ -296,13 +296,13 @@ namespace InterviewPrep.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Score")
-                        .HasColumnType("decimal(5, 2)");
+                        .HasColumnType("decimal(5, 0)");
 
                     b.Property<long>("SessionId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("UserAnswer")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -313,7 +313,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("SessionAnswers", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.SubscriptionPlan", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.SubscriptionPlan", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -343,25 +343,25 @@ namespace InterviewPrep.API.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(10, 2)");
+                        .HasColumnType("decimal(10, 0)");
 
                     b.HasKey("Id");
 
                     b.ToTable("SubscriptionPlans", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.SystemSetting", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.SystemSetting", b =>
                 {
                     b.Property<string>("SettingKey")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SettingValue")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -373,7 +373,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("SystemSettings", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Tag", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Tag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -402,7 +402,7 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("Tags", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Transaction", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Transaction", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -411,37 +411,49 @@ namespace InterviewPrep.API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(10, 2)");
+                        .HasColumnType("decimal(10, 0)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ExternalTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalTransactionId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GatewayTransactionId")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("PlanId")
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
+                    b.Property<int>("SubscriptionPlanId")
                         .HasColumnType("int");
 
                     b.Property<string>("TransactionCode")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -449,19 +461,14 @@ namespace InterviewPrep.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GatewayTransactionId");
-
-                    b.HasIndex("PlanId");
-
-                    b.HasIndex("TransactionCode")
-                        .IsUnique();
+                    b.HasIndex("SubscriptionPlanId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Transactions", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.UsageLog", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.UsageLog", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -621,9 +628,9 @@ namespace InterviewPrep.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.AuditLog", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.AuditLog", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", "User")
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", "User")
                         .WithMany("AuditLogs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -631,9 +638,9 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Category", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Category", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", "Creator")
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", "Creator")
                         .WithMany("CreatedCategories")
                         .HasForeignKey("CreatedBy")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -641,9 +648,9 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.MockSession", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.MockSession", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", "User")
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", "User")
                         .WithMany("MockSessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -652,9 +659,9 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Question", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Question", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", "Creator")
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", "Creator")
                         .WithMany("CreatedQuestions")
                         .HasForeignKey("CreatedBy")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -663,15 +670,15 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.QuestionCategory", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.QuestionCategory", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.Category", "Category")
+                    b.HasOne("InterviewPrep.API.Data.Models.Category", "Category")
                         .WithMany("QuestionCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InterviewPrep.API.Models.Question", "Question")
+                    b.HasOne("InterviewPrep.API.Data.Models.Question", "Question")
                         .WithMany("QuestionCategories")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -682,15 +689,15 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("Question");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.QuestionTag", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.QuestionTag", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.Question", "Question")
+                    b.HasOne("InterviewPrep.API.Data.Models.Question", "Question")
                         .WithMany("QuestionTags")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InterviewPrep.API.Models.Tag", "Tag")
+                    b.HasOne("InterviewPrep.API.Data.Models.Tag", "Tag")
                         .WithMany("QuestionTags")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -701,15 +708,15 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.SessionAnswer", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.SessionAnswer", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.Question", "Question")
+                    b.HasOne("InterviewPrep.API.Data.Models.Question", "Question")
                         .WithMany("SessionAnswers")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("InterviewPrep.API.Models.MockSession", "MockSession")
+                    b.HasOne("InterviewPrep.API.Data.Models.MockSession", "MockSession")
                         .WithMany("SessionAnswers")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -720,28 +727,28 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("Question");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Transaction", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Transaction", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.SubscriptionPlan", "Plan")
+                    b.HasOne("InterviewPrep.API.Data.Models.SubscriptionPlan", "SubscriptionPlan")
                         .WithMany("Transactions")
-                        .HasForeignKey("PlanId")
+                        .HasForeignKey("SubscriptionPlanId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", "User")
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", "User")
                         .WithMany("Transactions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Plan");
+                    b.Navigation("SubscriptionPlan");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.UsageLog", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.UsageLog", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", "User")
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", "User")
                         .WithMany("UsageLogs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -761,7 +768,7 @@ namespace InterviewPrep.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", null)
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -770,7 +777,7 @@ namespace InterviewPrep.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", null)
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -785,7 +792,7 @@ namespace InterviewPrep.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", null)
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -794,14 +801,14 @@ namespace InterviewPrep.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("InterviewPrep.API.Models.ApplicationUser", null)
+                    b.HasOne("InterviewPrep.API.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.ApplicationUser", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.ApplicationUser", b =>
                 {
                     b.Navigation("AuditLogs");
 
@@ -816,17 +823,17 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("UsageLogs");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Category", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Category", b =>
                 {
                     b.Navigation("QuestionCategories");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.MockSession", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.MockSession", b =>
                 {
                     b.Navigation("SessionAnswers");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Question", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Question", b =>
                 {
                     b.Navigation("QuestionCategories");
 
@@ -835,12 +842,12 @@ namespace InterviewPrep.API.Migrations
                     b.Navigation("SessionAnswers");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.SubscriptionPlan", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.SubscriptionPlan", b =>
                 {
                     b.Navigation("Transactions");
                 });
 
-            modelBuilder.Entity("InterviewPrep.API.Models.Tag", b =>
+            modelBuilder.Entity("InterviewPrep.API.Data.Models.Tag", b =>
                 {
                     b.Navigation("QuestionTags");
                 });

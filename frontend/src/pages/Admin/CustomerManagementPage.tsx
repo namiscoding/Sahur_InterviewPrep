@@ -83,24 +83,35 @@ const CustomerManagementPage: React.FC = () => {
   const handleUpdateStatus = async () => {
     if (!selectedCustomer) return;
     setUpdateError(null);
+  
     try {
       const dto: UpdateUserStatusDTO = { status: newStatus };
       const updated = await updateCustomerStatus(selectedCustomer.id, dto);
-      setSelectedCustomer({ ...selectedCustomer, ...updated });
-      fetchCustomers();
+      setSelectedCustomer({ ...selectedCustomer, status: updated.status });
+  
       toast({
         title: "Success",
         description: "Customer status updated successfully.",
+        duration: 2000,
       });
-    } catch (err) {
-      setUpdateError('Failed to update status.');
+  
+      // Delay 1.5s để toast hiển thị rõ rồi mới đóng dialog và reload
+      setTimeout(() => {
+        setIsDetailsOpen(false);
+        fetchCustomers(); // Làm mới danh sách sau khi cập nhật
+      }, 1000);
+  
+    } catch (error) {
+      setUpdateError("Failed to update status.");
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update customer status.",
+        duration: 2000,
       });
     }
   };
+  
 
   const calculateDefaultExpiry = useCallback((baseDate: Date = new Date('2025-07-14')) => {
     const expiry = new Date(baseDate);
