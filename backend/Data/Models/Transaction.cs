@@ -17,10 +17,10 @@ namespace InterviewPrep.API.Data.Models
         public virtual ApplicationUser User { get; set; }
 
         [Required]
-        public int SubscriptionPlanId { get; set; } // Changed to SubscriptionPlanId
+        public int SubscriptionPlanId { get; set; } 
 
         [ForeignKey("SubscriptionPlanId")]
-        public virtual SubscriptionPlan SubscriptionPlan { get; set; } // Changed to SubscriptionPlan
+        public virtual SubscriptionPlan SubscriptionPlan { get; set; } 
 
         [Required]
         [StringLength(255)]

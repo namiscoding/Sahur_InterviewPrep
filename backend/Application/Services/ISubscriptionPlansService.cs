@@ -5,6 +5,6 @@ namespace InterviewPrep.API.Application.Services
 {
     public interface ISubscriptionPlansService
     {
-        Task<IEnumerable<SubscriptionPlanDTO>> GetAllSubscriptionPlansAsync();
+        //Task<IEnumerable<SubscriptionPlanDTO>> GetAllSubscriptionPlansAsync();
     }
 }
