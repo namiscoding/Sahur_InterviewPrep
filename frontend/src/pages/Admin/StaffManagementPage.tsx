@@ -168,10 +168,15 @@ const StaffManagementPage: React.FC = () => { // <--- SỬA DÒNG NÀY
     } catch (err: any) {
       const message = err.message || "Failed to create staff.";
       setCreateError(message);
+    
+      const isDuplicate = message.toLowerCase().includes("already exists");
+    
       toast({
         variant: "destructive",
         title: "Error",
-        description: message,
+        description: isDuplicate
+          ? "This email is already associated with a staff account."
+          : message,
         duration: 4000,
       });
     }

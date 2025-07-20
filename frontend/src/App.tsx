@@ -13,8 +13,8 @@ import PaymentSuccessPage from './pages/customer/PaymentSuccessPage';
 import Layout from './components/layout/Layout'
 import HomePage from './pages/HomePage';
 import CategoryManagementPage from './pages/Staff/CategoryManagementPage';
-import CustomerManagementPage from './pages/Admin/CustomerManagementPage';
-import StaffManagementPage from './pages/Admin/StaffManagementPage';
+import CustomerManagementPage from './pages/admin/CustomerManagementPage';
+import StaffManagementPage from './pages/admin/StaffManagementPage';
 import QuestionBankPage from './pages/customer/QuestionBankPage';
 import PracticePage from './pages/customer/PracticePage';
 import ResultPage from './pages/customer/ResultPage';
