@@ -14,11 +14,12 @@ namespace InterviewPrep.API.Application.Services
     {
         private readonly IQuestionRepository _questionRepository;
         private readonly IMapper _mapper;
-
-        public QuestionService(IQuestionRepository questionRepository, IMapper mapper)
+        private readonly IAuditLogService _auditLogService;
+        public QuestionService(IQuestionRepository questionRepository, IMapper mapper, IAuditLogService auditLogService)
         {
             _questionRepository = questionRepository;
             _mapper = mapper;
+            _auditLogService = auditLogService;
         }
         public async Task<IEnumerable<QuestionDTO>> GetAllQuestionsAsync()
         {
@@ -64,7 +65,7 @@ namespace InterviewPrep.API.Application.Services
             _mapper.Map(updateDto, existingQuestion);
 
             var updatedQuestion = await _questionRepository.UpdateQuestionAsync(existingQuestion, updateDto.CategoryIds, updateDto.TagNames, userId);
-
+            await _auditLogService.LogQuestionActionAsync(userId, "Updated", existingQuestion.Id, existingQuestion.Content, null);
             return _mapper.Map<QuestionDTO>(updatedQuestion);
         }
 
@@ -79,6 +80,9 @@ namespace InterviewPrep.API.Application.Services
             existingQuestion.IsActive = updateDto.IsActive;
 
             var updatedQuestion = await _questionRepository.UpdateQuestionAsync(existingQuestion, null, null, userId);
+            
+            string actionType = updateDto.IsActive ? "Activated" : "Inactivated";
+            await _auditLogService.LogActionAsync(userId, $"{actionType} Question: ID={existingQuestion.Id}, Name='{existingQuestion.Content}'", null);
 
             return _mapper.Map<QuestionDTO>(updatedQuestion);
         }

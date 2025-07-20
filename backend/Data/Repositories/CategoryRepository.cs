@@ -42,7 +42,7 @@ namespace InterviewPrep.API.Data.Repositories
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
             
-            await _auditLogService.LogCategoryActionAsync(userId, "Updated", category.Id, category.Name, null);
+            //await _auditLogService.LogCategoryActionAsync(userId, "Updated", category.Id, category.Name, null);
             return category;
         }
 

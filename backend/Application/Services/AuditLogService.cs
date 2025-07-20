@@ -2,10 +2,11 @@ using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Audit;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
+using Microsoft.AspNetCore.Http; // Import IHttpContextAccessor
+using Microsoft.AspNetCore.Identity;
+using System; // Import DateTime
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http; // Import IHttpContextAccessor
-using System; // Import DateTime
 
 namespace InterviewPrep.API.Application.Services
 {
@@ -15,13 +16,16 @@ namespace InterviewPrep.API.Application.Services
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public AuditLogService(IAuditLogRepository auditLogRepository, IMapper mapper, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public AuditLogService(IAuditLogRepository auditLogRepository, IMapper mapper, ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _auditLogRepository = auditLogRepository;
             _mapper = mapper;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<PagedResult<AuditLogDTO>> GetAllAuditLogsAsync(string userId = null, string action = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 50)
@@ -93,6 +97,113 @@ namespace InterviewPrep.API.Application.Services
                 actionDescription += $", Content='{(questionContent.Length > 100 ? questionContent.Substring(0, 100) + "..." : questionContent)}'";
             }
             await LogActionAsync(userId, actionDescription, ipAddress);
+        }
+
+        public async Task<IEnumerable<SAAuditLogDTO>> GetFilteredAndParsedAuditLogsAsync(
+            string? userId,
+            string? userName,
+            string? userRole,
+            string? area,
+            string? actionType,
+            DateTime? startDate,
+            DateTime? endDate)
+        {
+            var rawLogs = await _auditLogRepository.GetFilteredAuditLogsAsync(userId, userName, userRole, startDate, endDate);
+
+            var auditLogDTOs = new List<SAAuditLogDTO>(); // THAY ĐỔI KIỂU DTO Ở ĐÂY
+
+            // Lấy thông tin User (DisplayName) và Role một lần để tối ưu
+            var userMap = new Dictionary<string, ApplicationUser>();
+            var roleMap = new Dictionary<string, string>(); // userId -> roleName
+
+            if (rawLogs.Any())
+            {
+                var distinctUserIds = rawLogs.Where(al => al.UserId != null).Select(al => al.UserId!).Distinct().ToList();
+                foreach (var distinctId in distinctUserIds)
+                {
+                    var user = await _userManager.FindByIdAsync(distinctId);
+                    if (user != null)
+                    {
+                        userMap[distinctId] = user;
+                        var roles = await _userManager.GetRolesAsync(user);
+                        roleMap[distinctId] = roles.FirstOrDefault() ?? "No Role";
+                    }
+                }
+            }
+
+            // Thực hiện phân tích chuỗi Action và áp dụng lọc Area/ActionType
+            foreach (var log in rawLogs)
+            {
+                string parsedArea;
+                string parsedActionType;
+                ParseAuditActionString(log.Action, out parsedArea, out parsedActionType);
+
+                // Áp dụng bộ lọc Area (nếu có)
+                if (!string.IsNullOrEmpty(area) && !parsedArea.Equals(area, StringComparison.OrdinalIgnoreCase) && area != "all")
+                {
+                    continue;
+                }
+
+                // Áp dụng bộ lọc ActionType (nếu có)
+                if (!string.IsNullOrEmpty(actionType) && !parsedActionType.Equals(actionType, StringComparison.OrdinalIgnoreCase) && actionType != "all")
+                {
+                    continue;
+                }
+
+                // Map sang DTO mới và thêm vào danh sách
+                auditLogDTOs.Add(new SAAuditLogDTO // THAY ĐỔI KIỂU DTO Ở ĐÂY
+                {
+                    Id = log.Id,
+                    UserId = log.UserId,
+                    UserName = userMap.TryGetValue(log.UserId ?? "", out var user) ? user.DisplayName : null,
+                    UserRole = roleMap.TryGetValue(log.UserId ?? "", out var roleName) ? roleName : null,
+                    ActionDescription = log.Action,
+                    Area = parsedArea,
+                    ActionType = parsedActionType,
+                    IpAddress = log.IpAddress,
+                    CreatedAt = log.CreatedAt
+                });
+            }
+
+            return auditLogDTOs;
+        }
+
+        private DateTime GetVietnamTime()
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            TimeZoneInfo vietnamTimeZone;
+            try
+            {
+                vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            }
+            return TimeZoneInfo.ConvertTimeFromUtc(utcNow, vietnamTimeZone);
+        }
+
+        private void ParseAuditActionString(string action, out string area, out string actionType)
+        {
+            area = "Unknown";
+            actionType = "Unknown";
+
+            if (string.IsNullOrEmpty(action)) return;
+
+            if (action.StartsWith("Added ")) actionType = "Added";
+            else if (action.StartsWith("Updated ")) actionType = "Updated";
+            else if (action.StartsWith("Deleted ")) actionType = "Deleted";
+            else if (action.StartsWith("Activated ")) actionType = "Activated";
+            else if (action.StartsWith("Inactivated ")) actionType = "Inactivated";
+            else if (action.StartsWith("Batch Inactivated ")) actionType = "Batch Inactivated";
+            else if (action.StartsWith("Batch Activated ")) actionType = "Batch Activated";
+            else if (action.StartsWith("Logged In")) actionType = "Logged In";
+            else if (action.StartsWith("Logged Out")) actionType = "Logged Out";
+
+            if (action.Contains("Category")) area = "Category";
+            else if (action.Contains("Question")) area = "Question";
+            else if (action.Contains("Subscription Plan")) area = "Subscription Plan";
+            else if (action.Contains("User ")) area = "User";
         }
     }
 }

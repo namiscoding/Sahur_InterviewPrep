@@ -111,6 +111,14 @@ namespace InterviewPrep.API.Application.Profiles
                 .ForMember(dest => dest.SessionType, opt => opt.MapFrom(src => src.SessionType.ToString()))
                 .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.SessionAnswers));
 
+            CreateMap<SubscriptionPlan, SubscriptionPlanDTO>().ReverseMap(); 
+            CreateMap<UpdateSubscriptionPlanInfoDTO, SubscriptionPlan>();
+
+            CreateMap<AuditLog, SAAuditLogDTO>()
+            .ForMember(dest => dest.UserName, opt => opt.Ignore()) // Sẽ gán thủ công trong service
+            .ForMember(dest => dest.UserRole, opt => opt.Ignore()) // Sẽ gán thủ công trong service
+            .ForMember(dest => dest.Area, opt => opt.Ignore()) // Sẽ gán thủ công trong service
+            .ForMember(dest => dest.ActionType, opt => opt.Ignore());
         }
     }
 }

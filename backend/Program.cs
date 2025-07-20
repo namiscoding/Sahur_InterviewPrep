@@ -62,6 +62,8 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IMockSessionRepository, MockSessionRepository>();
 builder.Services.AddScoped<ISessionAnswerRepository, SessionAnswerRepository>();
 builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+
 // Add Services
 builder.Services.AddScoped<ISessionAnswerService, SessionAnswerService>();
 builder.Services.AddScoped<IExcelImporterService, ExcelImporterService>();
@@ -77,6 +79,7 @@ builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IPracticeService, PracticeService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
