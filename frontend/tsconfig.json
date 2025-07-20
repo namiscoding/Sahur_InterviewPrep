@@ -26,6 +26,6 @@
       "@/*": ["./*"] // Khai báo rằng @/ sẽ trỏ đến thư mục gốc của baseUrl (tức là src/)
     }
   },
-  "include": ["src"],
+  "include": ["src", "*.d.ts"],
   "references": [{ "path": "./tsconfig.node.json"}]
 }

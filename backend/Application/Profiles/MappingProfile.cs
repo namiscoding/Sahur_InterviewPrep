@@ -94,7 +94,7 @@ namespace InterviewPrep.API.Application.Profiles
             CreateMap<Tag, TagDTO>()
                 .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
 
-            CreateMap<SubscriptionPlan, SubscriptionPlanDTO>();
+            CreateMap<SubscriptionPlan, DTOs.SubscriptionPlanDTO>();
         }
     }
 }

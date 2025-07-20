@@ -62,6 +62,9 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IMockSessionRepository, MockSessionRepository>();
 builder.Services.AddScoped<ISessionAnswerRepository, SessionAnswerRepository>();
 builder.Services.AddScoped<JwtTokenGenerator>();
+
+builder.Services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 // Add Services
 builder.Services.AddScoped<ISessionAnswerService, SessionAnswerService>();
 builder.Services.AddScoped<IExcelImporterService, ExcelImporterService>();
@@ -104,6 +107,10 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
         RoleClaimType = ClaimTypes.Role
     };
+}).AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 });
 
 // Thêm Controllers
@@ -119,7 +126,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         builder => builder.WithOrigins("http://localhost:5173") // Thay đổi nếu Frontend của bạn chạy trên cổng khác
                           .AllowAnyHeader()
-                          .AllowAnyMethod());
+                          .AllowAnyMethod().AllowCredentials());
+
 });
 
 

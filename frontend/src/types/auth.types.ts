@@ -7,8 +7,9 @@ export interface User {
 }
 
 export interface LoginRequest {
-  emailOrUserName: string;
-  password: string;
+  emailOrUserName?: string;
+  password?: string;
+  token?: string;
 }
 
 export interface LoginResponse {
