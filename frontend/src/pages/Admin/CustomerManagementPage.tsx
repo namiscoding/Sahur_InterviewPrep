@@ -268,7 +268,7 @@ const CustomerManagementPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Customer Cards */}
+        {/* Customer Table */}
         {customers.items.length === 0 ? (
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow-sm border p-8">
@@ -288,38 +288,65 @@ const CustomerManagementPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            {customers.items.map((customer) => (
-              <Card key={customer.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{customer.displayName}</CardTitle>
-                      <CardDescription className="mt-1">{customer.email}</CardDescription>
-                    </div>
-                    <Badge className={getStatusColor(customer.status)}>
-                      {customer.status}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center mt-2 gap-2">
-                    <Badge variant="secondary" className={getSubscriptionColor(customer.subscriptionLevel)}>
-                      {customer.subscriptionLevel}
-                    </Badge>
-                    <span className="text-sm text-gray-500">
-                      Expiry: {customer.subscriptionExpiryDate ? new Date(customer.subscriptionExpiryDate).toLocaleDateString() : 'N/A'}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(customer.id)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 hover:bg-gray-50">
+                    <TableHead className="font-semibold text-gray-900">Customer</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Subscription</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Expiry Date</TableHead>
+                    <TableHead className="font-semibold text-gray-900">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {customers.items.map((customer) => (
+                    <TableRow key={customer.id} className="hover:bg-gray-50 transition-colors">
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <div className="font-medium text-gray-900">{customer.displayName}</div>
+                          <div className="text-sm text-gray-500">{customer.email}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${getStatusColor(customer.status)} px-2 py-1 text-xs font-medium`}>
+                          {customer.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={`${getSubscriptionColor(customer.subscriptionLevel)} px-2 py-1 text-xs font-medium`}>
+                          {customer.subscriptionLevel}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-700">
+                          {customer.subscriptionExpiryDate 
+                            ? new Date(customer.subscriptionExpiryDate).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })
+                            : 'N/A'
+                          }
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleViewDetails(customer.id)}
+                          className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
 

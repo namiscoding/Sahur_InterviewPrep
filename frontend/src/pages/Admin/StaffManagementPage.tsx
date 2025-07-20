@@ -34,6 +34,14 @@ import {
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 // Icons
 import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle, BarChart3 } from "lucide-react"
@@ -43,7 +51,7 @@ import SystemStatisticsDashboard from "./system-statistic-dashboard"
 
 const StaffManagementWithStats: React.FC = () => {
   const navigate = useNavigate()
-
+  const [activeTab, setActiveTab] = useState("statistics")
   // All your existing state variables remain unchanged
   const [staffs, setStaffs] = useState<PagedResult<StaffDTO>>({
     items: [],
@@ -252,7 +260,7 @@ const StaffManagementWithStats: React.FC = () => {
       </header>
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs defaultValue="statistics" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="statistics" className="flex items-center">
               <BarChart3 className="mr-2 h-4 w-4" />
@@ -299,58 +307,77 @@ const StaffManagementWithStats: React.FC = () => {
               </div>
             </div>
 
-            {/* Staff Cards */}
-            {staffs.items.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="bg-white rounded-lg shadow-sm border p-8">
-                  <div className="text-gray-400 mb-4">
-                    <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
+            {/* Staff Table */}
+            <Card className="shadow-sm">
+              <CardContent>
+                {staffs.items.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 mb-4">
+                      <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-lg font-medium text-gray-900 mb-2">
+                      {searchTerm || selectedStatus !== "all" ? "No staffs match your filters" : "No staffs found"}
+                    </p>
+                    <p className="text-gray-600 mb-4">
+                      {searchTerm || selectedStatus !== "all"
+                        ? "Try adjusting your search or filters"
+                        : "There are no staff accounts yet"}
+                    </p>
                   </div>
-                  <p className="text-lg font-medium text-gray-900 mb-2">
-                    {searchTerm || selectedStatus !== "all" ? "No staffs match your filters" : "No staffs found"}
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    {searchTerm || selectedStatus !== "all"
-                      ? "Try adjusting your search or filters"
-                      : "There are no staff accounts yet"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-                {staffs.items.map((staff) => (
-                  <Card key={staff.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">{staff.displayName}</CardTitle>
-                          <CardDescription className="mt-1">{staff.email}</CardDescription>
-                        </div>
-                        <Badge className={getStatusColor(staff.status)}>{staff.status}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-end">
-                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(staff.id)}>
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                          <TableHead className="font-semibold text-gray-900">Name</TableHead>
+                          <TableHead className="font-semibold text-gray-900">Email</TableHead>
+                          <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                          <TableHead className="font-semibold text-gray-900 text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {staffs.items.map((staff) => (
+                          <TableRow key={staff.id} className="hover:bg-gray-50 transition-colors">
+                            <TableCell className="font-medium text-gray-900">
+                              {staff.displayName}
+                            </TableCell>
+                            <TableCell className="text-gray-600">
+                              {staff.email}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getStatusColor(staff.status)}>
+                                {staff.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleViewDetails(staff.id)}
+                                className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View Details
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center mt-6">
               <Button
                 variant="outline"
                 disabled={staffs.page === 1}
@@ -358,7 +385,7 @@ const StaffManagementWithStats: React.FC = () => {
               >
                 Previous
               </Button>
-              <span>
+              <span className="text-sm text-gray-600">
                 Page {staffs.page} of {Math.ceil(staffs.totalCount / staffs.pageSize)}
               </span>
               <Button
