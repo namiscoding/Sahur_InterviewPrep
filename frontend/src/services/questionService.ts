@@ -218,3 +218,24 @@ export const getCategoryUsageTrends = async (
     throw new Error('Failed to fetch category usage trends. Please try again.');
   }
 };
+
+export const downloadQuestionExcelTemplate = async (): Promise<Blob> => {
+    try {
+        const response = await apiClient.get('/staff/questions/template/download', {
+            responseType: 'blob', // Quan trọng: Yêu cầu Axios trả về dưới dạng Blob
+            headers: {
+                Authorization: `Bearer ${getAuthToken()}` // Nếu API cần xác thực
+            }
+        });
+        return response.data; // Dữ liệu sẽ là một Blob (file)
+    } catch (error: any) {
+        console.error('Error downloading Excel template:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to download Excel template');
+    }
+};
+
+// src/utils/authUtils.ts
+export const getAuthToken = (): string | null => {
+    // Thay thế bằng cách lấy token thực tế từ AuthContext hoặc localStorage
+    return localStorage.getItem('jwt_token');
+};
