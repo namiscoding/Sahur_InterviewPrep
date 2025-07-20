@@ -1,3 +1,4 @@
+using InterviewPrep.API;
 using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.Services.Momo;
@@ -165,4 +166,11 @@ app.UseAuthorization();
 
 // 5. Ánh xạ các Controller
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await DbSeeder.SeedDataAsync(services);
+}
+
 app.Run();

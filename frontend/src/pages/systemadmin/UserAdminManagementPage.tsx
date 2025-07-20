@@ -100,11 +100,8 @@ const UserAdminManagementPage: React.FC = () => {
         duration: 2000,
       });
   
-      // Delay 1.5s để người dùng thấy toast rồi mới đóng
-      setTimeout(() => {
         setIsDetailsOpen(false);
-        fetchUserAdmins(); // Làm mới danh sách sau khi cập nhật
-      }, 1000);
+        fetchUserAdmins();
     } catch (err) {
       setUpdateError('Failed to update status.');
       toast({
@@ -166,27 +163,32 @@ const UserAdminManagementPage: React.FC = () => {
         duration: 4000,
       });
     } catch (err: any) {
-      const message = err.message || "Failed to create user admin.";
-      setCreateError(message);
-    
-      const isDuplicate = message.toLowerCase().includes("already exists");
-    
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: isDuplicate
-          ? "This email is already associated with a user admin account."
-          : message,
-        duration: 4000,
-      });
+      const response = err?.response?.data;
+      const code = response?.errorCode;
+      const message = response?.message || "Failed to create user admin.";
+      
+      if (code === "EmailAlreadyExists") {
+        setCreateError("This email is already associated with another account.");
+        toast({
+          variant: "destructive",
+          title: "Duplicate Email",
+          description: "This email is already in use. Please try a different one.",
+        });
+      } else {
+        setCreateError(message);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: message,
+        });
+      }
     }
-  };
+  };  
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active': return "bg-green-100 text-green-800";
       case 'inactive': return "bg-yellow-100 text-yellow-800";
-      case 'suspended': return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -275,7 +277,6 @@ const UserAdminManagementPage: React.FC = () => {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
 
@@ -396,7 +397,6 @@ const UserAdminManagementPage: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="Active">Active</SelectItem>
                     <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="Suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button className="mt-2" onClick={handleUpdateStatus}>Update Status</Button>

@@ -5,6 +5,6 @@ namespace InterviewPrep.API.Application.DTOs.UserAdmin
     public class UpdateUserAdminStatusDTO
     {
         [Required]
-        public string Status { get; set; } // "Active", "Inactive", "Suspended"
+        public string Status { get; set; } // "Active", "Inactive"
     }
 }

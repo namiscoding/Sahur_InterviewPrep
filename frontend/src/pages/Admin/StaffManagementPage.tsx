@@ -114,7 +114,8 @@ const StaffManagementWithStats: React.FC = () => {
         title: "Success",
         description: "Staff status updated successfully.",
         duration: 2000,
-      })
+      });
+      setIsDetailsOpen(false);
     } catch (err) {
       setUpdateError("Failed to update status.")
       toast({
@@ -193,8 +194,6 @@ const StaffManagementWithStats: React.FC = () => {
         return "bg-green-100 text-green-800"
       case "inactive":
         return "bg-yellow-100 text-yellow-800"
-      case "suspended":
-        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -294,7 +293,6 @@ const StaffManagementWithStats: React.FC = () => {
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="Active">Active</SelectItem>
                     <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="Suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
                 <span className="text-sm font-medium text-gray-700">Total Accounts: {staffs.totalCount}</span>
@@ -419,7 +417,6 @@ const StaffManagementWithStats: React.FC = () => {
                     <SelectContent>
                       <SelectItem value="Active">Active</SelectItem>
                       <SelectItem value="Inactive">Inactive</SelectItem>
-                      <SelectItem value="Suspended">Suspended</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button className="mt-2" onClick={handleUpdateStatus}>
