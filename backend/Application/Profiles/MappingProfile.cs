@@ -153,9 +153,9 @@ namespace InterviewPrep.API.Application.Profiles
             .ForMember(dest => dest.ActionType, opt => opt.Ignore());
 
             CreateMap<Tag, TagDTO>()
-    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-    .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug));
         }
     }
 }
