@@ -77,6 +77,7 @@ builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IPracticeService, PracticeService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IAiService, OpenAiService>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));

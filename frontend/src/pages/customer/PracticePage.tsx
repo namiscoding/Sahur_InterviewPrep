@@ -132,7 +132,7 @@
             const rms = Math.sqrt(sumSquares / dataArray.length);
 
             // Ngưỡng phát hiện giọng nói (có thể cần tinh chỉnh)
-            const SPEECH_THRESHOLD = 0.08; 
+            const SPEECH_THRESHOLD = 0.01; 
             if (rms > SPEECH_THRESHOLD) {
                 setHasDetectedSpeech(true);
             }

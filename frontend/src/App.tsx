@@ -39,7 +39,7 @@ function App() {
           <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 4000 }} />
           <Routes>
             {/* Public Routes (accessible to everyone) - Combined from both branches */}
-            <Route path="/" element={<HomePage />} />
+            <Route path="/staff-dashboard" element={<HomePage />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/forgot-password" element={<ForgotPasswordForm />} />
@@ -73,6 +73,7 @@ function App() {
             {/* Routes wrapped in Layout (from develop, includes /questions) */}
             <Route element={<Layout/>}>
                 {/* Keep /questions here, as it's wrapped in Layout in develop */}
+                <Route path="/" element={<QuestionBankPage />} />
                 <Route path="/questions" element={<QuestionBankPage />} />
                 <Route path="/practice/session/:sessionId" element={<PracticePage />} />
                 <Route path="/practice/result/:sessionId" element={<ResultPage />} />
