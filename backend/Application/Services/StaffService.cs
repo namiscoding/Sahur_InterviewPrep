@@ -1,13 +1,15 @@
 ﻿// File: Application/Services/StaffService.cs
+
 using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Staff;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace InterviewPrep.API.Application.Services
 {
@@ -58,7 +60,14 @@ namespace InterviewPrep.API.Application.Services
 
         public async Task<StaffDTO> CreateStaffAsync(CreateStaffDTO createDto)
         {
+            var existingUser = await _userManager.FindByEmailAsync(createDto.Email);
+            if (existingUser != null)
+            {
+                throw new Exception("A staff account with this email already exists.");
+            }
+
             var tempPassword = GenerateTempPassword();
+
             var staff = new ApplicationUser
             {
                 UserName = createDto.Email,
@@ -80,8 +89,16 @@ namespace InterviewPrep.API.Application.Services
 
             await _emailService.SendEmailAsync(
                 staff.Email,
-                "Your InterviewPrep Staff Account",
-                $"Hi {staff.DisplayName},\n\nYour staff account has been created.\nEmail: {staff.Email}\nPassword: {tempPassword}\n\nPlease login and change your password.");
+                "Your InterviewPrep Staff Account Created",
+                $@"
+            <p>Hi {staff.DisplayName},</p>
+            <p>Your staff account has been successfully created.</p>
+            <p><strong>Email:</strong> {staff.Email}</p>
+            <p><strong>Temporary Password:</strong> {tempPassword}</p>
+            <p>Please <a href='http://localhost:5173/login'>login</a> and change your password immediately.</p>
+            <br/>
+            <p>Thanks,<br/>InterviewPrep Team</p>"
+            );
 
             return _mapper.Map<StaffDTO>(staff);
         }
@@ -104,7 +121,8 @@ namespace InterviewPrep.API.Application.Services
         public async Task<string> ResetStaffPasswordAsync(string id)
         {
             var staff = await _userManager.FindByIdAsync(id);
-            if (staff == null) throw new Exception("Staff not found");
+            if (staff == null)
+                throw new Exception("Staff not found");
 
             var tempPassword = GenerateTempPassword();
             var token = await _userManager.GeneratePasswordResetTokenAsync(staff);
@@ -120,15 +138,22 @@ namespace InterviewPrep.API.Application.Services
 
             await _emailService.SendEmailAsync(
                 staff.Email,
-                "Your Password Has Been Reset",
-                $"Hi {staff.DisplayName},\n\nYour password has been reset.\nNew Temporary Password: {tempPassword}\n\nPlease login and change your password.");
+                "Your InterviewPrep Staff Password Has Been Reset",
+                $@"
+            <p>Hi {staff.DisplayName},</p>
+            <p>Your password has been successfully reset.</p>
+            <p><strong>New Temporary Password:</strong> {tempPassword}</p>
+            <p>Please <a href='http://localhost:5173/login'>login</a> and change your password immediately.</p>
+            <br/>
+            <p>Thanks,<br/>InterviewPrep Team</p>"
+            );
 
             return tempPassword;
         }
 
         private string GenerateTempPassword()
         {
-            return Guid.NewGuid().ToString().Substring(0, 12) + "!A1";
+            return Guid.NewGuid().ToString().Substring(0, 8) + "!Aa1";
         }
     }
 }

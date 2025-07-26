@@ -56,7 +56,6 @@ namespace InterviewPrep.API.Application.Services
                 .Include(u => u.CreatedQuestions)
                 .Include(u => u.MockSessions)
                 .Include(u => u.UsageLogs)
-                .Include(u => u.Transactions)
                 .Include(u => u.AuditLogs)
                 .FirstOrDefaultAsync(u =>
                     u.Email == dto.EmailOrUserName || u.UserName == dto.EmailOrUserName);

@@ -28,7 +28,6 @@ namespace InterviewPrep.API.Application.DTOs.MockSession
         public long SessionId { get; set; }
         public long QuestionId { get; set; }
         public int QuestionOrder { get; set; }
-
         public QuestionDTO Question { get; set; }
         public string? UserAnswer { get; set; }
         public decimal? Score { get; set; }

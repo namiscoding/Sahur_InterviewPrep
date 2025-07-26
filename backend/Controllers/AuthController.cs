@@ -1,15 +1,19 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Google.Apis.Auth;
 using InterviewPrep.API.Application.DTOs.User;
 using InterviewPrep.API.Application.Services;
+using InterviewPrep.API.Application.Util;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace InterviewPrep.API.Controllers
 {
@@ -128,6 +132,74 @@ namespace InterviewPrep.API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            JwtTokenGenerator jwt = new JwtTokenGenerator(_configuration);
+            GoogleJsonWebSignature.Payload payload;
+
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { _configuration["Authentication:Google:ClientId"] }
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Token Google không hợp lệ: " + ex.Message);
+            }
+
+            var email = payload.Email;
+            var name = payload.Name;
+
+            var user = await _userManager.Users
+                          .Include(u => u.CreatedCategories)
+                          .Include(u => u.CreatedQuestions)
+                          .Include(u => u.MockSessions)
+                          .Include(u => u.UsageLogs)
+                   
+                          .FirstOrDefaultAsync(u =>
+                              u.Email == email);
+            if (user == null)
+            {
+                user = new ApplicationUser
+                {
+                    Email = email,
+                    UserName = email,
+                    EmailConfirmed = true,
+                    DisplayName = name ?? email,
+                    Status = UserStatus.Active,
+                    SubscriptionLevel = SubscriptionLevel.Free,
+                    SubscriptionExpiryDate = null
+                };
+
+                var result = await _userManager.CreateAsync(user);
+                if (!result.Succeeded)
+                    return BadRequest(result.Errors);
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = jwt.GenerateToken(user, roles);
+
+            var response = new AuthResponseDto
+            {
+                Token = token,
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email!,
+                    DisplayName = user.DisplayName,
+                    Status = user.Status,
+                    SubscriptionLevel = user.SubscriptionLevel,
+                    SubscriptionExpiryDate = user.SubscriptionExpiryDate
+                }
+            };
+
+            return Ok(response);
+        }
+
 
 
         [Authorize]

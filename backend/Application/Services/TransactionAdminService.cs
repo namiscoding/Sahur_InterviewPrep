@@ -1,0 +1,59 @@
+﻿using AutoMapper;
+using InterviewPrep.API.Application.DTOs.Transaction;
+using InterviewPrep.API.Data.Repositories;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace InterviewPrep.API.Application.Services
+{
+    public class TransactionAdminService : ITransactionAdminService
+    {
+        private readonly ITransactionRepository _transactionRepository;
+        private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAuditLogService _auditLogService;
+
+        public TransactionAdminService(
+            ITransactionRepository transactionRepository,
+            IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
+            IAuditLogService auditLogService)
+        {
+            _transactionRepository = transactionRepository;
+            _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
+            _auditLogService = auditLogService;
+        }
+
+        public async Task<PagedResult<TransactionListDTO>> GetAllTransactionsAsync(TransactionFilterDTO filter)
+        {
+            var (transactions, total) = await _transactionRepository.GetAllTransactionsAsync(filter);
+            var dtos = _mapper.Map<IEnumerable<TransactionListDTO>>(transactions);
+
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(userId, "Viewed all customer transactions", ip);
+
+            return new PagedResult<TransactionListDTO>
+            {
+                Items = dtos,
+                TotalCount = total,
+                Page = filter.Page,
+                PageSize = filter.PageSize
+            };
+        }
+
+        public async Task<TransactionDetailDTO> GetTransactionDetailsAsync(long id)
+        {
+            var transaction = await _transactionRepository.GetTransactionByIdAsync(id);
+            if (transaction == null) return null;
+
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(userId, $"Viewed transaction details for ID: {id}", ip);
+
+            return _mapper.Map<TransactionDetailDTO>(transaction);
+        }
+    }
+}
