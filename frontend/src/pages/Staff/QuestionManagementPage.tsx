@@ -433,9 +433,9 @@ const QuestionManagementPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Difficulty</SelectItem>
-                  <SelectItem value="1">Easy</SelectItem>
-                  <SelectItem value="2">Medium</SelectItem>
-                  <SelectItem value="3">Hard</SelectItem>
+                  <SelectItem value="0">Easy</SelectItem>
+                  <SelectItem value="1">Medium</SelectItem>
+                  <SelectItem value="2">Hard</SelectItem>
                 </SelectContent>
               </Select>
 

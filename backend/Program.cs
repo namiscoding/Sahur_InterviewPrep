@@ -82,12 +82,11 @@ builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IPracticeService, PracticeService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IAiService, OpenAiService>();
 builder.Services.AddScoped<IUserAdminService, UserAdminService>();
 builder.Services.AddScoped<ITransactionAdminService, TransactionAdminService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
-
-
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 

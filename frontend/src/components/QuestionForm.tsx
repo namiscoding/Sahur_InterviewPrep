@@ -156,9 +156,9 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ onSave, onCancel, initialDa
             <SelectValue placeholder="Select difficulty" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Easy</SelectItem>
-            <SelectItem value="2">Medium</SelectItem>
-            <SelectItem value="3">Hard</SelectItem>
+            <SelectItem value="0">Easy</SelectItem>
+            <SelectItem value="1">Medium</SelectItem>
+            <SelectItem value="2">Hard</SelectItem>
           </SelectContent>
         </Select>
       </div>
