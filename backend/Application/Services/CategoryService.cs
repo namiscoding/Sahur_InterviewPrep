@@ -10,12 +10,16 @@ namespace InterviewPrep.API.Application.Services
         private readonly ICategoryRepository _categoryRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly IMapper _mapper;
-
-        public CategoryService(ICategoryRepository categoryRepository, IQuestionRepository questionRepository, IMapper mapper)
+        private readonly IAuditLogService _auditLogService;
+        public CategoryService(ICategoryRepository categoryRepository, 
+            IQuestionRepository questionRepository, 
+            IMapper mapper,
+            IAuditLogService auditLogService)
         {
             _categoryRepository = categoryRepository;
             _questionRepository = questionRepository; 
             _mapper = mapper;
+            _auditLogService = auditLogService;
         }
 
         //Staff - xem danh sách Category
@@ -55,7 +59,7 @@ namespace InterviewPrep.API.Application.Services
             _mapper.Map(updateDto, existingCategory);
 
             var updatedCategory = await _categoryRepository.UpdateCategoryAsync(existingCategory, userId);
-
+            await _auditLogService.LogCategoryActionAsync(userId, "Updated", existingCategory.Id, existingCategory.Name, null);
             return _mapper.Map<CategoryDTO>(updatedCategory);
         }
 
@@ -73,16 +77,33 @@ namespace InterviewPrep.API.Application.Services
 
             var updatedCategory = await _categoryRepository.UpdateCategoryAsync(existingCategory, userId);
 
-           
+
             if (oldStatus == true && updateDto.IsActive == false)
             {
                 var relatedQuestions = await _questionRepository.GetQuestionsByCategoryIdAsync(id);
                 if (relatedQuestions.Any())
                 {
                     var questionIdsToUpdate = relatedQuestions.Select(q => q.Id).ToList();
-                    await _questionRepository.UpdateQuestionsStatusAsync(questionIdsToUpdate, false); 
+                    
+                    await _questionRepository.UpdateQuestionsStatusAsync(questionIdsToUpdate, false);
+                    
                 }
             }
+            
+            else if (oldStatus == false && updateDto.IsActive == true)
+            {
+                var relatedQuestions = await _questionRepository.GetQuestionsByCategoryIdAsync(id);
+                if (relatedQuestions.Any())
+                {
+                    var questionIdsToUpdate = relatedQuestions.Select(q => q.Id).ToList();
+                   
+                    await _questionRepository.UpdateQuestionsStatusAsync(questionIdsToUpdate, true);
+                    
+                }
+            }
+
+            string actionType = updateDto.IsActive ? "Activated" : "Inactivated";
+            await _auditLogService.LogActionAsync(userId, $"{actionType} Category: ID={existingCategory.Id}, Name='{existingCategory.Name}'", null);
 
             return _mapper.Map<CategoryDTO>(updatedCategory);
         }

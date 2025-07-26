@@ -27,6 +27,8 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
+import SubscriptionPlanManagementPage from './pages/Admin/SubscriptionPlanManagementPage';
+import AuditLogManagementPage from './pages/Admin/AuditLogManagementPage'
 import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
 import SystemAdminTransactionsPage from './pages/systemadmin/SystemAdminTransactionsPage';
 import SystemAdminUsageLimitsPage from './pages/systemadmin/SystemAdminUsageLimitsPage';
@@ -70,7 +72,9 @@ function App() {
 
             {/* Admin Routes (e.g., requires 'admin' role) - Combined from both branches */}
             <Route path="/admin/customers" element={<CustomerManagementPage />} />
-            <Route path="/admin/staffs" element={<StaffManagementPage />} />
+            <Route path="/admin/staffs" element={<StaffManagementPage />}/>
+            <Route path="/admin/subcriptionPlan" element={<SubscriptionPlanManagementPage />} />
+            <Route path="/admin/audit-log" element={<AuditLogManagementPage />} />
             {/* Add more admin routes as needed */}
 
             {/* SystemAdmin Routes */}

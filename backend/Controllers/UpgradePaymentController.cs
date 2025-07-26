@@ -144,9 +144,7 @@ namespace InterviewPrep.API.Controllers
 
             var callbackData = new MomoCallbackDTO();
 
-            // SỬA ĐỔI TẠI ĐÂY: Đọc frontendBaseUrl từ cấu hình
-            var frontendBaseUrl = _configuration["Frontend:ValidAudience"] ?? "http://localhost:5173"; // <-- Đọc từ appsettings.json
-            // Hoặc nếu bạn không muốn dùng cấu hình, chỉ cần gán cứng:
+            var frontendBaseUrl = _configuration["Frontend:ValidAudience"] ?? "http://localhost:5173"; 
             // var frontendBaseUrl = "http://localhost:5173";
 
 
@@ -224,7 +222,8 @@ namespace InterviewPrep.API.Controllers
                         TransactionDate = DateTime.UtcNow,
                         Status = TransactionStatus.Completed,
                         PaymentMethod = "MoMo",
-                        ExternalTransactionId = callbackData.TransId
+                        ExternalTransactionId = callbackData.TransId,
+                        TransactionCode = callbackData.TransId
                     });
 
                     // SỬA ĐỔI TẠI ĐÂY: Sử dụng frontendBaseUrl đã khai báo
@@ -248,7 +247,8 @@ namespace InterviewPrep.API.Controllers
                     TransactionDate = DateTime.UtcNow,
                     Status = TransactionStatus.Failed,
                     PaymentMethod = "MoMo",
-                    ExternalTransactionId = callbackData.TransId
+                    ExternalTransactionId = callbackData.TransId,
+                    TransactionCode = callbackData.TransId
                 });
 
                 // SỬA ĐỔI TẠI ĐÂY: Sử dụng frontendBaseUrl đã khai báo

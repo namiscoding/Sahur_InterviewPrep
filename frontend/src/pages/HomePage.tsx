@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'; 
+import { Link } from 'react-router-dom';
+import { Diamond } from 'lucide-react'; // Import icon cho Subscription Plans
 
 function HomePage() {
   return (
@@ -74,8 +75,46 @@ function HomePage() {
             </div>
           </Link>
 
-  {/* Account Upgrade Card */}
-<Link to="/upgrade" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
+          {/* New: Subscription Plan Management Card */}
+          <Link to="/admin/subcriptionPlan" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Subscription Plans</h3>
+              <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                Management
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Manage different subscription tiers and pricing
+            </p>
+            <div className="flex items-center text-yellow-600 hover:text-yellow-800">
+              <span className="text-sm font-medium">Manage Plans</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+
+          <Link to="/admin/audit-log" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Audit Log Manager</h3>
+              <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                Management
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Manage audit log
+            </p>
+            <div className="flex items-center text-yellow-600 hover:text-yellow-800">
+              <span className="text-sm font-medium">Manage audit log</span>
+              <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+          {/* Account Upgrade Card (Đã có) */}
+          <Link to="/upgrade" className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Upgrade Account</h3>
               <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -92,6 +131,8 @@ function HomePage() {
               </svg>
             </div>
           </Link>
+
+          
 
         </div>
       </main>
