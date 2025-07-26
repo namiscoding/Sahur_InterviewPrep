@@ -24,9 +24,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // Icons
-import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle } from "lucide-react";
+import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle, MoreHorizontal } from "lucide-react";
 
 const UserAdminManagementPage: React.FC = () => {
   // Khởi tạo useNavigate hook
@@ -100,11 +101,8 @@ const UserAdminManagementPage: React.FC = () => {
         duration: 2000,
       });
   
-      // Delay 1.5s để người dùng thấy toast rồi mới đóng
-      setTimeout(() => {
         setIsDetailsOpen(false);
-        fetchUserAdmins(); // Làm mới danh sách sau khi cập nhật
-      }, 1000);
+        fetchUserAdmins();
     } catch (err) {
       setUpdateError('Failed to update status.');
       toast({
@@ -166,28 +164,33 @@ const UserAdminManagementPage: React.FC = () => {
         duration: 4000,
       });
     } catch (err: any) {
-      const message = err.message || "Failed to create user admin.";
-      setCreateError(message);
-    
-      const isDuplicate = message.toLowerCase().includes("already exists");
-    
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: isDuplicate
-          ? "This email is already associated with a user admin account."
-          : message,
-        duration: 4000,
-      });
+      const response = err?.response?.data;
+      const code = response?.errorCode;
+      const message = response?.message || "Failed to create user admin.";
+      
+      if (code === "EmailAlreadyExists") {
+        setCreateError("This email is already associated with another account.");
+        toast({
+          variant: "destructive",
+          title: "Duplicate Email",
+          description: "This email is already in use. Please try a different one.",
+        });
+      } else {
+        setCreateError(message);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: message,
+        });
+      }
     }
-  };
+  };  
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active': return "bg-green-100 text-green-800";
-      case 'inactive': return "bg-yellow-100 text-yellow-800";
-      case 'suspended': return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case 'active': return "bg-green-100 text-green-800 border-green-200";
+      case 'inactive': return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      default: return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
@@ -275,7 +278,6 @@ const UserAdminManagementPage: React.FC = () => {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
 
@@ -283,55 +285,72 @@ const UserAdminManagementPage: React.FC = () => {
           </div>
         </div>
 
-        {/* User Admin Cards */}
-        {userAdmins.items.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-white rounded-lg shadow-sm border p-8">
-              <div className="text-gray-400 mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+        {/* User Admin Table */}
+        <Card className="shadow-sm">
+          <CardContent>
+            {userAdmins.items.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <p className="text-lg font-medium text-gray-900 mb-2">
+                  {searchTerm || selectedStatus !== "all" ? "No user admins match your filters" : "No user admins found"}
+                </p>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm || selectedStatus !== "all"
+                    ? "Try adjusting your search or filters"
+                    : "There are no user admin accounts yet"}
+                </p>
               </div>
-              <p className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || selectedStatus !== "all" ? "No user admins match your filters" : "No user admins found"}
-              </p>
-              <p className="text-gray-600 mb-4">
-                {searchTerm || selectedStatus !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "There are no user admin accounts yet"}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            {userAdmins.items.map((userAdmin) => (
-              <Card key={userAdmin.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{userAdmin.displayName}</CardTitle>
-                      <CardDescription className="mt-1">{userAdmin.email}</CardDescription>
-                    </div>
-                    <Badge className={getStatusColor(userAdmin.status)}>
-                      {userAdmin.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(userAdmin.id)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 hover:bg-gray-50">
+                      <TableHead className="font-semibold text-gray-900">Display Name</TableHead>
+                      <TableHead className="font-semibold text-gray-900">Email</TableHead>
+                      <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                      <TableHead className="font-semibold text-gray-900 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {userAdmins.items.map((userAdmin) => (
+                      <TableRow key={userAdmin.id} className="hover:bg-gray-50 transition-colors">
+                        <TableCell className="font-medium text-gray-900">
+                          {userAdmin.displayName}
+                        </TableCell>
+                        <TableCell className="text-gray-600">
+                          {userAdmin.email}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusColor(userAdmin.status)} border`}>
+                            {userAdmin.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewDetails(userAdmin.id)}
+                            className="hover:bg-blue-50 hover:border-blue-200"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-6">
           <Button
             variant="outline"
             disabled={userAdmins.page === 1}
@@ -339,7 +358,9 @@ const UserAdminManagementPage: React.FC = () => {
           >
             Previous
           </Button>
-          <span>Page {userAdmins.page} of {Math.ceil(userAdmins.totalCount / userAdmins.pageSize)}</span>
+          <span className="text-sm text-gray-600">
+            Page {userAdmins.page} of {Math.ceil(userAdmins.totalCount / userAdmins.pageSize)}
+          </span>
           <Button
             variant="outline"
             disabled={userAdmins.page * userAdmins.pageSize >= userAdmins.totalCount}
@@ -396,7 +417,6 @@ const UserAdminManagementPage: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="Active">Active</SelectItem>
                     <SelectItem value="Inactive">Inactive</SelectItem>
-                    <SelectItem value="Suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button className="mt-2" onClick={handleUpdateStatus}>Update Status</Button>
