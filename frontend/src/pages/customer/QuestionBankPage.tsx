@@ -62,6 +62,26 @@ const QuestionBankPage: React.FC = () => {
 
   // --- Các hàm xử lý (Handlers) ---
 
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("❌ Token không tồn tại.");
+      return;
+    }
+
+    try {
+      const res = await fetch("https://localhost:2004/api/user/full-profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error("❌ Không thể lấy thông tin người dùng.");
+
+      const data = await res.json();
+    } catch (err: any) {
+      toast.error(err.message || "❌ Lỗi khi tải thông tin người dùng.");
+    }
+  };
+
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, pageNumber: page }));
   };

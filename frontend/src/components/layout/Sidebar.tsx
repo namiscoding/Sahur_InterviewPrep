@@ -29,9 +29,9 @@ const Sidebar: React.FC = () => {
           { to: '/questions', icon: BookOpen, label: 'Question Bank' },
           { to: '/interview/setup', icon: Play, label: 'Start Interview' },
           { to: '/practice', icon: MessageSquare, label: 'Quick Practice' },
-          { to: '/history', icon: History, label: 'Practice History' },
+          { to: '/practice-history', icon: History, label: 'Practice History' },
           { to: '/upgrade', icon: Crown, label: 'Upgrade Account' },
-          { to: '/profile', icon: Settings, label: 'Profile' }
+          { to: '/update-profile', icon: Settings, label: 'Profile' }
         ];
       default:
         return commonItems;
