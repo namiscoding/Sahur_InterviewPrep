@@ -282,7 +282,8 @@ namespace InterviewPrep.API.Controllers
                 return Ok(new
                 {
                     isFreeUser = false,
-                    limits = "Unlimited access"
+                    limits = "Unlimited access",
+                    date = user.SubscriptionExpiryDate
                 });
             }
 
