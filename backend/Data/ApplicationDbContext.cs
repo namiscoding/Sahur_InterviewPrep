@@ -127,7 +127,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.ToTable("MockSessions");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.OverallScore).HasColumnType("decimal(5, 0)");
+            entity.Property(e => e.OverallScore).HasColumnType("decimal(5, 2)");
 
             // Lưu ý: UserId trong model MockSession phải là kiểu 'string'
             entity.HasOne(e => e.User)
