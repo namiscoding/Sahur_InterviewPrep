@@ -26,9 +26,10 @@ namespace InterviewPrep.API
         private static async Task SeedRolesAndUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             // Code seed roles và user của bạn ở đây...
-            if (!await roleManager.RoleExistsAsync("Admin")) await roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await roleManager.RoleExistsAsync("UserAdmin")) await roleManager.CreateAsync(new IdentityRole("UserAdmin"));
             if (!await roleManager.RoleExistsAsync("Staff")) await roleManager.CreateAsync(new IdentityRole("Staff"));
             if (!await roleManager.RoleExistsAsync("Customer")) await roleManager.CreateAsync(new IdentityRole("Customer"));
+            if (!await roleManager.RoleExistsAsync("SystemAdmin")) await roleManager.CreateAsync(new IdentityRole("SystemAdmin"));
             // ... v.v cho các user
         }
 

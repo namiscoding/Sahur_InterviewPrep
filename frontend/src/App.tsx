@@ -27,6 +27,8 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
+import SubscriptionPlanManagementPage from './pages/Admin/SubscriptionPlanManagementPage';
+import AuditLogManagementPage from './pages/Admin/AuditLogManagementPage'
 import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
 import SystemAdminTransactionsPage from './pages/systemadmin/SystemAdminTransactionsPage';
 import SystemAdminUsageLimitsPage from './pages/systemadmin/SystemAdminUsageLimitsPage';
@@ -42,7 +44,7 @@ function App() {
           <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 4000 }} />
           <Routes>
             {/* Public Routes (accessible to everyone) - Combined from both branches */}
-            <Route path="/" element={<HomePage />} />
+            <Route path="/staff-dashboard" element={<HomePage />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/forgot-password" element={<ForgotPasswordForm />} />
@@ -70,7 +72,9 @@ function App() {
 
             {/* Admin Routes (e.g., requires 'admin' role) - Combined from both branches */}
             <Route path="/admin/customers" element={<CustomerManagementPage />} />
-            <Route path="/admin/staffs" element={<StaffManagementPage />} />
+            <Route path="/admin/staffs" element={<StaffManagementPage />}/>
+            <Route path="/admin/subcriptionPlan" element={<SubscriptionPlanManagementPage />} />
+            <Route path="/admin/audit-log" element={<AuditLogManagementPage />} />
             {/* Add more admin routes as needed */}
 
             {/* SystemAdmin Routes */}
@@ -81,6 +85,7 @@ function App() {
             {/* Routes wrapped in Layout (from develop, includes /questions) */}
             <Route element={<Layout/>}>
                 {/* Keep /questions here, as it's wrapped in Layout in develop */}
+                <Route path="/" element={<QuestionBankPage />} />
                 <Route path="/questions" element={<QuestionBankPage />} />
                 <Route path="/practice/session/:sessionId" element={<PracticePage />} />
                 <Route path="/practice/result/:sessionId" element={<ResultPage />} />

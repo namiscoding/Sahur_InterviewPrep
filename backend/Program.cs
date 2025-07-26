@@ -1,3 +1,4 @@
+using InterviewPrep.API;
 using InterviewPrep.API.Application.Profiles;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.Services.Momo;
@@ -62,6 +63,7 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IMockSessionRepository, MockSessionRepository>();
 builder.Services.AddScoped<ISessionAnswerRepository, SessionAnswerRepository>();
 builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 builder.Services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
 builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -82,12 +84,12 @@ builder.Services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
 builder.Services.AddScoped<IPracticeService, PracticeService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+builder.Services.AddScoped<IAiService, OpenAiService>();
 builder.Services.AddScoped<IUserAdminService, UserAdminService>();
 builder.Services.AddScoped<ITransactionAdminService, TransactionAdminService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
-
-
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -165,4 +167,11 @@ app.UseAuthorization();
 
 // 5. Ánh xạ các Controller
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await DbSeeder.SeedDataAsync(services);
+}
+
 app.Run();

@@ -5,7 +5,6 @@ namespace InterviewPrep.API.Data.Models.Enums
     public enum UserStatus
     {
         Active = 1,
-        Inactive = 2,
-        Suspended = 3,
+        Inactive = 2
     }
 }

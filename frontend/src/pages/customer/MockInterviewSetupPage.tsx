@@ -87,8 +87,43 @@ const MockInterviewSetupPage: React.FC = () => {
       });
 
     } catch (error) {
-      toast.error("Không thể bắt đầu phiên. Vui lòng thử lại.");
-      setIsStarting(false);
+      if (error && typeof error === 'object' && 'response' in error) {
+              const axiosError = error as { response?: { status?: number } };
+              if (axiosError.response?.status === 401) {
+                toast.error('Bạn cần đăng nhập để thực hiện chức năng này.');
+                setTimeout(() => {
+                  navigate('/login');
+                }, 1500);
+                return; 
+              }
+               // Xử lý lỗi 403 - Hết lượt sử dụng
+              if (axiosError.response?.status === 403) {
+                const errorMessage = "Bạn đã hết lượt sử dụng miễn phí.";
+                toast.error(
+                  (t) => (
+                    <div className="flex flex-col items-start gap-2">
+                      <span>{errorMessage}</span>
+                      <Button
+                        variant="default"
+                        color='green'
+                        size="sm"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          navigate('/upgrade'); 
+                          toast.dismiss(t.id); 
+                        }}
+                      >
+                        Nâng cấp tài khoản
+                      </Button>
+                    </div>
+                  ),
+                  { duration: 6000 } 
+                );
+                return; 
+              }
+            }
+            console.error("Failed to start practice session:", error);
+            toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
     }
   };
 

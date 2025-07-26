@@ -62,18 +62,18 @@ export interface CategoryUsageTrend {
 // --- Utility functions ---
 export const getDifficultyLevelText = (level: number): string => {
   switch (level) {
-    case 1: return 'Easy';
-    case 2: return 'Medium';
-    case 3: return 'Hard';
+    case 0: return 'Easy';
+    case 1: return 'Medium';
+    case 2: return 'Hard';
     default: return 'Unknown';
   }
 };
 
 export const getDifficultyLevelColor = (level: number): string => {
   switch (level) {
-    case 1: return 'bg-green-100 text-green-800';
-    case 2: return 'bg-yellow-100 text-yellow-800';
-    case 3: return 'bg-red-100 text-red-800';
+    case 0: return 'bg-green-100 text-green-800';
+    case 1: return 'bg-yellow-100 text-yellow-800';
+    case 2: return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };
@@ -217,4 +217,25 @@ export const getCategoryUsageTrends = async (
     console.error('Error fetching category usage trends:', error);
     throw new Error('Failed to fetch category usage trends. Please try again.');
   }
+};
+
+export const downloadQuestionExcelTemplate = async (): Promise<Blob> => {
+    try {
+        const response = await apiClient.get('/staff/questions/template/download', {
+            responseType: 'blob', // Quan trọng: Yêu cầu Axios trả về dưới dạng Blob
+            headers: {
+                Authorization: `Bearer ${getAuthToken()}` // Nếu API cần xác thực
+            }
+        });
+        return response.data; // Dữ liệu sẽ là một Blob (file)
+    } catch (error: any) {
+        console.error('Error downloading Excel template:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to download Excel template');
+    }
+};
+
+// src/utils/authUtils.ts
+export const getAuthToken = (): string | null => {
+    // Thay thế bằng cách lấy token thực tế từ AuthContext hoặc localStorage
+    return localStorage.getItem('jwt_token');
 };

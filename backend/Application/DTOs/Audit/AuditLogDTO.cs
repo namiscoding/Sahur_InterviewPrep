@@ -7,6 +7,6 @@
         public string Action { get; set; }
         public string? IpAddress { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string? UserEmail { get; set; } // Populated in service for display
+        public string? UserEmail { get; set; } 
     }
 }
