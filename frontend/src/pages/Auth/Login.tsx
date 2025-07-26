@@ -94,7 +94,7 @@ export function LoginForm() {
     toast.success("Login successful!");
 
     if (role === "Admin") navigate("/categories")
-      else if (role==="User") navigate("/practice-history")
+      else if (role==="User") navigate("/questions")
     else navigate("/");
   };
 

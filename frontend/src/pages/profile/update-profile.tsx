@@ -1,437 +1,142 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Edit3, Save, X, ArrowLeft, Crown, Calendar, BarChart3, Zap, LogOut } from "lucide-react"; // Import LogOut icon
+import { Crown, Star, Zap } from "lucide-react";
 import toast from "react-hot-toast";
-import { useNavigate } from 'react-router-dom';
 
-interface UpdateProfileDto {
-  displayName?: string;
-  userName?: string;
-  email?: string;
+interface DailyLimit {
+  used: number;
+  limit: number;
+  reached: boolean;
 }
 
-interface AccountStatus {
-  accountType: 'Free' | 'Premium';
-  expirationDate?: string;
-  usageStats: {
-    apiCallsUsed: number;
-    apiCallsLimit: number;
-    storageUsed: number; // in MB
-    storageLimit: number; // in MB
-    featuresUsed: string[];
+interface FreeLimitStatus {
+  isFreeUser: boolean;
+  limits?: {
+    dailyQuestion: DailyLimit;
+    dailySession: DailyLimit;
   };
-  remainingLimits: {
-    apiCalls: number;
-    storage: number;
-    daysUntilExpiration?: number;
-  };
+  date?: string;
 }
 
-export function UserProfile() {
-  const navigate = useNavigate();
-
-  const [formData, setFormData] = useState<UpdateProfileDto>({});
-  const [originalData, setOriginalData] = useState<UpdateProfileDto>({});
-  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+export default function UserProfile() {
+  const [limitStatus, setLimitStatus] = useState<FreeLimitStatus | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
 
   useEffect(() => {
-    // Chame suas funções de fetch aqui
-    fetchProfile();
-    fetchAccountStatus();
+    fetchLimitStatus();
   }, []);
 
-  const fetchProfile = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("❌ Token không tồn tại.");
-      return;
-    }
-
-    try {
-      const res = await fetch("https://localhost:2004/api/user/full-profile", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error("❌ Không thể lấy thông tin người dùng.");
-
-      const data = await res.json();
-      setOriginalData(data);
-      setFormData(data);
-    } catch (err: any) {
-      toast.error(err.message || "❌ Lỗi khi tải thông tin người dùng.");
-    }
-  };
-
-  const fetchAccountStatus = async () => {
+  const fetchLimitStatus = async () => {
     setIsLoadingStatus(true);
     const token = localStorage.getItem("token");
-    if (!token) {
-      setIsLoadingStatus(false);
-      return;
-    }
+    if (!token) return setIsLoadingStatus(false);
 
     try {
-      const res = await fetch("https://localhost:2004/api/user/subribtionPlan", {
+      const res = await fetch("https://localhost:2004/api/check", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!res.ok) throw new Error("❌ Không thể lấy thông tin gói đăng ký.");
+      if (!res.ok) throw new Error("❌ Không thể lấy giới hạn sử dụng.");
 
       const data = await res.json();
-
-      const transformed: AccountStatus = {
-        accountType: data.subscriptionLevel === 2 ? "Premium" : "Free",
-        expirationDate: data.subscriptionExpiryDate,
-        usageStats: {
-          apiCallsUsed: data.apiCallsUsed ?? 0,
-          apiCallsLimit: data.apiCallsLimit ?? 1000,
-          storageUsed: data.storageUsed ?? 0,
-          storageLimit: data.storageLimit ?? 500,
-          featuresUsed: data.featuresUsed ?? [],
-        },
-        remainingLimits: {
-          apiCalls: data.apiCallsLimit - data.apiCallsUsed,
-          storage: data.storageLimit - data.storageUsed,
-          daysUntilExpiration: data.subscriptionExpiryDate
-            ? Math.ceil(
-                (new Date(data.subscriptionExpiryDate).getTime() - Date.now()) /
-                  (1000 * 60 * 60 * 24)
-              )
-            : undefined,
-        },
-      };
-
-      setAccountStatus(transformed);
+      setLimitStatus(data);
     } catch (err: any) {
-      toast.error(err.message || "❌ Lỗi khi tải thông tin gói đăng ký.");
+      toast.error(err.message || "❌ Lỗi khi tải giới hạn sử dụng.");
     } finally {
       setIsLoadingStatus(false);
     }
   };
 
+  if (isLoadingStatus) return <p className="p-4">Đang tải trạng thái sử dụng...</p>;
 
-  const handleInputChange = (field: keyof UpdateProfileDto, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast.error("❌ Token không tồn tại.");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch("https://localhost:2004/api/user/update-profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!res.ok) {
-        const result = await res.json();
-        if (result?.error) throw new Error(result.error);
-        if (result?.errors) throw new Error(Object.values(result.errors).flat().join("\n"));
-        throw new Error("❌ Cập nhật thất bại.");
-      }
-
-      setOriginalData(formData);
-      setIsEditing(false);
-      toast.success("✅ Cập nhật thông tin thành công!");
-    } catch (err: any) {
-      toast.error(err.message || "❌ Có lỗi xảy ra khi cập nhật.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setFormData(originalData);
-    setIsEditing(false);
-  };
-
-  const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        // Optionally, call your backend logout endpoint if it invalidates server-side sessions/cookies
-        // This is important if your backend relies on server-side session management or cookie clearing
-        await fetch("https://localhost:2004/api/user/logout", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      }
-
-      localStorage.removeItem("token"); // Clear JWT from localStorage
-      toast.success("Đăng xuất thành công!");
-      navigate("/login"); // Redirect to login page
-    } catch (error) {
-      console.error("Lỗi khi đăng xuất:", error);
-      toast.error("❌ Lỗi khi đăng xuất.");
-      localStorage.removeItem("token"); // Still clear token even if API call fails
-      navigate("/login");
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const getUsagePercentage = (used: number, limit: number) => {
-    return Math.round((used / limit) * 100);
-  };
-
-  const getUsageColor = (percentage: number) => {
-    if (percentage >= 90) return 'text-red-600';
-    if (percentage >= 70) return 'text-yellow-600';
-    return 'text-green-600';
-  };
-
-  const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+  if (!limitStatus) return <p className="p-4">Không thể xác định trạng thái người dùng.</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
-          </Button>
-          <h1 className="text-3xl font-bold mt-4">Profile Settings</h1>
-          <p className="text-gray-600">View and update your personal information</p>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Account Status Section */}
+    <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      {/* Premium User Card */}
+      {!limitStatus.isFreeUser ? (
+        <Card className="border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-800">
+              <Star className="h-6 w-6 text-yellow-600" /> Gói Premium
+            </CardTitle>
+            <CardDescription className="text-yellow-700">
+              Bạn đang sử dụng gói không giới hạn
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {limitStatus.date && (
+              <p className="text-sm text-gray-700">
+                Ngày hết hạn:{" "}
+                <span className="font-medium">
+                  {new Date(limitStatus.date).toLocaleDateString("vi-VN")}
+                </span>
+              </p>
+            )}
+            <div className="mt-4 text-sm text-yellow-800">
+              Bạn có thể sử dụng không giới hạn số lượng câu hỏi và phiên luyện tập.
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        // Free User Limits
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5" />
-              Account Status
+              <Crown className="h-5 w-5" /> Giới hạn hàng ngày (Tài khoản miễn phí)
             </CardTitle>
-            <CardDescription>Your current plan and usage information</CardDescription>
+            <CardDescription>Thông tin sử dụng hàng ngày</CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoadingStatus ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span className="ml-2">Loading account status...</span>
+            {/* Practice Questions */}
+            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-1">Câu hỏi luyện tập</p>
+              <div className="flex justify-between text-sm mb-1">
+                <span>{limitStatus.limits?.dailyQuestion.used} đã sử dụng</span>
+                <span>{limitStatus.limits?.dailyQuestion.limit} tổng cộng</span>
               </div>
-            ) : accountStatus ? (
-              <div className="space-y-6">
-                {/* Account Type & Expiration */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${accountStatus.accountType === 'Premium' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100'}`}>
-                      <Crown className={`h-5 w-5 ${accountStatus.accountType === 'Premium' ? 'text-white' : 'text-gray-600'}`} />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Account Type</p>
-                      <p className={`text-lg font-semibold ${accountStatus.accountType === 'Premium' ? 'text-purple-600' : 'text-gray-700'}`}>
-                        {accountStatus.accountType}
-                      </p>
-                    </div>
-                  </div>
-
-                  {accountStatus.accountType === 'Premium' && accountStatus.expirationDate && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-blue-100">
-                        <Calendar className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Expires On</p>
-                        <p className="text-lg font-semibold text-gray-700">
-                          {formatDate(accountStatus.expirationDate)}
-                        </p>
-                        {accountStatus.remainingLimits.daysUntilExpiration && (
-                          <p className="text-sm text-gray-500">
-                            {accountStatus.remainingLimits.daysUntilExpiration} days remaining
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Usage Statistics */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Usage Statistics
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* API Calls Usage */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">API Calls</span>
-                        <span className="text-sm text-gray-500">
-                          {accountStatus.usageStats.apiCallsUsed} / {accountStatus.usageStats.apiCallsLimit}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${getUsagePercentage(accountStatus.usageStats.apiCallsUsed, accountStatus.usageStats.apiCallsLimit)}%` }}
-                        ></div>
-                      </div>
-                      <p className={`text-sm mt-1 ${getUsageColor(getUsagePercentage(accountStatus.usageStats.apiCallsUsed, accountStatus.usageStats.apiCallsLimit))}`}>
-                        {accountStatus.remainingLimits.apiCalls} calls remaining
-                      </p>
-                    </div>
-
-                    {/* Storage Usage */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Storage</span>
-                        <span className="text-sm text-gray-500">
-                          {accountStatus.usageStats.storageUsed} MB / {accountStatus.usageStats.storageLimit} MB
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${getUsagePercentage(accountStatus.usageStats.storageUsed, accountStatus.usageStats.storageLimit)}%` }}
-                        ></div>
-                      </div>
-                      <p className={`text-sm mt-1 ${getUsageColor(getUsagePercentage(accountStatus.usageStats.storageUsed, accountStatus.usageStats.storageLimit))}`}>
-                        {accountStatus.remainingLimits.storage} MB remaining
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Features Used */}
-                {accountStatus.usageStats.featuresUsed.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                      <Zap className="h-5 w-5" />
-                      Active Features
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {accountStatus.usageStats.featuresUsed.map((feature, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                        >
-                          {feature}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Upgrade Button for Free users */}
-                {accountStatus.accountType === 'Free' && (
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-lg text-white">
-                    <h3 className="text-lg font-semibold mb-2">Upgrade to Pro</h3>
-                    <p className="text-sm mb-3 opacity-90">
-                      Unlock unlimited API calls, increased storage, and premium features
-                    </p>
-                    <Button
-                      variant="secondary"
-                      onClick={() => navigate("/upgrade")}
-                      className="bg-white text-purple-600 hover:bg-gray-100"
-                    >
-                      Upgrade Now
-                    </Button>
-                  </div>
-                )}
+              <div className="w-full bg-yellow-100 rounded-full h-2">
+                <div
+                  className="bg-yellow-500 h-2 rounded-full"
+                  style={{
+                    width: `${Math.min(
+                      (limitStatus.limits?.dailyQuestion.used! / limitStatus.limits?.dailyQuestion.limit!) * 100,
+                      100
+                    )}%`,
+                  }}
+                ></div>
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                Failed to load account status
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Personal Information Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Change your display name, username, and email</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input
-                  id="displayName"
-                  value={formData.displayName || ""}
-                  onChange={(e) => handleInputChange("displayName", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="userName">Username</Label>
-                <Input
-                  id="userName"
-                  value={formData.userName || ""}
-                  onChange={(e) => handleInputChange("userName", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
+              {limitStatus.limits?.dailyQuestion.reached && (
+                <p className="text-sm text-red-600 mt-2">Đã đạt giới hạn câu hỏi hôm nay</p>
+              )}
             </div>
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email || ""}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                disabled={!isEditing}
-              />
+            {/* Practice Sessions */}
+            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+              <p className="text-sm font-medium text-gray-700 mb-1">Phiên luyện tập</p>
+              <div className="flex justify-between text-sm mb-1">
+                <span>{limitStatus.limits?.dailySession.used} đã sử dụng</span>
+                <span>{limitStatus.limits?.dailySession.limit} tổng cộng</span>
+              </div>
+              <div className="w-full bg-red-100 rounded-full h-2">
+                <div
+                  className="bg-red-500 h-2 rounded-full"
+                  style={{
+                    width: `${Math.min(
+                      (limitStatus.limits?.dailySession.used! / limitStatus.limits?.dailySession.limit!) * 100,
+                      100
+                    )}%`,
+                  }}
+                ></div>
+              </div>
+              {limitStatus.limits?.dailySession.reached && (
+                <p className="text-sm text-red-600 mt-2">Đã đạt giới hạn phiên hôm nay</p>
+              )}
             </div>
-
-            {isEditing ? (
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-                  <X className="h-4 w-4 mr-1" /> Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={isLoading || !hasChanges}>
-                  <Save className="h-4 w-4 mr-1" />
-                  {isLoading ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-3">
-                <Button onClick={() => setIsEditing(true)}>
-                  <Edit3 className="h-4 w-4 mr-1" /> Edit
-                </Button>
-                <Button variant="secondary" onClick={() => navigate("/change-password")}>
-                  🔐 Change Password
-                </Button>
-                {/* New Logout Button */}
-                <Button variant="destructive" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-1" /> Logout
-                </Button>
-              </div>
-            )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+      )}
+    </main>
   );
 }

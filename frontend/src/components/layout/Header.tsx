@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 // 1. Xóa import useAuth
 // import { useAuth } from '../../contexts/AuthContext'; 
 import { User, LogOut, Settings, Bell } from 'lucide-react';
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   // 2. Tạo một người dùng giả với vai trò Customer
   const mockUser = {
     name: 'Test Customer',
@@ -14,10 +19,58 @@ const Header: React.FC = () => {
   
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleLogout = () => {
-    // 3. Xử lý logout giả, chỉ cần in ra console
-    console.log("Logout action triggered.");
-    setShowDropdown(false);
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        // Optionally, call your backend logout endpoint if it invalidates server-side sessions/cookies
+        // This is important if your backend relies on server-side session management or cookie clearing
+        await fetch("https://localhost:2004/api/user/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
+
+      localStorage.removeItem("token"); // Clear JWT from localStorage;
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+   
+      localStorage.removeItem("token"); // Still clear token even if API call fails
+      navigate("/login");
+    }
+  };
+
+
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "❌ Token không tồn tại.",
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch("https://localhost:2004/api/user/full-profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error("❌ Không thể lấy thông tin người dùng.");
+
+      const data = await res.json();
+   
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message || "❌ Lỗi khi tải thông tin người dùng.",
+      });
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -71,10 +124,13 @@ const Header: React.FC = () => {
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="py-1">
-                    <button className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Profile Settings
-                    </button>
+                  <button
+      onClick={() => navigate("/update-profile")}
+      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
+    >
+      <Settings className="w-4 h-4 mr-2" />
+      Profile Settings
+    </button>
                     <hr className="my-1" />
                     <button
                       onClick={handleLogout}

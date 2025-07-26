@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using InterviewPrep.API.Application.DTOs.MockSessions;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace InterviewPrep.API.Application.Services
 {
@@ -273,6 +274,21 @@ namespace InterviewPrep.API.Application.Services
                 .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
 
             return session;
+        }
+        public Task<int> GetLimitAsync(string key, int defaultValue)
+        {
+            int value = _settingsService.GetValue<int>(key, defaultValue); // <- rõ ràng kiểu int
+            return Task.FromResult(value);
+        }
+
+
+        public Task<int> CountUsageAsync(string userId, string actionType, DateTime fromUtc)
+        {
+            return _context.UsageLogs
+                .Where(log => log.UserId == userId &&
+                              log.ActionType == actionType &&
+                              log.UsageTimestamp >= fromUtc)
+                .CountAsync();
         }
     }
 }
