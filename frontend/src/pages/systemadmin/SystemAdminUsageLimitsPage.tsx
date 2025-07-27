@@ -223,7 +223,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">System Settings Management</h1>
-              <p className="mt-2 text-gray-600">SystemAdmin configure all system settings and usage limits</p>
+                              <p className="mt-2 text-gray-600">SystemAdmin configure all system settings</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate("/")}>
@@ -284,7 +284,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
                       <CardDescription className="mt-1">Value: {setting.settingValue}</CardDescription>
                     </div>
                     <Badge variant={setting.settingKey.startsWith('FREE_USER_') ? 'default' : 'secondary'} className="text-xs">
-                      {setting.settingKey.startsWith('FREE_USER_') ? 'Usage Limit' : 'System Setting'}
+                      System Setting
                     </Badge>
                   </div>
                 </CardHeader>

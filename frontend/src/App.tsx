@@ -13,7 +13,11 @@ import SubscriptionUpgradePage from './pages/customer/SubscriptionUpgradePage';
 import PaymentFailurePage from './pages/customer/PaymentFailurePage';
 import PaymentSuccessPage from './pages/customer/PaymentSuccessPage';
 import Layout from './components/layout/Layout'
+import UserAdminLayout from './components/layout/UserAdminLayout'
+import SystemAdminLayout from './components/layout/SystemAdminLayout'
 import HomePage from './pages/HomePage';
+import UserAdminDashboard from './pages/admin/UserAdminDashboard';
+import SystemAdminDashboard from './pages/systemadmin/SystemAdminDashboard';
 import CustomerManagementPage from './pages/admin/CustomerManagementPage';
 import StaffManagementPage from './pages/admin/StaffManagementPage';
 import CategoryManagementPage from './pages/staff/CategoryManagementPage';
@@ -70,17 +74,22 @@ function App() {
             <Route path="/staff/questions/analytics" element={<QuestionAnalyticsPage />} />
             {/* Add more staff routes as needed */}
 
-            {/* Admin Routes (e.g., requires 'admin' role) - Combined from both branches */}
-            <Route path="/admin/customers" element={<CustomerManagementPage />} />
-            <Route path="/admin/staffs" element={<StaffManagementPage />}/>
-            <Route path="/admin/subcriptionPlan" element={<SubscriptionPlanManagementPage />} />
-            <Route path="/admin/audit-log" element={<AuditLogManagementPage />} />
-            {/* Add more admin routes as needed */}
+            {/* UserAdmin Routes with Layout */}
+            <Route element={<UserAdminLayout />}>
+              <Route path="/admin/dashboard" element={<UserAdminDashboard />} />
+              <Route path="/admin/customers" element={<CustomerManagementPage />} />
+              <Route path="/admin/staffs" element={<StaffManagementPage />}/>
+              <Route path="/admin/subcriptionPlan" element={<SubscriptionPlanManagementPage />} />
+              <Route path="/admin/audit-log" element={<AuditLogManagementPage />} />
+            </Route>
 
-            {/* SystemAdmin Routes */}
-            <Route path="/systemadmin/useradmins" element={<UserAdminManagementPage />} />
-            <Route path="/systemadmin/transactions" element={<SystemAdminTransactionsPage />} />
-            <Route path="/systemadmin/usagelimits" element={<SystemAdminUsageLimitsPage />} />
+            {/* SystemAdmin Routes with Layout */}
+            <Route element={<SystemAdminLayout />}>
+              <Route path="/systemadmin/dashboard" element={<SystemAdminDashboard />} />
+              <Route path="/systemadmin/useradmins" element={<UserAdminManagementPage />} />
+              <Route path="/systemadmin/transactions" element={<SystemAdminTransactionsPage />} />
+              <Route path="/systemadmin/usagelimits" element={<SystemAdminUsageLimitsPage />} />
+            </Route>
 
             {/* Routes wrapped in Layout (from develop, includes /questions) */}
             <Route element={<Layout/>}>
