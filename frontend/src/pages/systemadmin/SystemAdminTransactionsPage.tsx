@@ -46,7 +46,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [planId, setPlanId] = useState("");
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetailDTO | null>(null);
@@ -58,7 +57,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
       search: searchTerm,
       customerSearch: customerSearch,
       status: selectedStatus === "all" ? "" : selectedStatus,
-      planId: planId ? parseInt(planId) : undefined,
       fromDate: fromDate ? fromDate.toISOString() : undefined,
       toDate: toDate ? toDate.toISOString() : undefined,
       page: transactions.page,
@@ -77,7 +75,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [searchTerm, customerSearch, selectedStatus, planId, fromDate, toDate, transactions.page]);
+  }, [searchTerm, customerSearch, selectedStatus, fromDate, toDate, transactions.page]);
 
   const handleViewDetails = async (id: number) => {
     try {
@@ -198,13 +196,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </SelectContent>
             </Select>
 
-            <Input
-              placeholder="Plan ID"
-              type="number"
-              value={planId}
-              onChange={(e) => setPlanId(e.target.value)}
-              className="w-32"
-            />
+
 
             <Popover>
               <PopoverTrigger asChild>
@@ -330,7 +322,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               Showing <span className="font-medium">{transactions.items.length}</span> of{" "}
               <span className="font-medium">{transactions.totalCount}</span> transactions
             </p>
-            {(searchTerm || customerSearch || selectedStatus !== "all" || planId || fromDate || toDate) && (
+            {(searchTerm || customerSearch || selectedStatus !== "all" || fromDate || toDate) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -339,7 +331,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   setSearchTerm("");
                   setCustomerSearch("");
                   setSelectedStatus("all");
-                  setPlanId("");
                   setFromDate(undefined);
                   setToDate(undefined);
                 }}

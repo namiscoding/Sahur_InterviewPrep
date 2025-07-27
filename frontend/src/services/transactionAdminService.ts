@@ -36,7 +36,6 @@ export interface TransactionFilterDTO {
   search?: string;
   customerSearch?: string;
   status?: string;
-  planId?: number;
   fromDate?: string;
   toDate?: string;
   page: number;

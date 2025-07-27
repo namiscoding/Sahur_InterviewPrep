@@ -33,9 +33,6 @@ namespace InterviewPrep.API.Data.Repositories
             if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<TransactionStatus>(filter.Status, true, out var parsedStatus))
                 query = query.Where(t => t.Status == parsedStatus);
 
-            if (filter.PlanId.HasValue)
-                query = query.Where(t => t.SubscriptionPlanId == filter.PlanId.Value);
-
             if (!string.IsNullOrEmpty(filter.Search))
                 query = query.Where(t =>
                     t.TransactionCode.Contains(filter.Search) ||
