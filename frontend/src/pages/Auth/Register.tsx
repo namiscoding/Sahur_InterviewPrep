@@ -54,10 +54,10 @@ export function RegisterForm() { // Sửa signature của component
         throw new Error(resultMessage || "Đăng ký thất bại");
       }
 
-      toast.success("🎉 Đăng ký thành công!");
+              toast.success("🎉 Registration successful!");
       navigate("/login"); // Thay thế onRegister() và onNavigate("login")
     } catch (err: any) {
-      toast.error(err.message || "Đã có lỗi xảy ra.");
+              toast.error(err.message || "An error occurred.");
     } finally {
       setLoading(false);
     }

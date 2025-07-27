@@ -54,7 +54,7 @@ export function LoginForm() {
 
       handleLoginSuccess(data.token, data.user);
     } catch (err) {
-      toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -198,8 +198,8 @@ export function LoginForm() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="w-full flex flex-col space-y-2">
-  <div id="google-signin-button" className="w-full" />
+              <div className="w-full flex flex-col space-y-2">
+      <div id="google-signin-button" className="w-full" />
 </div>
 
 

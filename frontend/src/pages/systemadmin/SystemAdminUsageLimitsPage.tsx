@@ -19,14 +19,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { toast } from 'react-hot-toast';
 
 // Icons
 import { ArrowLeft, Search, Eye, AlertCircle, PlusCircle, Edit } from "lucide-react";
 
 const SystemAdminUsageLimitsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [settings, setSettings] = useState<PagedResult<SystemSettingDTO>>({
     items: [],
@@ -52,16 +52,26 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
+      console.log('Fetching settings with params:', {
+        prefix: undefined,
+        searchTerm,
+        page: settings.page,
+        pageSize: settings.pageSize
+      });
+      
       const data = await getAllSystemSettings(
-        "FREE_USER_",
+        undefined, // Không filter theo prefix, lấy tất cả system settings
         searchTerm,
         settings.page,
         settings.pageSize
       );
+      
+      console.log('Received settings data:', data);
       setSettings(data);
     } catch (err) {
       console.error("Error fetching system settings:", err);
-      setError('Failed to fetch usage limits. Please ensure the backend is running and accessible.');
+      setError('Failed to fetch system settings. Please ensure the backend is running and accessible.');
+      toast.error("Failed to fetch system settings. Please ensure the backend is running and accessible.");
     } finally {
       setLoading(false);
     }
@@ -79,7 +89,8 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       setNewDescription(details.description || "");
       setIsDetailsOpen(true);
     } catch (err) {
-      setError('Failed to fetch usage limit details.');
+      setError('Failed to fetch system setting details.');
+      toast.error("Failed to fetch system setting details.");
     }
   };
 
@@ -94,29 +105,34 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       const updated = await updateSystemSetting(selectedSetting.settingKey, dto);
       setSelectedSetting(updated);
   
-      toast({
-        title: "Success",
-        description: "Usage limit updated successfully.",
-        duration: 2000,
-      });
+      toast.success("System setting updated successfully.");
   
       setTimeout(() => {
         setIsDetailsOpen(false);
         fetchSettings();
       }, 1000);
     } catch (err) {
-      setUpdateError('Failed to update usage limit.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update usage limit.",
-        duration: 2000,
-      });
+      setUpdateError('Failed to update system setting.');
+      toast.error("Failed to update system setting.");
     }
   };
 
   const handleCreate = async () => {
     setCreateError(null);
+    
+    // Validation
+    if (!newKey.trim()) {
+      setCreateError("Setting key is required.");
+      toast.error("Setting key is required.");
+      return;
+    }
+    
+    if (!createValue.trim()) {
+      setCreateError("Setting value is required.");
+      toast.error("Setting value is required.");
+      return;
+    }
+    
     try {
       const dto: CreateSystemSettingDTO = {
         settingKey: newKey,
@@ -128,28 +144,48 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       setNewKey("");
       setCreateValue("");
       setCreateDescription("");
-      fetchSettings();
-      toast({
-        title: "Success",
-        description: "Usage limit created successfully.",
-        duration: 4000,
-      });
+      
+      // Reset to first page and clear search to show new setting
+      setSettings(prev => ({ ...prev, page: 1 }));
+      setSearchTerm("");
+      setLocalSearch("");
+      
+      // Force refresh the settings list
+      setTimeout(async () => {
+        await fetchSettings();
+        // Double check to ensure the new setting appears
+        console.log(`Created setting "${newKey}" - refreshing list...`);
+        
+        // Verify the new setting exists by trying to fetch it directly
+        try {
+          const newSetting = await getSystemSettingByKey(newKey);
+          console.log(`Verification: Setting "${newKey}" exists with value:`, newSetting.settingValue);
+        } catch (verifyErr) {
+          console.error(`Verification failed: Setting "${newKey}" not found:`, verifyErr);
+          toast.error(`Warning: Created setting "${newKey}" may not be visible immediately. Please refresh the page.`);
+        }
+      }, 100);
+      
+      toast.success(`System setting "${newKey}" created successfully and added to the list!`);
     } catch (err: any) {
-      const message = err.message || "Failed to create usage limit.";
+      const message = err.message || "Failed to create system setting.";
       setCreateError(message);
-    
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: message,
-        duration: 4000,
-      });
+      
+      // Check for specific error types
+      if (message.toLowerCase().includes('already exists')) {
+        toast.error("A system setting with this key already exists.");
+      } else {
+        toast.error(message);
+      }
     }
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
+      if (localSearch.trim()) {
+        toast.success(`Searching for: "${localSearch}"`);
+      }
     }
   };
 
@@ -158,7 +194,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading usage limits...</p>
+          <p className="text-gray-600">Loading system settings...</p>
         </div>
       </div>
     );
@@ -186,8 +222,8 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Usage Limits Management</h1>
-              <p className="mt-2 text-gray-600">SystemAdmin configure usage limits for free accounts</p>
+              <h1 className="text-3xl font-bold text-gray-900">System Settings Management</h1>
+                              <p className="mt-2 text-gray-600">SystemAdmin configure all system settings</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate("/")}>
@@ -196,7 +232,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
               </Button>
               <Button onClick={() => setIsCreateOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create New Limit
+                Create New Setting
               </Button>
             </div>
           </div>
@@ -217,7 +253,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
             />
           </div>
 
-          <span className="text-sm font-medium text-gray-700">Total Limits: {settings.totalCount}</span>
+          <span className="text-sm font-medium text-gray-700">Total Settings: {settings.totalCount}</span>
         </div>
 
         {/* Settings Cards */}
@@ -230,7 +266,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
                 </svg>
               </div>
               <p className="text-lg font-medium text-gray-900 mb-2">
-                No usage limits found
+                No system settings found
               </p>
               <p className="text-gray-600 mb-4">
                 Try adjusting your search or create a new one
@@ -247,6 +283,9 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
                       <CardTitle className="text-lg">{setting.settingKey}</CardTitle>
                       <CardDescription className="mt-1">Value: {setting.settingValue}</CardDescription>
                     </div>
+                    <Badge variant={setting.settingKey.startsWith('FREE_USER_') ? 'default' : 'secondary'} className="text-xs">
+                      System Setting
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -265,7 +304,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
         )}
 
         {/* Pagination */}
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-center items-center space-x-4 mb-6">
           <Button
             variant="outline"
             disabled={settings.page === 1}
@@ -288,32 +327,24 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
           <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
             <p>
               Showing <span className="font-medium">{settings.items.length}</span> of{" "}
-              <span className="font-medium">{settings.totalCount}</span> usage limits
+              <span className="font-medium">{settings.totalCount}</span> system settings
             </p>
-            {searchTerm && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setLocalSearch("");
-                  setSearchTerm("");
-                }}
-              >
-                Clear search
-              </Button>
-            )}
           </div>
         )}
       </main>
 
-      {/* Edit Dialog */}
+      {/* Details Dialog */}
       {selectedSetting && (
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Usage Limit: {selectedSetting.settingKey}</DialogTitle>
+              <DialogTitle>Edit System Setting: {selectedSetting.settingKey}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              <div>
+                <Label>Setting Key</Label>
+                <p className="text-sm font-medium">{selectedSetting.settingKey}</p>
+              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="value" className="text-right">
                   Value
@@ -337,7 +368,6 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
                   className="col-span-3"
                 />
               </div>
-              <p className="text-sm text-gray-600">Updated At: {new Date(selectedSetting.updatedAt).toLocaleString()}</p>
             </div>
             {updateError && (
               <div className="flex items-center text-red-600 mt-2">
@@ -346,7 +376,8 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
               </div>
             )}
             <DialogFooter>
-              <Button onClick={handleUpdate}>Save Changes</Button>
+              <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Cancel</Button>
+              <Button onClick={handleUpdate}>Update Setting</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -356,57 +387,60 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Usage Limit</DialogTitle>
+            <DialogTitle>Create New System Setting</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="key" className="text-right">
-                Key
-              </Label>
-              <Input
-                id="key"
-                value={newKey}
-                onChange={(e) => setNewKey(e.target.value)}
-                className="col-span-3"
-                placeholder="FREE_USER_..."
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="createValue" className="text-right">
-                Value
-              </Label>
-              <Input
-                id="createValue"
-                type="number"
-                value={createValue}
-                onChange={(e) => setCreateValue(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="createDescription" className="text-right">
-                Description
-              </Label>
-              <Input
-                id="createDescription"
-                value={createDescription}
-                onChange={(e) => setCreateDescription(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="key" className="text-right">
+              Key
+            </Label>
+            <Input
+              id="key"
+              value={newKey}
+              onChange={(e) => setNewKey(e.target.value)}
+              className="col-span-3"
+              placeholder="e.g. SYSTEM_TIMEOUT, FREE_USER_DAILY_LIMIT..."
+            />
           </div>
-          {createError && (
-            <div className="flex items-center text-red-600 mt-2">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {createError}
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={handleCreate}>Create</Button>
-          </DialogFooter>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="createValue" className="text-right">
+              Value
+            </Label>
+            <Input
+              id="createValue"
+              type="number"
+              value={createValue}
+              onChange={(e) => setCreateValue(e.target.value)}
+              className="col-span-3"
+              placeholder="e.g. 5, 10, 100..."
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="createDescription" className="text-right">
+              Description
+            </Label>
+            <Input
+              id="createDescription"
+              value={createDescription}
+              onChange={(e) => setCreateDescription(e.target.value)}
+              className="col-span-3"
+              placeholder="Description of this setting..."
+            />
+          </div>
+        </div>
+        {createError && (
+          <div className="flex items-center text-red-600 mt-2">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            {createError}
+          </div>
+        )}
+        <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+          <Button onClick={handleCreate}>Create Setting</Button>
+        </DialogFooter>
         </DialogContent>
-      </Dialog>
-    </div>
+        </Dialog>
+      </div>
   );
 };
 

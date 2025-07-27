@@ -1,14 +1,17 @@
-﻿using InterviewPrep.API.Application.DTOs.Staff;
+﻿using InterviewPrep.API.Application.DTOs.Admin;
+using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Data.Repositories
 {
-    public interface IAdminDashboardRepository
+    public interface IUserAdminDashboardRepository
     {
-        Task<int> GetTotalUsersAsync();
-        Task<int> GetTotalSessionsAsync();
-        Task<decimal> GetTotalRevenueAsync();
-        Task<List<MonthlyRevenue>> GetRevenuePerMonthAsync(int monthsBack);
-      
+        Task<UserAdminDashboardStatsDto> GetUserAdminDashboardStatsAsync();
+        Task<int> GetTotalAccountsAsync();
+        Task<int> GetTotalCustomersAsync();
+        Task<int> GetTotalStaffAsync();
+        Task<int> GetActiveAccountsAsync();
+        Task<int> GetInactiveAccountsAsync();
+        Task<int> GetPremiumCustomersAsync();
+        Task<int> GetFreeCustomersAsync();
     }
-
 }

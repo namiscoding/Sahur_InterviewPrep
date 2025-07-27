@@ -1,9 +1,10 @@
-﻿using InterviewPrep.API.Application.DTOs.Staff;
+﻿using InterviewPrep.API.Application.DTOs.Admin;
+using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Application.Services
 {
-    public interface IAdminDashboardService
+    public interface IUserAdminDashboardService
     {
-        Task<SystemStatsDto> GetSystemStatsAsync(int monthsBack);
+        Task<UserAdminDashboardStatsDto> GetDashboardStatsAsync();
     }
 }

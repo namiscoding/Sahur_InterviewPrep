@@ -9,5 +9,6 @@ namespace InterviewPrep.API.Data.Repositories
     {
         Task<(IEnumerable<Transaction> Transactions, int Total)> GetAllTransactionsAsync(TransactionFilterDTO filter);
         Task<Transaction> GetTransactionByIdAsync(long id);
+        Task<TransactionStatisticsDTO> GetTransactionStatisticsAsync(TransactionFilterDTO filter);
     }
 }

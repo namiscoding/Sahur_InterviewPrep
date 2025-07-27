@@ -7,5 +7,6 @@ namespace InterviewPrep.API.Application.Services
     {
         Task<PagedResult<TransactionListDTO>> GetAllTransactionsAsync(TransactionFilterDTO filter);
         Task<TransactionDetailDTO> GetTransactionDetailsAsync(long id);
+        Task<TransactionStatisticsDTO> GetTransactionStatisticsAsync(TransactionFilterDTO filter);
     }
 }

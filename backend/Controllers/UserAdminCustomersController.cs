@@ -2,18 +2,19 @@
 using Microsoft.AspNetCore.Mvc;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.DTOs.User;
+using System;
 using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Controllers
 {
     [Route("api/useradmin/customers")]
     [ApiController]
-    //[Authorize(Roles = "Admin")]
-    public class CustomerAdminController : ControllerBase
+    //[Authorize(Roles = "UserAdmin")]
+    public class UserAdminCustomersController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public CustomerAdminController(IUserService userService)
+        public UserAdminCustomersController(IUserService userService)
         {
             _userService = userService;
         }

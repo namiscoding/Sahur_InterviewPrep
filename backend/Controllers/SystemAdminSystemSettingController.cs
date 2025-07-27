@@ -20,9 +20,9 @@ namespace InterviewPrep.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SystemSettingDTO>>> GetAllSystemSettings([FromQuery] string prefix = "FREE_USER_")
+        public async Task<ActionResult<PagedResult<SystemSettingDTO>>> GetAllSystemSettings([FromQuery] string prefix = null, [FromQuery] string search = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _systemSettingService.GetAllSystemSettingsAsync(prefix);
+            var result = await _systemSettingService.GetAllSystemSettingsAsync(prefix, search, page, pageSize);
             return Ok(result);
         }
 

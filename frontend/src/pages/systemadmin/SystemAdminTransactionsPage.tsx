@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react';
 import {
   getAllTransactions,
   getTransactionDetails,
+  getTransactionStatistics,
   PagedResult,
   TransactionListDTO,
   TransactionDetailDTO,
   TransactionFilterDTO,
+  TransactionStatisticsDTO,
 } from '../../services/transactionAdminService';
 
 // Import useNavigate from react-router-dom
@@ -20,19 +22,19 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Search, Filter, Eye, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 // Icons
 import { ArrowLeft } from "lucide-react";
 
 const SystemAdminTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+
 
   const [transactions, setTransactions] = useState<PagedResult<TransactionListDTO>>({
     items: [],
@@ -46,11 +48,11 @@ const SystemAdminTransactionsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [planId, setPlanId] = useState("");
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetailDTO | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [statistics, setStatistics] = useState<TransactionStatisticsDTO | null>(null);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -58,18 +60,22 @@ const SystemAdminTransactionsPage: React.FC = () => {
       search: searchTerm,
       customerSearch: customerSearch,
       status: selectedStatus === "all" ? "" : selectedStatus,
-      planId: planId ? parseInt(planId) : undefined,
       fromDate: fromDate ? fromDate.toISOString() : undefined,
       toDate: toDate ? toDate.toISOString() : undefined,
       page: transactions.page,
       pageSize: transactions.pageSize,
     };
     try {
-      const data = await getAllTransactions(filter);
+      const [data, stats] = await Promise.all([
+        getAllTransactions(filter),
+        getTransactionStatistics(filter)
+      ]);
       setTransactions(data);
+      setStatistics(stats);
     } catch (err) {
       console.error("Error fetching transactions:", err);
       setError('Failed to fetch transactions. Please ensure the backend is running and accessible.');
+      toast.error("Failed to fetch transactions. Please ensure the backend is running and accessible.");
     } finally {
       setLoading(false);
     }
@@ -77,7 +83,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [searchTerm, customerSearch, selectedStatus, planId, fromDate, toDate, transactions.page]);
+  }, [searchTerm, customerSearch, selectedStatus, fromDate, toDate, transactions.page]);
 
   const handleViewDetails = async (id: number) => {
     try {
@@ -86,6 +92,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch transaction details.');
+      toast.error("Failed to fetch transaction details.");
     }
   };
 
@@ -102,6 +109,9 @@ const SystemAdminTransactionsPage: React.FC = () => {
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
+      if (localSearch.trim()) {
+              toast.success(`Searching for: "${localSearch}"`);
+      }
     }
   };
 
@@ -111,6 +121,8 @@ const SystemAdminTransactionsPage: React.FC = () => {
     if (isNaN(date.getTime())) return 'Invalid Date';
     return format(date, formatString);
   };
+
+
 
   if (loading) {
     return (
@@ -147,6 +159,20 @@ const SystemAdminTransactionsPage: React.FC = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Customer Transactions Management</h1>
               <p className="mt-2 text-gray-600">SystemAdmin view customer transactions in InterviewPrep system</p>
+              {statistics && (
+                <div className="mt-2 flex items-center gap-4 text-sm">
+                  <span className="text-gray-500">
+                    Total Revenue: <span className="font-semibold text-green-600">
+                      {formatCurrency(statistics.completedRevenue || 0)}
+                    </span>
+                  </span>
+                  <span className="text-gray-500">
+                    Completed: <span className="font-semibold text-blue-600">
+                      {statistics.completedTransactions || 0}
+                    </span>
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate("/")}>
@@ -159,6 +185,67 @@ const SystemAdminTransactionsPage: React.FC = () => {
       </header>
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Revenue Statistics */}
+        <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Total Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{statistics?.totalTransactions || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">All time transactions</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Completed Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {statistics?.completedTransactions || 0}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {statistics?.successRate ? `${statistics.successRate.toFixed(1)}% success rate` : 'No transactions'}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {formatCurrency(statistics?.completedRevenue || 0)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">From completed transactions</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Revenue by Currency */}
+          {statistics?.revenueByCurrency && statistics.revenueByCurrency.length > 0 && (
+            <div className="mt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Revenue by Currency</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {statistics.revenueByCurrency.map((item) => (
+                      <Badge key={item.currency} variant="secondary" className="text-sm">
+                        {item.currency}: {formatCurrency(item.totalAmount, item.currency)} ({item.transactionCount} txns)
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+
         {/* Search and Filters */}
         <div className="mb-6 space-y-4">
           <div className="relative">
@@ -198,13 +285,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </SelectContent>
             </Select>
 
-            <Input
-              placeholder="Plan ID"
-              type="number"
-              value={planId}
-              onChange={(e) => setPlanId(e.target.value)}
-              className="w-32"
-            />
+
 
             <Popover>
               <PopoverTrigger asChild>
@@ -251,8 +332,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
                 />
               </PopoverContent>
             </Popover>
-
-            <span className="text-sm font-medium text-gray-700">Total Transactions: {transactions.totalCount}</span>
           </div>
         </div>
 
@@ -289,7 +368,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600">Amount: {transaction.amount} {transaction.currency}</p>
+                  <p className="text-sm text-gray-600">Amount: {formatCurrency(transaction.amount, transaction.currency)}</p>
                   <p className="text-sm text-gray-600">Plan: {transaction.subscriptionPlanName}</p>
                   <p className="text-sm text-gray-600">Date: {safeFormatDate(transaction.transactionDate)}</p>
                   <div className="flex justify-end mt-2">
@@ -326,11 +405,18 @@ const SystemAdminTransactionsPage: React.FC = () => {
         {/* Results Summary */}
         {transactions.items.length > 0 && (
           <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
-            <p>
-              Showing <span className="font-medium">{transactions.items.length}</span> of{" "}
-              <span className="font-medium">{transactions.totalCount}</span> transactions
-            </p>
-            {(searchTerm || customerSearch || selectedStatus !== "all" || planId || fromDate || toDate) && (
+            <div className="flex flex-col gap-1">
+              <p>
+                Showing <span className="font-medium">{transactions.items.length}</span> of{" "}
+                <span className="font-medium">{transactions.totalCount}</span> transactions
+              </p>
+              <p className="text-xs text-gray-500">
+                Total revenue: <span className="font-medium text-green-600">
+                  {formatCurrency(statistics?.completedRevenue || 0)}
+                </span> (completed transactions only)
+              </p>
+            </div>
+            {(searchTerm || customerSearch || selectedStatus !== "all" || fromDate || toDate) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -339,9 +425,9 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   setSearchTerm("");
                   setCustomerSearch("");
                   setSelectedStatus("all");
-                  setPlanId("");
                   setFromDate(undefined);
                   setToDate(undefined);
+                            toast.success("All search filters have been cleared.");
                 }}
               >
                 Clear filters
@@ -366,7 +452,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </div>
               <div>
                 <Label>Amount</Label>
-                <p className="text-sm">{selectedTransaction.amount} {selectedTransaction.currency}</p>
+                <p className="text-sm">{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</p>
               </div>
               <div>
                 <Label>Subscription Plan</Label>
@@ -398,7 +484,16 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+              <div className="flex justify-between items-center w-full">
+                <div className="text-xs text-gray-500">
+                  {selectedTransaction.status.toLowerCase() === 'completed' && (
+                    <span className="text-green-600 font-medium">
+                      Revenue: {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+                    </span>
+                  )}
+                </div>
+                <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
