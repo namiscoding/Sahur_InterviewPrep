@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from 'react-hot-toast'
 import {
   Table,
   TableBody,
@@ -74,8 +74,6 @@ const StaffManagementWithStats: React.FC = () => {
   const [createError, setCreateError] = useState<string | null>(null)
   const [resetLoading, setResetLoading] = useState(false)
 
-  const { toast } = useToast()
-
   // All your existing functions remain unchanged
   const fetchStaffs = async () => {
     setLoading(true)
@@ -90,12 +88,7 @@ const StaffManagementWithStats: React.FC = () => {
     } catch (err) {
       console.error("Error fetching staffs:", err)
       setError("Failed to fetch staffs. Please ensure the backend is running and accessible.")
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch staffs. Please ensure the backend is running and accessible.",
-        duration: 4000,
-      });
+      toast.error("Failed to fetch staffs. Please ensure the backend is running and accessible.");
     } finally {
       setLoading(false)
     }
@@ -113,12 +106,7 @@ const StaffManagementWithStats: React.FC = () => {
       setIsDetailsOpen(true)
     } catch (err) {
       setError("Failed to fetch staff details.")
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch staff details.",
-        duration: 3000,
-      });
+      toast.error("Failed to fetch staff details.");
     }
   }
 
@@ -130,20 +118,11 @@ const StaffManagementWithStats: React.FC = () => {
       const updated = await updateStaffStatus(selectedStaff.id, dto)
       setSelectedStaff({ ...selectedStaff, status: updated.status })
       fetchStaffs()
-      toast({
-        title: "Success",
-        description: "Staff status updated successfully.",
-        duration: 2000,
-      });
+      toast.success("Staff status updated successfully.");
       setIsDetailsOpen(false);
     } catch (err) {
       setUpdateError("Failed to update status.")
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update staff status.",
-        duration: 2000,
-      })
+      toast.error("Failed to update staff status.");
     }
   }
 
@@ -152,20 +131,11 @@ const StaffManagementWithStats: React.FC = () => {
     setResetLoading(true)
     try {
       const tempPassword = await resetStaffPassword(selectedStaff.id)
-      toast({
-        title: "Password Reset Successful",
-        description: `Temporary password: ${tempPassword}`,
-        duration: 6000,
-      })
+      toast.success(`Password reset successful. Temporary password: ${tempPassword}`);
     } catch (err: any) {
       const message = err?.response?.data?.message || err?.message || "Unknown error occurred while resetting password."
       console.error("Reset password failed:", err)
-      toast({
-        variant: "destructive",
-        title: "Password Reset Failed",
-        description: message,
-        duration: 4000,
-      })
+      toast.error(`Password reset failed: ${message}`);
     } finally {
       setResetLoading(false)
     }
@@ -183,11 +153,7 @@ const StaffManagementWithStats: React.FC = () => {
       setNewDisplayName("")
       setNewEmail("")
       fetchStaffs()
-      toast({
-        title: "Success",
-        description: "Staff created and temporary password sent via email.",
-        duration: 4000,
-      })
+      toast.success("Staff created and temporary password sent via email.");
     } catch (err: any) {
       const message = err.message || "Failed to create staff."
       setCreateError(message)
@@ -197,14 +163,11 @@ const StaffManagementWithStats: React.FC = () => {
         message.toLowerCase().includes("already exists") ||
         message.toLowerCase().includes("already associated")
         
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: isDuplicate
-          ? "This email is already associated with a staff account."
-          : message,
-        duration: 4000,
-      })
+      if (isDuplicate) {
+        toast.error("This email is already associated with a staff account.");
+      } else {
+        toast.error(message);
+      }
     }
   }
 
@@ -223,11 +186,7 @@ const StaffManagementWithStats: React.FC = () => {
     if (e.key === "Enter") {
       setSearchTerm(localSearch)
       if (localSearch.trim()) {
-        toast({
-          title: "Search Applied",
-          description: `Searching for: "${localSearch}"`,
-          duration: 2000,
-        });
+        toast.success(`Searching for: "${localSearch}"`);
       }
     }
   }
@@ -256,13 +215,12 @@ const StaffManagementWithStats: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Staff Management Dashboard</h1>
-              <p className="mt-2 text-gray-600">System statistics and staff account management</p>
+              <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
+              <p className="mt-2 text-gray-600">UserAdmin manage staff accounts and view system statistics</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate("/")}>
@@ -279,22 +237,20 @@ const StaffManagementWithStats: React.FC = () => {
       </header>
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="statistics" className="flex items-center">
+            <TabsTrigger value="statistics">
               <BarChart3 className="mr-2 h-4 w-4" />
               System Statistics
             </TabsTrigger>
-            <TabsTrigger value="staff">Staff Management</TabsTrigger>
+            <TabsTrigger value="management">Staff Management</TabsTrigger>
           </TabsList>
 
-          {/* Statistics Tab */}
-          <TabsContent value="statistics">
+          <TabsContent value="statistics" className="mt-6">
             <SystemStatisticsDashboard />
           </TabsContent>
 
-          {/* Staff Management Tab - Your existing code */}
-          <TabsContent value="staff" className="space-y-6">
+          <TabsContent value="management" className="mt-6">
             {/* Search and Filters */}
             <div className="mb-6 space-y-4">
               <div className="relative">
@@ -307,11 +263,13 @@ const StaffManagementWithStats: React.FC = () => {
                   className="pl-10"
                 />
               </div>
+
               <div className="flex flex-wrap gap-4 items-center">
                 <div className="flex items-center space-x-2">
                   <Filter className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">Filters:</span>
                 </div>
+
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Filter by status" />
@@ -322,6 +280,7 @@ const StaffManagementWithStats: React.FC = () => {
                     <SelectItem value="Inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
+
                 <span className="text-sm font-medium text-gray-700">Total Accounts: {staffs.totalCount}</span>
               </div>
             </div>
@@ -341,62 +300,43 @@ const StaffManagementWithStats: React.FC = () => {
                         />
                       </svg>
                     </div>
-                    <p className="text-lg font-medium text-gray-900 mb-2">
-                      {searchTerm || selectedStatus !== "all" ? "No staffs match your filters" : "No staffs found"}
-                    </p>
-                    <p className="text-gray-600 mb-4">
-                      {searchTerm || selectedStatus !== "all"
-                        ? "Try adjusting your search or filters"
-                        : "There are no staff accounts yet"}
-                    </p>
+                    <p className="text-lg font-medium text-gray-900 mb-2">No staffs found</p>
+                    <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
                   </div>
                 ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50 hover:bg-gray-50">
-                          <TableHead className="font-semibold text-gray-900">Name</TableHead>
-                          <TableHead className="font-semibold text-gray-900">Email</TableHead>
-                          <TableHead className="font-semibold text-gray-900">Status</TableHead>
-                          <TableHead className="font-semibold text-gray-900 text-right">Actions</TableHead>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {staffs.items.map((staff) => (
+                        <TableRow key={staff.id}>
+                          <TableCell className="font-medium">{staff.displayName}</TableCell>
+                          <TableCell>{staff.email}</TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(staff.status)}>{staff.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="outline" size="sm" onClick={() => handleViewDetails(staff.id)}>
+                              <Eye className="h-4 w-4 mr-1" />
+                              View Details
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {staffs.items.map((staff) => (
-                          <TableRow key={staff.id} className="hover:bg-gray-50 transition-colors">
-                            <TableCell className="font-medium text-gray-900">
-                              {staff.displayName}
-                            </TableCell>
-                            <TableCell className="text-gray-600">
-                              {staff.email}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(staff.status)}>
-                                {staff.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleViewDetails(staff.id)}
-                                className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                View Details
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex justify-center items-center space-x-4 mt-6">
               <Button
                 variant="outline"
                 disabled={staffs.page === 1}
@@ -404,7 +344,7 @@ const StaffManagementWithStats: React.FC = () => {
               >
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
+              <span>
                 Page {staffs.page} of {Math.ceil(staffs.totalCount / staffs.pageSize)}
               </span>
               <Button
@@ -431,11 +371,7 @@ const StaffManagementWithStats: React.FC = () => {
                       setLocalSearch("")
                       setSearchTerm("")
                       setSelectedStatus("all")
-                      toast({
-                        title: "Filters Cleared",
-                        description: "All search filters have been cleared.",
-                        duration: 2000,
-                      });
+                      toast.success("All search filters have been cleared.");
                     }}
                   >
                     Clear filters
@@ -533,9 +469,10 @@ const StaffManagementWithStats: React.FC = () => {
               </div>
             )}
             <DialogFooter>
-              <Button type="submit" onClick={handleCreateStaff}>
-                Create
+              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                Cancel
               </Button>
+              <Button onClick={handleCreateStaff}>Create Staff</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -544,4 +481,4 @@ const StaffManagementWithStats: React.FC = () => {
   )
 }
 
-export default StaffManagementWithStats
+export default StaffManagementWithStats 

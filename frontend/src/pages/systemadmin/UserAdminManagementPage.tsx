@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // Icons
@@ -52,7 +52,6 @@ const UserAdminManagementPage: React.FC = () => {
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const fetchUserAdmins = async () => {
     setLoading(true);
@@ -67,12 +66,7 @@ const UserAdminManagementPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching user admins:", err);
       setError('Failed to fetch user admins. Please ensure the backend is running and accessible.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch user admins. Please ensure the backend is running and accessible.",
-        duration: 4000,
-      });
+      toast.error("Failed to fetch user admins. Please ensure the backend is running and accessible.");
     } finally {
       setLoading(false);
     }
@@ -90,12 +84,7 @@ const UserAdminManagementPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch user admin details.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch user admin details.",
-        duration: 3000,
-      });
+      toast.error("Failed to fetch user admin details.");
     }
   };
 
@@ -107,22 +96,13 @@ const UserAdminManagementPage: React.FC = () => {
       const updated = await updateUserAdminStatus(selectedUserAdmin.id, dto);
       setSelectedUserAdmin({ ...selectedUserAdmin, status: updated.status });
   
-      toast({
-        title: "Success",
-        description: "User admin status updated successfully.",
-        duration: 2000,
-      });
+      toast.success("User admin status updated successfully.");
   
         setIsDetailsOpen(false);
         fetchUserAdmins();
     } catch (err) {
       setUpdateError('Failed to update status.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update user admin status.",
-        duration: 2000,
-      });
+      toast.error("Failed to update user admin status.");
     }
   };
   
@@ -135,11 +115,7 @@ const UserAdminManagementPage: React.FC = () => {
     setResetLoading(true);
     try {
       const tempPassword = await resetUserAdminPassword(selectedUserAdmin.id);
-      toast({
-        title: "Password Reset Successful",
-        description: `Temporary password: ${tempPassword}`,
-        duration: 6000,
-      });
+      toast.success(`Password reset successful. Temporary password: ${tempPassword}`);
     } catch (err: any) {
       const message =
         err?.response?.data?.message ||
@@ -147,12 +123,7 @@ const UserAdminManagementPage: React.FC = () => {
         "Unknown error occurred while resetting password.";
       console.error("Reset password failed:", err);
 
-      toast({
-        variant: "destructive",
-        title: "Password Reset Failed",
-        description: message,
-        duration: 4000,
-      });
+      toast.error(`Password reset failed: ${message}`);
     } finally {
       setResetLoading(false);
     }
@@ -170,11 +141,7 @@ const UserAdminManagementPage: React.FC = () => {
       setNewDisplayName("");
       setNewEmail("");
       fetchUserAdmins();
-      toast({
-        title: "Success",
-        description: "User admin created and temporary password sent via email.",
-        duration: 4000,
-      });
+      toast.success("User admin created and temporary password sent via email.");
     } catch (err: any) {
       const response = err?.response?.data;
       const code = response?.errorCode;
@@ -182,27 +149,19 @@ const UserAdminManagementPage: React.FC = () => {
       
       if (code === "EmailAlreadyExists") {
         setCreateError("This email is already associated with another account.");
-        toast({
-          variant: "destructive",
-          title: "Duplicate Email",
-          description: "This email is already in use. Please try a different one.",
-        });
+        toast.error("This email is already in use. Please try a different one.");
       } else {
         setCreateError(message);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: message,
-        });
+        toast.error(message);
       }
     }
   };  
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active': return "bg-green-100 text-green-800 border-green-200";
-      case 'inactive': return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+      case 'active': return "bg-green-100 text-green-800";
+      case 'inactive': return "bg-yellow-100 text-yellow-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -210,11 +169,7 @@ const UserAdminManagementPage: React.FC = () => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
       if (localSearch.trim()) {
-        toast({
-          title: "Search Applied",
-          description: `Searching for: "${localSearch}"`,
-          duration: 2000,
-        });
+        toast.success(`Searching for: "${localSearch}"`);
       }
     }
   };
@@ -315,61 +270,48 @@ const UserAdminManagementPage: React.FC = () => {
                   </svg>
                 </div>
                 <p className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || selectedStatus !== "all" ? "No user admins match your filters" : "No user admins found"}
+                  No user admins found
                 </p>
                 <p className="text-gray-600 mb-4">
-                  {searchTerm || selectedStatus !== "all"
-                    ? "Try adjusting your search or filters"
-                    : "There are no user admin accounts yet"}
+                  Try adjusting your search or create a new one
                 </p>
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 hover:bg-gray-50">
-                      <TableHead className="font-semibold text-gray-900">Display Name</TableHead>
-                      <TableHead className="font-semibold text-gray-900">Email</TableHead>
-                      <TableHead className="font-semibold text-gray-900">Status</TableHead>
-                      <TableHead className="font-semibold text-gray-900 text-right">Actions</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userAdmins.items.map((userAdmin) => (
+                    <TableRow key={userAdmin.id}>
+                      <TableCell className="font-medium">{userAdmin.displayName}</TableCell>
+                      <TableCell>{userAdmin.email}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(userAdmin.status)}>
+                          {userAdmin.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(userAdmin.id)}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Details
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {userAdmins.items.map((userAdmin) => (
-                      <TableRow key={userAdmin.id} className="hover:bg-gray-50 transition-colors">
-                        <TableCell className="font-medium text-gray-900">
-                          {userAdmin.displayName}
-                        </TableCell>
-                        <TableCell className="text-gray-600">
-                          {userAdmin.email}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={`${getStatusColor(userAdmin.status)} border`}>
-                            {userAdmin.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleViewDetails(userAdmin.id)}
-                            className="hover:bg-blue-50 hover:border-blue-200"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center mt-6">
+        <div className="flex justify-center items-center space-x-4 mt-6">
           <Button
             variant="outline"
             disabled={userAdmins.page === 1}
@@ -377,9 +319,7 @@ const UserAdminManagementPage: React.FC = () => {
           >
             Previous
           </Button>
-          <span className="text-sm text-gray-600">
-            Page {userAdmins.page} of {Math.ceil(userAdmins.totalCount / userAdmins.pageSize)}
-          </span>
+          <span>Page {userAdmins.page} of {Math.ceil(userAdmins.totalCount / userAdmins.pageSize)}</span>
           <Button
             variant="outline"
             disabled={userAdmins.page * userAdmins.pageSize >= userAdmins.totalCount}
@@ -404,11 +344,7 @@ const UserAdminManagementPage: React.FC = () => {
                   setLocalSearch("");
                   setSearchTerm("");
                   setSelectedStatus("all");
-                  toast({
-                    title: "Filters Cleared",
-                    description: "All search filters have been cleared.",
-                    duration: 2000,
-                  });
+                  toast.success("All search filters have been cleared.");
                 }}
               >
                 Clear filters
@@ -504,7 +440,8 @@ const UserAdminManagementPage: React.FC = () => {
             </div>
           )}
           <DialogFooter>
-            <Button type="submit" onClick={handleCreateUserAdmin}>Create</Button>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateUserAdmin}>Create User Admin</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -198,8 +198,8 @@ export function LoginForm() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="w-full flex flex-col space-y-2">
-  <div id="google-signin-button" className="w-full" />
+              <div className="w-full flex flex-col space-y-2">
+      <div id="google-signin-button" className="w-full" />
 </div>
 
 

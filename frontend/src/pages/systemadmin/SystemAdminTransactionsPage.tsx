@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Search, Filter, Eye, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -34,7 +34,7 @@ import { ArrowLeft } from "lucide-react";
 
 const SystemAdminTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+
 
   const [transactions, setTransactions] = useState<PagedResult<TransactionListDTO>>({
     items: [],
@@ -75,12 +75,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching transactions:", err);
       setError('Failed to fetch transactions. Please ensure the backend is running and accessible.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch transactions. Please ensure the backend is running and accessible.",
-        duration: 4000,
-      });
+      toast.error("Failed to fetch transactions. Please ensure the backend is running and accessible.");
     } finally {
       setLoading(false);
     }
@@ -97,12 +92,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch transaction details.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch transaction details.",
-        duration: 3000,
-      });
+      toast.error("Failed to fetch transaction details.");
     }
   };
 
@@ -120,11 +110,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
       if (localSearch.trim()) {
-        toast({
-          title: "Search Applied",
-          description: `Searching for: "${localSearch}"`,
-          duration: 2000,
-        });
+              toast.success(`Searching for: "${localSearch}"`);
       }
     }
   };
@@ -443,11 +429,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   setSelectedStatus("all");
                   setFromDate(undefined);
                   setToDate(undefined);
-                  toast({
-                    title: "Filters Cleared",
-                    description: "All search filters have been cleared.",
-                    duration: 2000,
-                  });
+                            toast.success("All search filters have been cleared.");
                 }}
               >
                 Clear filters

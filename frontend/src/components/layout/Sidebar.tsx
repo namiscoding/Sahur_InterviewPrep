@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
 
   const getNavItems = () => {
     const commonItems = [
-      { to: '/dashboard', icon: Home, label: 'Dashboard' }
+      { to: '/staff-dashboard', icon: Home, label: 'Dashboard' }
     ];
 
     // 3. Switch case giờ sẽ luôn chạy vào trường hợp 'Customer'

@@ -22,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-hot-toast';
 
 import { ArrowLeft, Search, Filter, Eye, AlertCircle } from "lucide-react";
 const CustomerManagementPage: React.FC = () => {
@@ -44,7 +44,6 @@ const CustomerManagementPage: React.FC = () => {
   const [newSubscriptionLevel, setNewSubscriptionLevel] = useState("");
   const [reason, setReason] = useState("");
   const [updateError, setUpdateError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const fetchCustomers = async () => {
     setLoading(true);
@@ -59,12 +58,7 @@ const CustomerManagementPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching customers:", err);
       setError('Failed to fetch customers. Please ensure the backend is running and accessible.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch customers. Please ensure the backend is running and accessible.",
-        duration: 4000,
-      });
+      toast.error("Failed to fetch customers. Please ensure the backend is running and accessible.");
     } finally {
       setLoading(false);
     }
@@ -83,12 +77,7 @@ const CustomerManagementPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch customer details.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch customer details.",
-        duration: 3000,
-      });
+      toast.error("Failed to fetch customer details.");
     }
   };
 
@@ -101,11 +90,7 @@ const CustomerManagementPage: React.FC = () => {
       const updated = await updateCustomerStatus(selectedCustomer.id, dto);
       setSelectedCustomer({ ...selectedCustomer, status: updated.status });
   
-      toast({
-        title: "Success",
-        description: "Customer status updated successfully.",
-        duration: 2000,
-      });
+      toast.success("Customer status updated successfully.");
   
       // Delay 1.5s để toast hiển thị rõ rồi mới đóng dialog và reload
       setTimeout(() => {
@@ -115,12 +100,7 @@ const CustomerManagementPage: React.FC = () => {
   
     } catch (error) {
       setUpdateError("Failed to update status.");
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update customer status.",
-        duration: 2000,
-      });
+      toast.error("Failed to update customer status.");
     }
   };
   
@@ -162,17 +142,10 @@ const CustomerManagementPage: React.FC = () => {
       setSelectedCustomer({ ...selectedCustomer, ...updated });
       fetchCustomers();
       setReason("");
-      toast({
-        title: "Success",
-        description: "Customer subscription updated successfully.",
-      });
+      toast.success("Customer subscription updated successfully.");
     } catch (err) {
       setUpdateError('Failed to update subscription.');
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update customer subscription.",
-      });
+      toast.error("Failed to update customer subscription.");
     }
   };
 
@@ -196,11 +169,7 @@ const CustomerManagementPage: React.FC = () => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
       if (localSearch.trim()) {
-        toast({
-          title: "Search Applied",
-          description: `Searching for: "${localSearch}"`,
-          duration: 2000,
-        });
+        toast.success(`Searching for: "${localSearch}"`);
       }
     }
   };
@@ -288,75 +257,54 @@ const CustomerManagementPage: React.FC = () => {
         </div>
 
         {/* Customer Table */}
-        {customers.items.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-white rounded-lg shadow-sm border p-8">
-              <div className="text-gray-400 mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+        <Card className="shadow-sm">
+          <CardContent>
+            {customers.items.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <p className="text-lg font-medium text-gray-900 mb-2">
+                  No customers found
+                </p>
+                <p className="text-gray-600 mb-4">
+                  Try adjusting your search or filters
+                </p>
               </div>
-              <p className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || selectedStatus !== "all" ? "No customers match your filters" : "No customers found"}
-              </p>
-              <p className="text-gray-600 mb-4">
-                {searchTerm || selectedStatus !== "all" 
-                  ? "Try adjusting your search or filters" 
-                  : "There are no customer accounts yet"}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <div className="overflow-x-auto">
+            ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900">Customer</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Status</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Subscription</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Expiry Date</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Actions</TableHead>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Subscription</TableHead>
+                    <TableHead>Expiry Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {customers.items.map((customer) => (
-                    <TableRow key={customer.id} className="hover:bg-gray-50 transition-colors">
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">{customer.displayName}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
-                          <div className="font-medium text-gray-900">{customer.displayName}</div>
-                          <div className="text-sm text-gray-500">{customer.email}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${getStatusColor(customer.status)} px-2 py-1 text-xs font-medium`}>
+                        <Badge className={getStatusColor(customer.status)}>
                           {customer.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={`${getSubscriptionColor(customer.subscriptionLevel)} px-2 py-1 text-xs font-medium`}>
+                        <Badge className={getSubscriptionColor(customer.subscriptionLevel)}>
                           {customer.subscriptionLevel}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-700">
-                          {customer.subscriptionExpiryDate 
-                            ? new Date(customer.subscriptionExpiryDate).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })
-                            : 'N/A'
-                          }
-                        </span>
+                        {customer.subscriptionExpiryDate ? new Date(customer.subscriptionExpiryDate).toLocaleDateString() : 'N/A'}
                       </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleViewDetails(customer.id)}
-                          className="hover:bg-blue-50 hover:border-blue-200 transition-colors"
-                        >
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(customer.id)}>
                           <Eye className="h-4 w-4 mr-1" />
                           View Details
                         </Button>
@@ -365,41 +313,33 @@ const CustomerManagementPage: React.FC = () => {
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          </div>
-        )}
+            )}
+          </CardContent>
+        </Card>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center mt-4">
-                      <Button
-              variant="outline"
-              disabled={customers.page === 1}
-              onClick={() => {
-                setCustomers(prev => ({ ...prev, page: prev.page - 1 }));
-                toast({
-                  title: "Page Changed",
-                  description: `Moved to page ${customers.page - 1}`,
-                  duration: 1500,
-                });
-              }}
-            >
-              Previous
-            </Button>
+        <div className="flex justify-center items-center space-x-4 mt-6">
+          <Button
+            variant="outline"
+            disabled={customers.page === 1}
+            onClick={() => {
+              setCustomers(prev => ({ ...prev, page: prev.page - 1 }));
+              toast.success(`Moved to page ${customers.page - 1}`);
+            }}
+          >
+            Previous
+          </Button>
           <span>Page {customers.page} of {Math.ceil(customers.totalCount / customers.pageSize)}</span>
-                      <Button
-              variant="outline"
-              disabled={customers.page * customers.pageSize >= customers.totalCount}
-              onClick={() => {
-                setCustomers(prev => ({ ...prev, page: prev.page + 1 }));
-                toast({
-                  title: "Page Changed",
-                  description: `Moved to page ${customers.page + 1}`,
-                  duration: 1500,
-                });
-              }}
-            >
-              Next
-            </Button>
+          <Button
+            variant="outline"
+            disabled={customers.page * customers.pageSize >= customers.totalCount}
+            onClick={() => {
+              setCustomers(prev => ({ ...prev, page: prev.page + 1 }));
+              toast.success(`Moved to page ${customers.page + 1}`);
+            }}
+          >
+            Next
+          </Button>
         </div>
 
         {/* Results Summary */}
@@ -417,11 +357,7 @@ const CustomerManagementPage: React.FC = () => {
                   setLocalSearch("");
                   setSearchTerm("");
                   setSelectedStatus("all");
-                  toast({
-                    title: "Filters Cleared",
-                    description: "All search filters have been cleared.",
-                    duration: 2000,
-                  });
+                  toast.success("All search filters have been cleared.");
                 }}
               >
                 Clear filters
@@ -580,11 +516,7 @@ const CustomerManagementPage: React.FC = () => {
             <DialogFooter>
               <Button variant="outline" onClick={() => {
                 setIsDetailsOpen(false);
-                toast({
-                  title: "Dialog Closed",
-                  description: "Customer details dialog has been closed.",
-                  duration: 1500,
-                });
+                toast.success("Customer details dialog has been closed.");
               }}>Close</Button>
             </DialogFooter>
           </DialogContent>

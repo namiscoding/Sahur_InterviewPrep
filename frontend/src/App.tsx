@@ -27,8 +27,8 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import { UserProfile } from './pages/profile/update-profile';
 import { ChangePassword } from './pages/profile/change-password';
 import { PracticeHistory } from './pages/history/practice-history';
-import SubscriptionPlanManagementPage from './pages/Admin/SubscriptionPlanManagementPage';
-import AuditLogManagementPage from './pages/Admin/AuditLogManagementPage'
+import SubscriptionPlanManagementPage from './pages/admin/SubscriptionPlanManagementPage';
+import AuditLogManagementPage from './pages/admin/AuditLogManagementPage'
 import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
 import SystemAdminTransactionsPage from './pages/systemadmin/SystemAdminTransactionsPage';
 import SystemAdminUsageLimitsPage from './pages/systemadmin/SystemAdminUsageLimitsPage';
