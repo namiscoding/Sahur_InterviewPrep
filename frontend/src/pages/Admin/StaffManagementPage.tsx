@@ -90,6 +90,12 @@ const StaffManagementWithStats: React.FC = () => {
     } catch (err) {
       console.error("Error fetching staffs:", err)
       setError("Failed to fetch staffs. Please ensure the backend is running and accessible.")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch staffs. Please ensure the backend is running and accessible.",
+        duration: 4000,
+      });
     } finally {
       setLoading(false)
     }
@@ -107,6 +113,12 @@ const StaffManagementWithStats: React.FC = () => {
       setIsDetailsOpen(true)
     } catch (err) {
       setError("Failed to fetch staff details.")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch staff details.",
+        duration: 3000,
+      });
     }
   }
 
@@ -210,6 +222,13 @@ const StaffManagementWithStats: React.FC = () => {
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setSearchTerm(localSearch)
+      if (localSearch.trim()) {
+        toast({
+          title: "Search Applied",
+          description: `Searching for: "${localSearch}"`,
+          duration: 2000,
+        });
+      }
     }
   }
 
@@ -412,6 +431,11 @@ const StaffManagementWithStats: React.FC = () => {
                       setLocalSearch("")
                       setSearchTerm("")
                       setSelectedStatus("all")
+                      toast({
+                        title: "Filters Cleared",
+                        description: "All search filters have been cleared.",
+                        duration: 2000,
+                      });
                     }}
                   >
                     Clear filters

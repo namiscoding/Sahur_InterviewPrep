@@ -68,6 +68,12 @@ const SystemAdminTransactionsPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching transactions:", err);
       setError('Failed to fetch transactions. Please ensure the backend is running and accessible.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch transactions. Please ensure the backend is running and accessible.",
+        duration: 4000,
+      });
     } finally {
       setLoading(false);
     }
@@ -84,6 +90,12 @@ const SystemAdminTransactionsPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch transaction details.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch transaction details.",
+        duration: 3000,
+      });
     }
   };
 
@@ -100,6 +112,13 @@ const SystemAdminTransactionsPage: React.FC = () => {
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
+      if (localSearch.trim()) {
+        toast({
+          title: "Search Applied",
+          description: `Searching for: "${localSearch}"`,
+          duration: 2000,
+        });
+      }
     }
   };
 
@@ -333,6 +352,11 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   setSelectedStatus("all");
                   setFromDate(undefined);
                   setToDate(undefined);
+                  toast({
+                    title: "Filters Cleared",
+                    description: "All search filters have been cleared.",
+                    duration: 2000,
+                  });
                 }}
               >
                 Clear filters

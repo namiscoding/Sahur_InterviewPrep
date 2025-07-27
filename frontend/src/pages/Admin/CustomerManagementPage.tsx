@@ -59,6 +59,12 @@ const CustomerManagementPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching customers:", err);
       setError('Failed to fetch customers. Please ensure the backend is running and accessible.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch customers. Please ensure the backend is running and accessible.",
+        duration: 4000,
+      });
     } finally {
       setLoading(false);
     }
@@ -77,6 +83,12 @@ const CustomerManagementPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch customer details.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch customer details.",
+        duration: 3000,
+      });
     }
   };
 
@@ -183,6 +195,13 @@ const CustomerManagementPage: React.FC = () => {
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
+      if (localSearch.trim()) {
+        toast({
+          title: "Search Applied",
+          description: `Searching for: "${localSearch}"`,
+          duration: 2000,
+        });
+      }
     }
   };
 
@@ -352,21 +371,35 @@ const CustomerManagementPage: React.FC = () => {
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4">
-          <Button 
-            variant="outline" 
-            disabled={customers.page === 1}
-            onClick={() => setCustomers(prev => ({ ...prev, page: prev.page - 1 }))}
-          >
-            Previous
-          </Button>
+                      <Button
+              variant="outline"
+              disabled={customers.page === 1}
+              onClick={() => {
+                setCustomers(prev => ({ ...prev, page: prev.page - 1 }));
+                toast({
+                  title: "Page Changed",
+                  description: `Moved to page ${customers.page - 1}`,
+                  duration: 1500,
+                });
+              }}
+            >
+              Previous
+            </Button>
           <span>Page {customers.page} of {Math.ceil(customers.totalCount / customers.pageSize)}</span>
-          <Button 
-            variant="outline" 
-            disabled={customers.page * customers.pageSize >= customers.totalCount}
-            onClick={() => setCustomers(prev => ({ ...prev, page: prev.page + 1 }))}
-          >
-            Next
-          </Button>
+                      <Button
+              variant="outline"
+              disabled={customers.page * customers.pageSize >= customers.totalCount}
+              onClick={() => {
+                setCustomers(prev => ({ ...prev, page: prev.page + 1 }));
+                toast({
+                  title: "Page Changed",
+                  description: `Moved to page ${customers.page + 1}`,
+                  duration: 1500,
+                });
+              }}
+            >
+              Next
+            </Button>
         </div>
 
         {/* Results Summary */}
@@ -384,6 +417,11 @@ const CustomerManagementPage: React.FC = () => {
                   setLocalSearch("");
                   setSearchTerm("");
                   setSelectedStatus("all");
+                  toast({
+                    title: "Filters Cleared",
+                    description: "All search filters have been cleared.",
+                    duration: 2000,
+                  });
                 }}
               >
                 Clear filters
@@ -540,7 +578,14 @@ const CustomerManagementPage: React.FC = () => {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+              <Button variant="outline" onClick={() => {
+                setIsDetailsOpen(false);
+                toast({
+                  title: "Dialog Closed",
+                  description: "Customer details dialog has been closed.",
+                  duration: 1500,
+                });
+              }}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

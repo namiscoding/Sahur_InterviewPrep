@@ -62,6 +62,12 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching system settings:", err);
       setError('Failed to fetch usage limits. Please ensure the backend is running and accessible.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch usage limits. Please ensure the backend is running and accessible.",
+        duration: 4000,
+      });
     } finally {
       setLoading(false);
     }
@@ -80,6 +86,12 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       setIsDetailsOpen(true);
     } catch (err) {
       setError('Failed to fetch usage limit details.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch usage limit details.",
+        duration: 3000,
+      });
     }
   };
 
@@ -150,6 +162,13 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearchTerm(localSearch);
+      if (localSearch.trim()) {
+        toast({
+          title: "Search Applied",
+          description: `Searching for: "${localSearch}"`,
+          duration: 2000,
+        });
+      }
     }
   };
 
