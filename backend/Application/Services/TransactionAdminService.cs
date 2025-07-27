@@ -55,5 +55,16 @@ namespace InterviewPrep.API.Application.Services
 
             return _mapper.Map<TransactionDetailDTO>(transaction);
         }
+
+        public async Task<TransactionStatisticsDTO> GetTransactionStatisticsAsync(TransactionFilterDTO filter)
+        {
+            var statistics = await _transactionRepository.GetTransactionStatisticsAsync(filter);
+
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await _auditLogService.LogActionAsync(userId, "Viewed transaction statistics", ip);
+
+            return statistics;
+        }
     }
 }

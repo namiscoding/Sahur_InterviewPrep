@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react';
 import {
   getAllTransactions,
   getTransactionDetails,
+  getTransactionStatistics,
   PagedResult,
   TransactionListDTO,
   TransactionDetailDTO,
   TransactionFilterDTO,
+  TransactionStatisticsDTO,
 } from '../../services/transactionAdminService';
 
 // Import useNavigate from react-router-dom
@@ -50,6 +52,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetailDTO | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [statistics, setStatistics] = useState<TransactionStatisticsDTO | null>(null);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -63,8 +66,12 @@ const SystemAdminTransactionsPage: React.FC = () => {
       pageSize: transactions.pageSize,
     };
     try {
-      const data = await getAllTransactions(filter);
+      const [data, stats] = await Promise.all([
+        getAllTransactions(filter),
+        getTransactionStatistics(filter)
+      ]);
       setTransactions(data);
+      setStatistics(stats);
     } catch (err) {
       console.error("Error fetching transactions:", err);
       setError('Failed to fetch transactions. Please ensure the backend is running and accessible.');
@@ -129,6 +136,8 @@ const SystemAdminTransactionsPage: React.FC = () => {
     return format(date, formatString);
   };
 
+
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
@@ -164,6 +173,20 @@ const SystemAdminTransactionsPage: React.FC = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Customer Transactions Management</h1>
               <p className="mt-2 text-gray-600">SystemAdmin view customer transactions in InterviewPrep system</p>
+              {statistics && (
+                <div className="mt-2 flex items-center gap-4 text-sm">
+                  <span className="text-gray-500">
+                    Total Revenue: <span className="font-semibold text-green-600">
+                      {(statistics.completedRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </span>
+                  <span className="text-gray-500">
+                    Completed: <span className="font-semibold text-blue-600">
+                      {statistics.completedTransactions || 0}
+                    </span>
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate("/")}>
@@ -176,6 +199,67 @@ const SystemAdminTransactionsPage: React.FC = () => {
       </header>
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Revenue Statistics */}
+        <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Total Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{statistics?.totalTransactions || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">All time transactions</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Completed Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {statistics?.completedTransactions || 0}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {statistics?.successRate ? `${statistics.successRate.toFixed(1)}% success rate` : 'No transactions'}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {(statistics?.completedRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">From completed transactions</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Revenue by Currency */}
+          {statistics?.revenueByCurrency && statistics.revenueByCurrency.length > 0 && (
+            <div className="mt-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Revenue by Currency</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {statistics.revenueByCurrency.map((item) => (
+                      <Badge key={item.currency} variant="secondary" className="text-sm">
+                        {item.currency}: {item.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({item.transactionCount} txns)
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+
         {/* Search and Filters */}
         <div className="mb-6 space-y-4">
           <div className="relative">
@@ -337,10 +421,17 @@ const SystemAdminTransactionsPage: React.FC = () => {
         {/* Results Summary */}
         {transactions.items.length > 0 && (
           <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
-            <p>
-              Showing <span className="font-medium">{transactions.items.length}</span> of{" "}
-              <span className="font-medium">{transactions.totalCount}</span> transactions
-            </p>
+            <div className="flex flex-col gap-1">
+              <p>
+                Showing <span className="font-medium">{transactions.items.length}</span> of{" "}
+                <span className="font-medium">{transactions.totalCount}</span> transactions
+              </p>
+              <p className="text-xs text-gray-500">
+                Total revenue: <span className="font-medium text-green-600">
+                  {(statistics?.completedRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span> (completed transactions only)
+              </p>
+            </div>
             {(searchTerm || customerSearch || selectedStatus !== "all" || fromDate || toDate) && (
               <Button
                 variant="ghost"
@@ -413,7 +504,16 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+              <div className="flex justify-between items-center w-full">
+                <div className="text-xs text-gray-500">
+                  {selectedTransaction.status.toLowerCase() === 'completed' && (
+                    <span className="text-green-600 font-medium">
+                      Revenue: {selectedTransaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedTransaction.currency}
+                    </span>
+                  )}
+                </div>
+                <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
