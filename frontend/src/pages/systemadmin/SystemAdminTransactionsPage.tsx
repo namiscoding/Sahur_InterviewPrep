@@ -15,26 +15,33 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 // Shadcn UI components
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Input } from "../../components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog";
+import { Label } from "../../components/ui/label";
 import { toast } from 'react-hot-toast';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { CalendarIcon, Search, Filter, Eye, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { cn, formatCurrency } from "@/lib/utils";
+import { Calendar } from "../../components/ui/calendar";
+import { cn, formatCurrency } from "../../lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
 
 // Icons
 import { ArrowLeft } from "lucide-react";
 
 const SystemAdminTransactionsPage: React.FC = () => {
   const navigate = useNavigate();
-
 
   const [transactions, setTransactions] = useState<PagedResult<TransactionListDTO>>({
     items: [],
@@ -122,8 +129,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
     return format(date, formatString);
   };
 
-
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
@@ -159,23 +164,9 @@ const SystemAdminTransactionsPage: React.FC = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Customer Transactions Management</h1>
               <p className="mt-2 text-gray-600">SystemAdmin view customer transactions in InterviewPrep system</p>
-              {statistics && (
-                <div className="mt-2 flex items-center gap-4 text-sm">
-                  <span className="text-gray-500">
-                    Total Revenue: <span className="font-semibold text-green-600">
-                      {formatCurrency(statistics.completedRevenue || 0)}
-                    </span>
-                  </span>
-                  <span className="text-gray-500">
-                    Completed: <span className="font-semibold text-blue-600">
-                      {statistics.completedTransactions || 0}
-                    </span>
-                  </span>
-                </div>
-              )}
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={() => navigate("/systemadmin/dashboard")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
@@ -285,8 +276,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </SelectContent>
             </Select>
 
-
-
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -335,10 +324,10 @@ const SystemAdminTransactionsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Transaction Cards */}
-        {transactions.items.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-white rounded-lg shadow-sm border p-8">
+        {/* Transactions Table */}
+        <div className="bg-white rounded-lg shadow">
+          {transactions.items.length === 0 ? (
+            <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -351,37 +340,51 @@ const SystemAdminTransactionsPage: React.FC = () => {
                 Try adjusting your search or filters
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            {transactions.items.map((transaction) => (
-              <Card key={transaction.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{transaction.transactionCode}</CardTitle>
-                      <CardDescription className="mt-1">{transaction.customerDisplayName} ({transaction.customerEmail})</CardDescription>
-                    </div>
-                    <Badge className={getStatusColor(transaction.status)}>
-                      {transaction.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">Amount: {formatCurrency(transaction.amount, transaction.currency)}</p>
-                  <p className="text-sm text-gray-600">Plan: {transaction.subscriptionPlanName}</p>
-                  <p className="text-sm text-gray-600">Date: {safeFormatDate(transaction.transactionDate)}</p>
-                  <div className="flex justify-end mt-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(transaction.id)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Transaction Code</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.items.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell className="font-medium">{transaction.transactionCode}</TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{transaction.customerDisplayName}</div>
+                        <div className="text-sm text-gray-500">{transaction.customerEmail}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {formatCurrency(transaction.amount, transaction.currency)}
+                    </TableCell>
+                    <TableCell>{transaction.subscriptionPlanName}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(transaction.status)}>
+                        {transaction.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{safeFormatDate(transaction.transactionDate)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(transaction.id)}>
+                        <Eye className="h-4 w-4 mr-1" />
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4">

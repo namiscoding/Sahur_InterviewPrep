@@ -236,7 +236,7 @@ const CategoryManagementPage: React.FC = () => {
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Refresh
               </Button>
-              <Link to="/">
+              <Link to="/admin/dashboard">
                 <Button variant="outline">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to Dashboard

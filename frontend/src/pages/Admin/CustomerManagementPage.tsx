@@ -217,7 +217,7 @@ const CustomerManagementPage: React.FC = () => {
               <p className="mt-2 text-gray-600">UserAdmin manage customer accounts in InterviewPrep system</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => navigate("/")}> 
+              <Button variant="outline" onClick={() => navigate("/admin/dashboard")}> 
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
