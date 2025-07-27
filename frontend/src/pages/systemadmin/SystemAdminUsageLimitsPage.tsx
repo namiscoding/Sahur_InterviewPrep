@@ -52,12 +52,21 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
+      console.log('Fetching settings with params:', {
+        prefix: undefined,
+        searchTerm,
+        page: settings.page,
+        pageSize: settings.pageSize
+      });
+      
       const data = await getAllSystemSettings(
         undefined, // Không filter theo prefix, lấy tất cả system settings
         searchTerm,
         settings.page,
         settings.pageSize
       );
+      
+      console.log('Received settings data:', data);
       setSettings(data);
     } catch (err) {
       console.error("Error fetching system settings:", err);
@@ -135,8 +144,29 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       setNewKey("");
       setCreateValue("");
       setCreateDescription("");
-      fetchSettings();
-      toast.success("System setting created successfully.");
+      
+      // Reset to first page and clear search to show new setting
+      setSettings(prev => ({ ...prev, page: 1 }));
+      setSearchTerm("");
+      setLocalSearch("");
+      
+      // Force refresh the settings list
+      setTimeout(async () => {
+        await fetchSettings();
+        // Double check to ensure the new setting appears
+        console.log(`Created setting "${newKey}" - refreshing list...`);
+        
+        // Verify the new setting exists by trying to fetch it directly
+        try {
+          const newSetting = await getSystemSettingByKey(newKey);
+          console.log(`Verification: Setting "${newKey}" exists with value:`, newSetting.settingValue);
+        } catch (verifyErr) {
+          console.error(`Verification failed: Setting "${newKey}" not found:`, verifyErr);
+          toast.error(`Warning: Created setting "${newKey}" may not be visible immediately. Please refresh the page.`);
+        }
+      }, 100);
+      
+      toast.success(`System setting "${newKey}" created successfully and added to the list!`);
     } catch (err: any) {
       const message = err.message || "Failed to create system setting.";
       setCreateError(message);

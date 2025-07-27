@@ -114,8 +114,8 @@ const UserAdminManagementPage: React.FC = () => {
 
     setResetLoading(true);
     try {
-      const tempPassword = await resetUserAdminPassword(selectedUserAdmin.id);
-      toast.success(`Password reset successful. Temporary password: ${tempPassword}`);
+      await resetUserAdminPassword(selectedUserAdmin.id);
+      toast.success("Password reset successful.");
     } catch (err: any) {
       const message =
         err?.response?.data?.message ||

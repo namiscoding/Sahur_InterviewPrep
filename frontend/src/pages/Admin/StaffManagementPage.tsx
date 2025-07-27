@@ -71,7 +71,7 @@ const StaffManagementWithStats: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [newDisplayName, setNewDisplayName] = useState("")
   const [newEmail, setNewEmail] = useState("")
-  const [createError, setCreateError] = useState<string | null>(null)
+
   const [resetLoading, setResetLoading] = useState(false)
 
   // All your existing functions remain unchanged
@@ -130,8 +130,8 @@ const StaffManagementWithStats: React.FC = () => {
     if (!selectedStaff) return
     setResetLoading(true)
     try {
-      const tempPassword = await resetStaffPassword(selectedStaff.id)
-      toast.success(`Password reset successful. Temporary password: ${tempPassword}`);
+      await resetStaffPassword(selectedStaff.id)
+      toast.success("Password reset successful.");
     } catch (err: any) {
       const message = err?.response?.data?.message || err?.message || "Unknown error occurred while resetting password."
       console.error("Reset password failed:", err)
@@ -142,31 +142,56 @@ const StaffManagementWithStats: React.FC = () => {
   }
 
   const handleCreateStaff = async () => {
-    setCreateError(null)
+    // Validation
+    if (!newDisplayName.trim()) {
+      toast.error("Please enter display name.");
+      return;
+    }
+    
+    if (!newEmail.trim()) {
+      toast.error("Please enter email address.");
+      return;
+    }
+    
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      toast.error("Invalid email format.");
+      return;
+    }
+    
     try {
       const dto: CreateStaffDTO = {
-        displayName: newDisplayName,
-        email: newEmail,
+        displayName: newDisplayName.trim(),
+        email: newEmail.trim().toLowerCase(),
       }
       await createStaff(dto)
       setIsCreateOpen(false)
       setNewDisplayName("")
       setNewEmail("")
       fetchStaffs()
-      toast.success("Staff created and temporary password sent via email.");
+      toast.success(`Staff "${newDisplayName}" created successfully! Temporary password sent via email.`);
     } catch (err: any) {
-      const message = err.message || "Failed to create staff."
-      setCreateError(message)
-
-      const isDuplicate =
-        message.toLowerCase().includes("duplicate") ||
-        message.toLowerCase().includes("already exists") ||
-        message.toLowerCase().includes("already associated")
-        
-      if (isDuplicate) {
-        toast.error("This email is already associated with a staff account.");
+      console.error("Create staff error:", err);
+      
+      // Extract error message and code from response
+      const response = err?.response?.data;
+      const errorCode = response?.errorCode;
+      let message = "Failed to create staff.";
+      
+      if (response?.message) {
+        message = response.message;
+      } else if (err?.response?.data) {
+        message = typeof err.response.data === 'string' ? err.response.data : JSON.stringify(err.response.data);
+      } else if (err?.message) {
+        message = err.message;
+      }
+      
+      // Handle specific error codes - only show toast, no form error
+      if (errorCode === "EmailAlreadyExists") {
+        toast.error("Email already exists! Please use a different email address.");
       } else {
-        toast.error(message);
+        toast.error(`Failed to create staff: ${message}`);
       }
     }
   }
@@ -448,6 +473,8 @@ const StaffManagementWithStats: React.FC = () => {
                   value={newDisplayName}
                   onChange={(e) => setNewDisplayName(e.target.value)}
                   className="col-span-3"
+                  placeholder="Enter display name..."
+                  required
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -456,20 +483,21 @@ const StaffManagementWithStats: React.FC = () => {
                 </Label>
                 <Input
                   id="email"
+                  type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   className="col-span-3"
+                  placeholder="Enter email address..."
+                  required
                 />
               </div>
             </div>
-            {createError && (
-              <div className="flex items-center text-red-600 mt-2">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                {createError}
-              </div>
-            )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              <Button variant="outline" onClick={() => {
+                setIsCreateOpen(false);
+                setNewDisplayName("");
+                setNewEmail("");
+              }}>
                 Cancel
               </Button>
               <Button onClick={handleCreateStaff}>Create Staff</Button>

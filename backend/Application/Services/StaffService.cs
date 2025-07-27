@@ -2,6 +2,7 @@
 
 using AutoMapper;
 using InterviewPrep.API.Application.DTOs.Staff;
+using InterviewPrep.API.Application.Exceptions;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -63,7 +64,7 @@ namespace InterviewPrep.API.Application.Services
             var existingUser = await _userManager.FindByEmailAsync(createDto.Email);
             if (existingUser != null)
             {
-                throw new Exception("A staff account with this email already exists.");
+                throw new DuplicateEmailException(createDto.Email);
             }
 
             var tempPassword = GenerateTempPassword();

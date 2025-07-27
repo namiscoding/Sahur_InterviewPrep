@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Search, Filter, Eye, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 // Icons
 import { ArrowLeft } from "lucide-react";
@@ -163,7 +163,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                 <div className="mt-2 flex items-center gap-4 text-sm">
                   <span className="text-gray-500">
                     Total Revenue: <span className="font-semibold text-green-600">
-                      {(statistics.completedRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {formatCurrency(statistics.completedRevenue || 0)}
                     </span>
                   </span>
                   <span className="text-gray-500">
@@ -218,7 +218,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-600">
-                  {(statistics?.completedRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrency(statistics?.completedRevenue || 0)}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">From completed transactions</p>
               </CardContent>
@@ -236,7 +236,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     {statistics.revenueByCurrency.map((item) => (
                       <Badge key={item.currency} variant="secondary" className="text-sm">
-                        {item.currency}: {item.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({item.transactionCount} txns)
+                        {item.currency}: {formatCurrency(item.totalAmount, item.currency)} ({item.transactionCount} txns)
                       </Badge>
                     ))}
                   </div>
@@ -332,8 +332,6 @@ const SystemAdminTransactionsPage: React.FC = () => {
                 />
               </PopoverContent>
             </Popover>
-
-            <span className="text-sm font-medium text-gray-700">Total Transactions: {transactions.totalCount}</span>
           </div>
         </div>
 
@@ -370,7 +368,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600">Amount: {transaction.amount} {transaction.currency}</p>
+                  <p className="text-sm text-gray-600">Amount: {formatCurrency(transaction.amount, transaction.currency)}</p>
                   <p className="text-sm text-gray-600">Plan: {transaction.subscriptionPlanName}</p>
                   <p className="text-sm text-gray-600">Date: {safeFormatDate(transaction.transactionDate)}</p>
                   <div className="flex justify-end mt-2">
@@ -414,7 +412,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </p>
               <p className="text-xs text-gray-500">
                 Total revenue: <span className="font-medium text-green-600">
-                  {(statistics?.completedRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrency(statistics?.completedRevenue || 0)}
                 </span> (completed transactions only)
               </p>
             </div>
@@ -454,7 +452,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </div>
               <div>
                 <Label>Amount</Label>
-                <p className="text-sm">{selectedTransaction.amount} {selectedTransaction.currency}</p>
+                <p className="text-sm">{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</p>
               </div>
               <div>
                 <Label>Subscription Plan</Label>
@@ -490,7 +488,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                 <div className="text-xs text-gray-500">
                   {selectedTransaction.status.toLowerCase() === 'completed' && (
                     <span className="text-green-600 font-medium">
-                      Revenue: {selectedTransaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedTransaction.currency}
+                      Revenue: {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
                     </span>
                   )}
                 </div>

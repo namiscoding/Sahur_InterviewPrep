@@ -70,7 +70,7 @@ const InterviewSessionPage: React.FC = () => {
 
   useEffect(() => {
     if (!initialSession?.questions?.length) {
-      toast.error("Không tìm thấy dữ liệu phiên làm bài.");
+              toast.error("Session data not found.");
       navigate('/interview/setup');
       return;
     }
@@ -101,13 +101,13 @@ const InterviewSessionPage: React.FC = () => {
   const handleCompleteInterview = useCallback(async (isTimeUp = false) => {
       if (!sessionId || isCompleting) return;
       setIsCompleting(true);
-      if (isTimeUp) toast.error("Đã hết thời gian làm bài!");
+      if (isTimeUp) toast.error("Time's up!");
       try {
         const finalSession = await completeFullMockInterview(parseInt(sessionId));
-        toast.success("Chúc mừng bạn đã hoàn thành bài phỏng vấn!");
+        toast.success("Congratulations! You have completed the interview!");
         navigate(`/interview/result/${sessionId}`, { state: { resultData: finalSession } });
       } catch (error) {
-        toast.error("Hoàn thành bài phỏng vấn thất bại.");
+        toast.error("Failed to complete interview.");
         setIsCompleting(false);
       }
   }, [sessionId, navigate, isCompleting]);
@@ -142,12 +142,12 @@ const InterviewSessionPage: React.FC = () => {
         userAnswer: answers[currentQuestion.id]
       });
       setSubmissionStatus(prev => ({ ...prev, [currentQuestion.id]: 'submitted' }));
-      toast.success(`Đã nộp câu trả lời cho câu hỏi ${currentQuestionIndex + 1}`);
+      toast.success(`Answer submitted for question ${currentQuestionIndex + 1}`);
       if (currentQuestionIndex < totalQuestions - 1) {
         goToNext();
       }
     } catch (error) {
-      toast.error("Nộp câu trả lời thất bại.");
+      toast.error("Failed to submit answer.");
       setSubmissionStatus(prev => ({ ...prev, [currentQuestion.id]: 'pending' }));
     }
   };
@@ -191,7 +191,7 @@ const InterviewSessionPage: React.FC = () => {
           stream.getTracks().forEach(track => track.stop());
           await audioContext.close();
           if (!hasDetectedSpeech) {
-            toast.error("Không phát hiện thấy giọng nói.");
+            toast.error("No speech detected.");
             return;
           }
           const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -199,9 +199,9 @@ const InterviewSessionPage: React.FC = () => {
           try {
             const text = await transcribeAudio(audioBlob, 'vi');
             setAnswers(prev => ({...prev, [currentQuestion.id]: (prev[currentQuestion.id] || '') + text }));
-            toast.success('Đã chuyển thành văn bản!');
+            toast.success('Speech converted to text!');
           } catch (error) {
-            toast.error('Không thể xử lý giọng nói.');
+            toast.error('Unable to process speech.');
           } finally {
             setTranscribing(false);
           }
@@ -211,7 +211,7 @@ const InterviewSessionPage: React.FC = () => {
         setIsListening(true);
         checkAudioActivity();
       } catch (error) {
-        toast.error("Không thể truy cập micro.");
+        toast.error("Unable to access microphone.");
       }
     }
   };

@@ -54,7 +54,7 @@ export function LoginForm() {
 
       handleLoginSuccess(data.token, data.user);
     } catch (err) {
-      toast.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }

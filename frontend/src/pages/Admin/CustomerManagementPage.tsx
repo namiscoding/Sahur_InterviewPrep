@@ -140,9 +140,15 @@ const CustomerManagementPage: React.FC = () => {
       };
       const updated = await updateCustomerSubscription(selectedCustomer.id, dto);
       setSelectedCustomer({ ...selectedCustomer, ...updated });
-      fetchCustomers();
       setReason("");
       toast.success("Customer subscription updated successfully.");
+
+      // Delay 1.5s để toast hiển thị rõ rồi mới đóng dialog và reload
+      setTimeout(() => {
+        setIsDetailsOpen(false);
+        fetchCustomers(); // Làm mới danh sách sau khi cập nhật
+      }, 1000);
+
     } catch (err) {
       setUpdateError('Failed to update subscription.');
       toast.error("Failed to update customer subscription.");

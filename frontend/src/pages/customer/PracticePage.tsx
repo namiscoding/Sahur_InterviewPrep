@@ -153,7 +153,7 @@
 
           // Kiểm tra xem đã phát hiện giọng nói hay chưa
           if (!hasDetectedSpeech) {
-            toast.error("Không phát hiện thấy giọng nói. Vui lòng thử lại.");
+            toast.error("No speech detected. Please try again.");
             return; // Dừng lại, không gửi API
           }
 
@@ -163,9 +163,9 @@
           try {
             const text = await transcribeAudio(audioBlob, 'vi');
             setUserAnswer(prev => prev ? `${prev}\n${text}` : text);
-            toast.success('Đã chuyển thành văn bản!');
+            toast.success('Speech converted to text!');
           } catch (error) {
-            toast.error('Không thể xử lý giọng nói.');
+            toast.error('Unable to process speech.');
           } finally {
             setTranscribing(false);
           }
@@ -177,7 +177,7 @@
         checkAudioActivity();
 
       } catch (error) {
-        toast.error("Không thể truy cập micro. Vui lòng cấp quyền.");
+        toast.error("Unable to access microphone. Please grant permission.");
       }
     }
   };

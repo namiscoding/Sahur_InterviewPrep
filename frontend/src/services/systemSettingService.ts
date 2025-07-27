@@ -34,9 +34,15 @@ export const getAllSystemSettings = async (
   pageSize: number = 10
 ): Promise<PagedResult<SystemSettingDTO>> => {
   try {
+    const params = { prefix, search, page, pageSize };
+    console.log('API call params:', params);
+    console.log('API URL:', API_URL);
+    
     const response = await axios.get<PagedResult<SystemSettingDTO>>(API_URL, {
-      params: { prefix, search, page, pageSize },
+      params,
     });
+    
+    console.log('API response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching system settings:', error);
