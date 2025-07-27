@@ -23,7 +23,7 @@ namespace InterviewPrep.API.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResult<SystemSettingDTO>> GetAllSystemSettingsAsync(string prefix = "FREE_USER_", string search = null, int page = 1, int pageSize = 10)
+        public async Task<PagedResult<SystemSettingDTO>> GetAllSystemSettingsAsync(string prefix = null, string search = null, int page = 1, int pageSize = 10)
         {
             var (systemSettings, total) = await _systemSettingRepository.GetAllSystemSettingsAsync(prefix, search, page, pageSize);
             var dtos = _mapper.Map<IEnumerable<SystemSettingDTO>>(systemSettings);
@@ -38,11 +38,6 @@ namespace InterviewPrep.API.Application.Services
 
         public async Task<SystemSettingDTO> GetSystemSettingByKeyAsync(string key)
         {
-            if (!key.StartsWith("FREE_USER_"))
-            {
-                throw new Exception("Access restricted to free user settings.");
-            }
-
             var systemSetting = await _systemSettingRepository.GetSystemSettingByKeyAsync(key);
             if (systemSetting == null) return null;
             return _mapper.Map<SystemSettingDTO>(systemSetting);
@@ -50,9 +45,9 @@ namespace InterviewPrep.API.Application.Services
 
         public async Task<SystemSettingDTO> CreateSystemSettingAsync(CreateSystemSettingDTO createDto)
         {
-            if (!createDto.SettingKey.StartsWith("FREE_USER_"))
+            if (string.IsNullOrWhiteSpace(createDto.SettingKey))
             {
-                throw new Exception("Creation restricted to free user settings.");
+                throw new Exception("Setting key cannot be empty.");
             }
 
             if (!int.TryParse(createDto.SettingValue, out int value) || value <= 0)
@@ -76,9 +71,9 @@ namespace InterviewPrep.API.Application.Services
 
         public async Task<SystemSettingDTO> UpdateSystemSettingAsync(string key, UpdateSystemSettingDTO updateDto)
         {
-            if (!key.StartsWith("FREE_USER_"))
+            if (string.IsNullOrWhiteSpace(key))
             {
-                throw new Exception("Update restricted to free user settings.");
+                throw new Exception("Setting key cannot be empty.");
             }
 
             if (!int.TryParse(updateDto.SettingValue, out int value) || value <= 0)

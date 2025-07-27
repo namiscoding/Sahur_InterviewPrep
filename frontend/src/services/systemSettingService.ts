@@ -28,7 +28,7 @@ export interface UpdateSystemSettingDTO {
 }
 
 export const getAllSystemSettings = async (
-  prefix: string = 'FREE_USER_',
+  prefix: string | null = null,
   search: string = '',
   page: number = 1,
   pageSize: number = 10

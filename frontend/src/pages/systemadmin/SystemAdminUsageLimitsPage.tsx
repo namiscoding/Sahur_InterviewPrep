@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 // Icons
@@ -53,7 +54,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await getAllSystemSettings(
-        "FREE_USER_",
+        undefined, // Không filter theo prefix, lấy tất cả system settings
         searchTerm,
         settings.page,
         settings.pageSize
@@ -61,11 +62,11 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       setSettings(data);
     } catch (err) {
       console.error("Error fetching system settings:", err);
-      setError('Failed to fetch usage limits. Please ensure the backend is running and accessible.');
+      setError('Failed to fetch system settings. Please ensure the backend is running and accessible.');
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to fetch usage limits. Please ensure the backend is running and accessible.",
+        description: "Failed to fetch system settings. Please ensure the backend is running and accessible.",
         duration: 4000,
       });
     } finally {
@@ -85,11 +86,11 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       setNewDescription(details.description || "");
       setIsDetailsOpen(true);
     } catch (err) {
-      setError('Failed to fetch usage limit details.');
+      setError('Failed to fetch system setting details.');
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to fetch usage limit details.",
+        description: "Failed to fetch system setting details.",
         duration: 3000,
       });
     }
@@ -108,7 +109,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
   
       toast({
         title: "Success",
-        description: "Usage limit updated successfully.",
+        description: "System setting updated successfully.",
         duration: 2000,
       });
   
@@ -117,11 +118,11 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
         fetchSettings();
       }, 1000);
     } catch (err) {
-      setUpdateError('Failed to update usage limit.');
+      setUpdateError('Failed to update system setting.');
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update usage limit.",
+        description: "Failed to update system setting.",
         duration: 2000,
       });
     }
@@ -143,11 +144,11 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       fetchSettings();
       toast({
         title: "Success",
-        description: "Usage limit created successfully.",
+        description: "System setting created successfully.",
         duration: 4000,
       });
     } catch (err: any) {
-      const message = err.message || "Failed to create usage limit.";
+      const message = err.message || "Failed to create system setting.";
       setCreateError(message);
     
       toast({
@@ -205,8 +206,8 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Usage Limits Management</h1>
-              <p className="mt-2 text-gray-600">SystemAdmin configure usage limits for free accounts</p>
+              <h1 className="text-3xl font-bold text-gray-900">System Settings Management</h1>
+              <p className="mt-2 text-gray-600">SystemAdmin configure all system settings and usage limits</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => navigate("/")}>
@@ -215,7 +216,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
               </Button>
               <Button onClick={() => setIsCreateOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create New Limit
+                Create New Setting
               </Button>
             </div>
           </div>
@@ -236,7 +237,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
             />
           </div>
 
-          <span className="text-sm font-medium text-gray-700">Total Limits: {settings.totalCount}</span>
+          <span className="text-sm font-medium text-gray-700">Total Settings: {settings.totalCount}</span>
         </div>
 
         {/* Settings Cards */}
@@ -249,7 +250,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
                 </svg>
               </div>
               <p className="text-lg font-medium text-gray-900 mb-2">
-                No usage limits found
+                No system settings found
               </p>
               <p className="text-gray-600 mb-4">
                 Try adjusting your search or create a new one
@@ -266,6 +267,9 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
                       <CardTitle className="text-lg">{setting.settingKey}</CardTitle>
                       <CardDescription className="mt-1">Value: {setting.settingValue}</CardDescription>
                     </div>
+                    <Badge variant={setting.settingKey.startsWith('FREE_USER_') ? 'default' : 'secondary'} className="text-xs">
+                      {setting.settingKey.startsWith('FREE_USER_') ? 'Usage Limit' : 'System Setting'}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -330,7 +334,7 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Usage Limit: {selectedSetting.settingKey}</DialogTitle>
+              <DialogTitle>Edit System Setting: {selectedSetting.settingKey}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -372,11 +376,11 @@ const SystemAdminUsageLimitsPage: React.FC = () => {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Usage Limit</DialogTitle>
-          </DialogHeader>
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New System Setting</DialogTitle>
+            </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="key" className="text-right">
