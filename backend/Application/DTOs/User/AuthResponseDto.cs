@@ -18,5 +18,6 @@ namespace InterviewPrep.API.Application.DTOs.User
         public UserStatus Status { get; set; }
         public SubscriptionLevel SubscriptionLevel { get; set; }
         public DateTime? SubscriptionExpiryDate { get; set; }
+        public IList<string> Roles { get; set; }
     }
 }

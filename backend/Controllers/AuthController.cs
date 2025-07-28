@@ -181,6 +181,7 @@ namespace InterviewPrep.API.Controllers
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
                     return BadRequest(result.Errors);
+                await _userManager.AddToRoleAsync(user, "Customer");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -197,7 +198,8 @@ namespace InterviewPrep.API.Controllers
                     DisplayName = user.DisplayName,
                     Status = user.Status,
                     SubscriptionLevel = user.SubscriptionLevel,
-                    SubscriptionExpiryDate = user.SubscriptionExpiryDate
+                    SubscriptionExpiryDate = user.SubscriptionExpiryDate,
+                    Roles = roles
                 }
             };
 
