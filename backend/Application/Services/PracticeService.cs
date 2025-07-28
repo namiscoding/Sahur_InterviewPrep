@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using InterviewPrep.API.Application.DTOs.MockSessions;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace InterviewPrep.API.Application.Services
 {
@@ -40,7 +41,7 @@ namespace InterviewPrep.API.Application.Services
 
             if (user.SubscriptionLevel == SubscriptionLevel.Free)
             {
-                var dailyLimit = _settingsService.GetValue<int>("FREE_USER_QUESTION_DAILY_LIMIT", 5);
+                var dailyLimit = _settingsService.GetValue<int>("FreeUser.SingleQuestion.DailyLimit", 5);
                 var todayStart = DateTime.UtcNow.Date;
 
                 var usageCount = await _context.UsageLogs
@@ -97,7 +98,11 @@ namespace InterviewPrep.API.Application.Services
             session.Status = SessionStatus.Completed;
             session.CompletedAt = DateTime.UtcNow;
             session.OverallScore = score;
-
+            var question = sessionAnswer.Question;
+            if (question != null)
+            {
+                question.UsageCount++;
+            }
             var usageLog = new UsageLog
             {
                 UserId = session.UserId,
@@ -125,7 +130,7 @@ namespace InterviewPrep.API.Application.Services
 
             if (user.SubscriptionLevel == SubscriptionLevel.Free)
             {
-                var dailyLimit = _settingsService.GetValue<int>("FREE_USER_SESSION_DAILY_LIMIT", 2);
+                var dailyLimit = _settingsService.GetValue<int>("FreeUser.FullSession.DailyLimit", 2);
                 var todayStart = DateTime.UtcNow.Date;
 
                 var usageCount = await _context.UsageLogs
@@ -230,6 +235,7 @@ namespace InterviewPrep.API.Application.Services
         {
             var session = await _context.MockSessions
                 .Include(s => s.SessionAnswers)
+                     .ThenInclude(sa => sa.Question)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
 
             if (session == null)
@@ -244,6 +250,15 @@ namespace InterviewPrep.API.Application.Services
             {
                 session.OverallScore = session.SessionAnswers.Average(sa => sa.Score);
             }
+
+            foreach (var answer in session.SessionAnswers)
+            {
+                if (answer.Question != null)
+                {
+                    answer.Question.UsageCount++;
+                }
+            }
+
 
             var usageLog = new UsageLog
             {
@@ -273,6 +288,21 @@ namespace InterviewPrep.API.Application.Services
                 .FirstOrDefaultAsync(s => s.Id == sessionId && s.UserId == userId);
 
             return session;
+        }
+        public Task<int> GetLimitAsync(string key, int defaultValue)
+        {
+            int value = _settingsService.GetValue<int>(key, defaultValue); // <- rõ ràng kiểu int
+            return Task.FromResult(value);
+        }
+
+
+        public Task<int> CountUsageAsync(string userId, string actionType, DateTime fromUtc)
+        {
+            return _context.UsageLogs
+                .Where(log => log.UserId == userId &&
+                              log.ActionType == actionType &&
+                              log.UsageTimestamp >= fromUtc)
+                .CountAsync();
         }
     }
 }

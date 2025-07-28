@@ -11,5 +11,9 @@ namespace InterviewPrep.API.Application.Services
         Task<(SessionAnswer? Answer, string? ErrorMessage)> SubmitAnswerForMockInterviewAsync(long sessionId, SubmitFullInterviewAnswerRequestDto request);
         Task<(MockSession? Session, string? ErrorMessage)> CompleteFullMockInterviewAsync(long sessionId);
         Task<MockSession?> GetSessionByIdAsync(long sessionId);
+
+
+        Task<int> GetLimitAsync(string key, int defaultValue);
+        Task<int> CountUsageAsync(string userId, string actionType, DateTime fromUtc);
     }
 }

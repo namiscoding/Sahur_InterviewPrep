@@ -69,14 +69,14 @@ namespace InterviewPrep.API.Controllers
         }
 
 
-        [HttpGet("staff/subscription-plans")] 
+        [HttpGet("staff/subscription-plans")]
         public async Task<ActionResult<IEnumerable<SubscriptionPlanDTO>>> GetAllSubscriptionPlans()
         {
             var plans = await _subscriptionPlanService.GetAllSubscriptionPlansAsync();
             return Ok(plans);
         }
 
-        [HttpGet("staff/subscription-plans/{id}")] 
+        [HttpGet("staff/subscription-plans/{id}")]
         public async Task<ActionResult<SubscriptionPlanDTO>> GetSubscriptionPlanById(int id)
         {
             var plan = await _subscriptionPlanService.GetSubscriptionPlanByIdAsync(id);
@@ -87,7 +87,7 @@ namespace InterviewPrep.API.Controllers
             return Ok(plan);
         }
 
-        [HttpPut("staff/subscription-plans/{id}")] 
+        [HttpPut("staff/subscription-plans/{id}")]
         public async Task<ActionResult<SubscriptionPlanDTO>> UpdateSubscriptionPlanInfo(int id, [FromBody] UpdateSubscriptionPlanInfoDTO updateDto)
         {
             if (!ModelState.IsValid)
@@ -98,12 +98,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var updatedPlan = await _subscriptionPlanService.UpdateSubscriptionPlanInfoAsync(id, updateDto, userId);
@@ -114,7 +109,7 @@ namespace InterviewPrep.API.Controllers
             return Ok(updatedPlan);
         }
 
-        [HttpPatch("staff/subscription-plans/{id}/status")] 
+        [HttpPatch("staff/subscription-plans/{id}/status")]
         public async Task<ActionResult<SubscriptionPlanDTO>> UpdateSubscriptionPlanStatus(int id, [FromBody] UpdateSubscriptionPlanStatusDTO updateDto)
         {
             if (!ModelState.IsValid)
@@ -125,12 +120,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                // TẠM THỜI cho dev/test
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var updatedPlan = await _subscriptionPlanService.UpdateSubscriptionPlanStatusAsync(id, updateDto, userId);

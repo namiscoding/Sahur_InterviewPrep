@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.DTOs.Staff;
+using InterviewPrep.API.Application.Exceptions;
 using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Controllers
@@ -44,8 +45,20 @@ namespace InterviewPrep.API.Controllers
         public async Task<ActionResult<StaffDTO>> CreateStaff([FromBody] CreateStaffDTO createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var created = await _staffService.CreateStaffAsync(createDto);
-            return CreatedAtAction(nameof(GetStaffById), new { id = created.Id }, created);
+            
+            try
+            {
+                var created = await _staffService.CreateStaffAsync(createDto);
+                return CreatedAtAction(nameof(GetStaffById), new { id = created.Id }, created);
+            }
+            catch (DuplicateEmailException ex)
+            {
+                return BadRequest(new { message = ex.Message, errorCode = "EmailAlreadyExists" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id}/status")]

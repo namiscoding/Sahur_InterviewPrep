@@ -31,5 +31,12 @@ namespace InterviewPrep.API.Controllers
             if (transaction == null) return NotFound();
             return Ok(transaction);
         }
+
+        [HttpGet("statistics")]
+        public async Task<ActionResult<TransactionStatisticsDTO>> GetTransactionStatistics([FromQuery] TransactionFilterDTO filter)
+        {
+            var statistics = await _transactionAdminService.GetTransactionStatisticsAsync(filter);
+            return Ok(statistics);
+        }
     }
 }

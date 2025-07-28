@@ -110,3 +110,24 @@ export const resetStaffPassword = async (id: string): Promise<string> => {
     throw error;
   }
 };
+export interface StaffForSelection {
+  id: string;
+  displayName: string;
+}
+
+
+export const getAllStaffForSelection = async (): Promise<StaffForSelection[]> => {
+  try {
+    const response = await axios.get<PagedResult<StaffForSelection>>(API_URL, {
+      params: { 
+        status: 'Active', 
+        page: 1, 
+        pageSize: 1000 
+      },
+    });
+    return response.data.items; 
+  } catch (error) {
+    console.error('Error fetching all staff for selection:', error);
+    throw error;
+  }
+};

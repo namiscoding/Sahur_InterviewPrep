@@ -13,3 +13,7 @@ export const login = async (credentials: LoginRequest): Promise<LoginResponse> =
     throw error;
   }
 };
+export const loginWithGoogle = async (token: string): Promise<LoginResponse> => {
+  const response = await apiClient.post<LoginResponse>('/google', { idToken: token });
+  return response.data;
+};

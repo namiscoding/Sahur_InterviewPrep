@@ -32,28 +32,22 @@ namespace InterviewPrep.API.Application.Services
                     return false;
                 }
 
-                // Check if user is already at or above this level
                 if ((int)user.SubscriptionLevel >= (int)subscriptionPlan.Level)
                 {
                     _logger.LogWarning("User {UserId} is already at or above subscription level {Level}.", userId, subscriptionPlan.Level);
                     return false;
                 }
 
-                // Calculate new expiry date
                 DateTime newExpiryDate;
                 if (user.SubscriptionExpiryDate.HasValue && user.SubscriptionExpiryDate > DateTime.UtcNow)
                 {
-                    // Extend from current expiry date
                     newExpiryDate = user.SubscriptionExpiryDate.Value.AddMonths(subscriptionPlan.DurationMonths);
                 }
                 else
                 {
-                    // Start from now
                     newExpiryDate = DateTime.UtcNow.AddMonths(subscriptionPlan.DurationMonths);
                 }
 
-                // Update user subscription
-                // Update user subscription
                 user.SubscriptionLevel = (InterviewPrep.API.Data.Models.Enums.SubscriptionLevel)(int)subscriptionPlan.Level;
                 user.SubscriptionExpiryDate = newExpiryDate;
 

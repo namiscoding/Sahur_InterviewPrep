@@ -78,7 +78,7 @@ export function PracticeHistory() {
               <h1 className="text-3xl font-bold text-gray-900">Practice History</h1>
               <p className="mt-2 text-gray-600">Track your progress and review past sessions</p>
             </div>
-            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+            <Button variant="outline" onClick={() => navigate("/questions")}>
               Back to Dashboard
             </Button>
           </div>

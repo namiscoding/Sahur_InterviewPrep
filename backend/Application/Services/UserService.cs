@@ -4,6 +4,7 @@ using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
 using InterviewPrep.API.Data.Repositories;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -73,15 +74,17 @@ namespace InterviewPrep.API.Application.Services
                 throw new ArgumentException("Invalid subscription level.");
             }
 
+            // Store old level before changing
+            var currentLevel = user.SubscriptionLevel;
             user.SubscriptionLevel = parsedLevel;
 
             if (parsedLevel == SubscriptionLevel.Premium)
             {
-                if (user.SubscriptionLevel == SubscriptionLevel.Free)
+                if (currentLevel == SubscriptionLevel.Free)
                 {
                     user.SubscriptionExpiryDate = DateTime.UtcNow.AddMonths(1);
                 }
-                else if (user.SubscriptionLevel == SubscriptionLevel.Premium)
+                else if (currentLevel == SubscriptionLevel.Premium)
                 {
                     user.SubscriptionExpiryDate = (user.SubscriptionExpiryDate ?? DateTime.UtcNow).AddMonths(1);
                 }

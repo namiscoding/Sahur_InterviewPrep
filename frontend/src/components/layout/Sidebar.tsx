@@ -1,41 +1,83 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-// 1. Xóa import useAuth
-// import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
-  Home,
-  BookOpen,
-  MessageSquare,
-  History,
-  Crown,
-  Settings,
-  Play
+  Home,
+  BookOpen,
+  MessageSquare,
+  History,
+  Crown,
+  Users,
+  Settings,
+  BarChart3,
+  Shield,
+  Activity,
+  FileText,
+  Play,
+  CreditCard,
+  User2
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   // 2. Thay thế user từ context bằng một vai trò cố định
-  const userRole = 'Customer'; 
+  const { user } = useAuth();  
 
   const getNavItems = () => {
     const commonItems = [
-      { to: '/dashboard', icon: Home, label: 'Dashboard' }
-    ];
+      { to: '/', icon: Home, label: 'Home' }
+    ];
 
-    // 3. Switch case giờ sẽ luôn chạy vào trường hợp 'Customer'
-    switch (userRole) {
-      case 'Customer':
-        return [
-          ...commonItems,
-          { to: '/questions', icon: BookOpen, label: 'Question Bank' },
-          { to: '/interview/setup', icon: Play, label: 'Start Interview' },
-          { to: '/practice', icon: MessageSquare, label: 'Quick Practice' },
-          { to: '/practice-history', icon: History, label: 'Practice History' },
-          { to: '/upgrade', icon: Crown, label: 'Upgrade Account' },
-          { to: '/profile', icon: Settings, label: 'Profile' }
-        ];
-      default:
-        return commonItems;
+    if (!user?.roles) {
+      return commonItems;
+    }
+
+    if (user.roles.includes('Customer')) {
+      return [
+        ...commonItems,
+        { to: '/questions', icon: BookOpen, label: 'Question Bank' },
+        { to: '/interview/setup', icon: Play, label: 'Start Interview' },
+        { to: '/practice-history', icon: History, label: 'Practice History' },
+        { to: '/upgrade', icon: Crown, label: 'Upgrade Account' },
+        { to: '/update-profile', icon: Settings, label: 'Profile' }
+      ];
     }
+    if (user.roles.includes('Staff')) {
+        return [
+          ...commonItems,
+          { to: '/staff-dashboard', icon: BookOpen, label: 'Dashboard' },
+          { to: '/staff/questions', icon: BookOpen, label: 'Questions' },
+          { to: '/staff/categories', icon: FileText, label: 'Categories' },
+        ];
+    }
+    if (user.roles.includes('UserAdmin')) {
+        return [
+          ...commonItems,
+          { to: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
+          { to: '/admin/customers', icon: Users, label: 'Customer Management' },
+          { to: '/admin/staffs', icon: Users, label: 'Staff Management' },
+        ];
+    }
+    if (user.roles.includes('SystemAdmin')) {
+        return [
+          ...commonItems,
+          { to: '/systemadmin/usagelimits', icon: Settings, label: 'System Settings' },
+          { to: '/admin/subcriptionPlan', icon: Settings, label: 'Subscription Plans' },
+          { to: '/systemadmin/useradmins', icon: Users, label: 'UserAdmin Management' },
+          { to: '/admin/audit-log', icon: Activity , label: 'Audit Logs' },
+        ];
+    }
+    if (user.roles.includes('BusinessAdmin')) {
+        return [
+          ...commonItems,
+          { to: '/business/dashboard', icon: BarChart3, label: 'Dashboard' },
+          { to: '/business/questions', icon: BookOpen, label: 'Questions' },
+          { to: '/business/users', icon: Users, label: 'Customers' },
+          { to: '/business/staffs', icon: User2, label: 'Staffs' },
+          { to: '/business/transactions', icon: CreditCard, label: 'Transaction Management' },
+          { to: '/admin/audit-log', icon: Activity , label: 'Audit Logs' }
+        ];
+    }
+    return commonItems;
   };
 
   const navItems = getNavItems();

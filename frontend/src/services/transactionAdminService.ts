@@ -36,11 +36,30 @@ export interface TransactionFilterDTO {
   search?: string;
   customerSearch?: string;
   status?: string;
-  planId?: number;
   fromDate?: string;
   toDate?: string;
   page: number;
   pageSize: number;
+}
+
+export interface TransactionStatisticsDTO {
+  totalTransactions: number;
+  completedTransactions: number;
+  pendingTransactions: number;
+  failedTransactions: number;
+  cancelledTransactions: number;
+  totalRevenue: number;
+  completedRevenue: number;
+  successRate: number;
+  revenueByCurrency: RevenueByCurrencyDTO[];
+  lastTransactionDate: string | null;
+  firstTransactionDate: string | null;
+}
+
+export interface RevenueByCurrencyDTO {
+  currency: string;
+  totalAmount: number;
+  transactionCount: number;
 }
 
 export const getAllTransactions = async (filter: TransactionFilterDTO): Promise<PagedResult<TransactionListDTO>> => {
@@ -61,6 +80,18 @@ export const getTransactionDetails = async (id: number): Promise<TransactionDeta
     return response.data;
   } catch (error) {
     console.error('Error fetching transaction details:', error);
+    throw error;
+  }
+};
+
+export const getTransactionStatistics = async (filter: TransactionFilterDTO): Promise<TransactionStatisticsDTO> => {
+  try {
+    const response = await axios.get<TransactionStatisticsDTO>(`${API_URL}/statistics`, {
+      params: filter,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching transaction statistics:', error);
     throw error;
   }
 };

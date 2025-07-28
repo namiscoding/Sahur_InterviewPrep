@@ -2,7 +2,7 @@
 export interface User {
   id: string;
   email: string;
-  displayName: string;
+  displayName: string;  
   roles: string[];
 }
 
@@ -15,4 +15,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string;
   user: User;
+}
+export interface GoogleLoginRequest {
+  idToken: string;
 }

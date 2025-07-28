@@ -78,7 +78,8 @@ namespace InterviewPrep.API.Application.Services
                 DisplayName = user.DisplayName,
                 Status = user.Status,
                 SubscriptionLevel = user.SubscriptionLevel,
-                SubscriptionExpiryDate = user.SubscriptionExpiryDate
+                SubscriptionExpiryDate = user.SubscriptionExpiryDate,
+                Roles = roles
             };
 
             return new LoginResultDto
@@ -90,7 +91,7 @@ namespace InterviewPrep.API.Application.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
-            const string defaultRole = "User";
+            const string defaultRole = "Customer";
 
             if (await _userManager.FindByEmailAsync(dto.Email) != null)
                 throw new Exception("Email existed");

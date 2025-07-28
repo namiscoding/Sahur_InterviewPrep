@@ -25,16 +25,20 @@ namespace InterviewPrep.API.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IAuthService _authService;
+        private readonly IPracticeService _practiceService;
+
+   
 
         public AuthController(UserManager<ApplicationUser> userManager,
                               RoleManager<IdentityRole> roleManager,
                               IConfiguration configuration,
-                              IAuthService authService)
+                              IAuthService authService, IPracticeService practiceService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _authService = authService;
+            _practiceService = practiceService;
         }
 
         [HttpPost("register")]
@@ -62,7 +66,7 @@ namespace InterviewPrep.API.Controllers
 
             try
             {
-                var result = await _authService.LoginAsync(dto);
+                var result = await _authService.LoginAsync(dto);    
                 return Ok(result);
             }
             catch (Exception ex)
@@ -177,6 +181,7 @@ namespace InterviewPrep.API.Controllers
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
                     return BadRequest(result.Errors);
+                await _userManager.AddToRoleAsync(user, "Customer");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -193,7 +198,8 @@ namespace InterviewPrep.API.Controllers
                     DisplayName = user.DisplayName,
                     Status = user.Status,
                     SubscriptionLevel = user.SubscriptionLevel,
-                    SubscriptionExpiryDate = user.SubscriptionExpiryDate
+                    SubscriptionExpiryDate = user.SubscriptionExpiryDate,
+                    Roles = roles
                 }
             };
 
@@ -257,6 +263,61 @@ namespace InterviewPrep.API.Controllers
             }
 
             return Ok(new { message = "Password changed successfully" });
+        }
+        [HttpGet("check")]
+        public async Task<IActionResult> CheckLimits()
+        {
+            // 1. Lấy userId từ JWT
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("User not authenticated.");
+
+            // 2. Lấy user từ database
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+
+            // 3. Nếu không phải user free thì không giới hạn
+            if (user.SubscriptionLevel != SubscriptionLevel.Free)
+            {
+
+
+
+                return Ok(new
+                {
+                    isFreeUser = false,
+                    limits = "Unlimited access",
+                    date = user.SubscriptionExpiryDate
+                });
+            }
+
+            // 4. Nếu là user free → kiểm tra giới hạn
+            var today = DateTime.UtcNow.Date;
+
+            var questionLimit = await _practiceService.GetLimitAsync("FREE_USER_QUESTION_DAILY_LIMIT", 5);
+            var sessionLimit = await _practiceService.GetLimitAsync("FREE_USER_SESSION_DAILY_LIMIT", 2);
+
+            var questionUsed = await _practiceService.CountUsageAsync(userId, "CompleteSingleQuestion", today);
+            var sessionUsed = await _practiceService.CountUsageAsync(userId, "CompletePracticeSession", today);
+
+            // 5. Trả kết quả
+            return Ok(new
+            {
+                isFreeUser = true,
+                limits = new
+                {
+                    dailyQuestion = new
+                    {
+                        used = questionUsed,
+                        limit = questionLimit,
+                        reached = questionUsed >= questionLimit
+                    },
+                    dailySession = new
+                    {
+                        used = sessionUsed,
+                        limit = sessionLimit,
+                        reached = sessionUsed >= sessionLimit
+                    }
+                }
+            });
         }
     }
 }

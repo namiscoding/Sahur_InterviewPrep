@@ -64,7 +64,8 @@ builder.Services.AddScoped<IMockSessionRepository, MockSessionRepository>();
 builder.Services.AddScoped<ISessionAnswerRepository, SessionAnswerRepository>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
-builder.Services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
+builder.Services.AddScoped<IUserAdminDashboardRepository, UserAdminDashboardRepository>();
+builder.Services.AddScoped<ISystemAdminDashboardRepository, SystemAdminDashboardRepository>();
 builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
@@ -89,7 +90,9 @@ builder.Services.AddScoped<IAiService, OpenAiService>();
 builder.Services.AddScoped<IUserAdminService, UserAdminService>();
 builder.Services.AddScoped<ITransactionAdminService, TransactionAdminService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
-builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IUserAdminDashboardService, UserAdminDashboardService>();
+builder.Services.AddScoped<ISystemAdminDashboardService, SystemAdminDashboardService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
