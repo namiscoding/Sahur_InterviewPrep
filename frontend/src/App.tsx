@@ -86,9 +86,9 @@ function App() {
               <Route path="/admin/audit-log" element={<AuditLogManagementPage />} />
 
               {/* SystemAdmin Routes with Layout */}
-              <Route path="/systemadmin/dashboard" element={<SystemAdminDashboard />} />
+              <Route path="/business/dashboard" element={<SystemAdminDashboard />} />
               <Route path="/systemadmin/useradmins" element={<UserAdminManagementPage />} />
-              <Route path="/systemadmin/transactions" element={<SystemAdminTransactionsPage />} />
+              <Route path="/business/transactions" element={<SystemAdminTransactionsPage />} />
               <Route path="/systemadmin/usagelimits" element={<SystemAdminUsageLimitsPage />} />
 
             {/* Routes wrapped in Layout (from develop, includes /questions) */}

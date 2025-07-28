@@ -23,8 +23,11 @@ declare global {
     }
 
     // Ưu tiên vai trò có quyền cao nhất
+    if (user.roles.includes('BusinessAdmin')) {
+      return '/business/dashboard';
+    }
     if (user.roles.includes('SystemAdmin')) {
-      return '/systemadmin/dashboard';
+      return '/systemadmin/usagelimits';
     }
     if (user.roles.includes('UserAdmin')) {
       return '/admin/dashboard';

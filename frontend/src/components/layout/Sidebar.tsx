@@ -60,9 +60,8 @@ const Sidebar: React.FC = () => {
     if (user.roles.includes('SystemAdmin')) {
         return [
           ...commonItems,
-          { to: '/systemadmin/dashboard', icon: BarChart3, label: 'Dashboard' },
           { to: '/systemadmin/usagelimits', icon: Settings, label: 'System Settings' },
-          { to: '/systemadmin/transactions', icon: CreditCard, label: 'Transaction Management' },
+          { to: '/admin/subcriptionPlan', icon: Settings, label: 'Subscription Plans' },
           { to: '/systemadmin/useradmins', icon: Users, label: 'UserAdmin Management' },
           { to: '/admin/audit-log', icon: Activity , label: 'Audit Logs' },
         ];
@@ -70,9 +69,11 @@ const Sidebar: React.FC = () => {
     if (user.roles.includes('BusinessAdmin')) {
         return [
           ...commonItems,
-          { to: '/business/questions', icon: BarChart3, label: 'Questions' },
+          { to: '/business/dashboard', icon: BarChart3, label: 'Dashboard' },
+          { to: '/business/questions', icon: BookOpen, label: 'Questions' },
           { to: '/business/users', icon: Users, label: 'Customers' },
           { to: '/business/staffs', icon: User2, label: 'Staffs' },
+          { to: '/business/transactions', icon: CreditCard, label: 'Transaction Management' },
           { to: '/admin/audit-log', icon: Activity , label: 'Audit Logs' }
         ];
     }

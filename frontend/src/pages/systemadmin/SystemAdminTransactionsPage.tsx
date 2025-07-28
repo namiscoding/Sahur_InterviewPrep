@@ -209,32 +209,14 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-600">
-                  {formatCurrency(statistics?.completedRevenue || 0)}
+                  {formatCurrency(statistics?.completedRevenue || 0, 'VND')}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">From completed transactions</p>
               </CardContent>
             </Card>
           </div>
           
-          {/* Revenue by Currency */}
-          {statistics?.revenueByCurrency && statistics.revenueByCurrency.length > 0 && (
-            <div className="mt-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Revenue by Currency</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {statistics.revenueByCurrency.map((item) => (
-                      <Badge key={item.currency} variant="secondary" className="text-sm">
-                        {item.currency}: {formatCurrency(item.totalAmount, item.currency)} ({item.transactionCount} txns)
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          
         </div>
 
         {/* Search and Filters */}
@@ -364,7 +346,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {formatCurrency(transaction.amount, transaction.currency)}
+                      {formatCurrency(transaction.amount, 'VND')}
                     </TableCell>
                     <TableCell>{transaction.subscriptionPlanName}</TableCell>
                     <TableCell>
@@ -415,7 +397,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </p>
               <p className="text-xs text-gray-500">
                 Total revenue: <span className="font-medium text-green-600">
-                  {formatCurrency(statistics?.completedRevenue || 0)}
+                  {formatCurrency(statistics?.completedRevenue || 0, 'VND')}
                 </span> (completed transactions only)
               </p>
             </div>
@@ -455,7 +437,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
               </div>
               <div>
                 <Label>Amount</Label>
-                <p className="text-sm">{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</p>
+                <p className="text-sm">{formatCurrency(selectedTransaction.amount, 'VND')}</p>
               </div>
               <div>
                 <Label>Subscription Plan</Label>
@@ -491,7 +473,7 @@ const SystemAdminTransactionsPage: React.FC = () => {
                 <div className="text-xs text-gray-500">
                   {selectedTransaction.status.toLowerCase() === 'completed' && (
                     <span className="text-green-600 font-medium">
-                      Revenue: {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+                      Revenue: {formatCurrency(selectedTransaction.amount, 'VND')}
                     </span>
                   )}
                 </div>

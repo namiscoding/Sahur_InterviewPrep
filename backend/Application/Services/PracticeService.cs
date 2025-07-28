@@ -41,7 +41,7 @@ namespace InterviewPrep.API.Application.Services
 
             if (user.SubscriptionLevel == SubscriptionLevel.Free)
             {
-                var dailyLimit = _settingsService.GetValue<int>("FREE_USER_QUESTION_DAILY_LIMIT", 5);
+                var dailyLimit = _settingsService.GetValue<int>("FreeUser.SingleQuestion.DailyLimit", 5);
                 var todayStart = DateTime.UtcNow.Date;
 
                 var usageCount = await _context.UsageLogs
@@ -130,7 +130,7 @@ namespace InterviewPrep.API.Application.Services
 
             if (user.SubscriptionLevel == SubscriptionLevel.Free)
             {
-                var dailyLimit = _settingsService.GetValue<int>("FREE_USER_SESSION_DAILY_LIMIT", 2);
+                var dailyLimit = _settingsService.GetValue<int>("FreeUser.FullSession.DailyLimit", 2);
                 var todayStart = DateTime.UtcNow.Date;
 
                 var usageCount = await _context.UsageLogs
