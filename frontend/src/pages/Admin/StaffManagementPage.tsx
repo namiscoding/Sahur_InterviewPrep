@@ -32,7 +32,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from 'react-hot-toast'
 import {
   Table,
@@ -44,14 +43,10 @@ import {
 } from "@/components/ui/table"
 
 // Icons
-import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle, BarChart3 } from "lucide-react"
+import { ArrowLeft, Search, Filter, Eye, AlertCircle, PlusCircle } from "lucide-react"
 
-// Import the new statistics dashboard
-import SystemStatisticsDashboard from "./system-statistic-dashboard"
-
-const StaffManagementWithStats: React.FC = () => {
+const StaffManagementPage: React.FC = () => {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState("statistics")
   // All your existing state variables remain unchanged
   const [staffs, setStaffs] = useState<PagedResult<StaffDTO>>({
     items: [],
@@ -245,10 +240,10 @@ const StaffManagementWithStats: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
-              <p className="mt-2 text-gray-600">UserAdmin manage staff accounts and view system statistics</p>
+              <p className="mt-2 text-gray-600">Manage staff accounts and permissions</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={() => navigate("/admin/dashboard")}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
@@ -262,150 +257,134 @@ const StaffManagementWithStats: React.FC = () => {
       </header>
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="statistics">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              System Statistics
-            </TabsTrigger>
-            <TabsTrigger value="management">Staff Management</TabsTrigger>
-          </TabsList>
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search staffs by name or email..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="pl-10"
+            />
+          </div>
 
-          <TabsContent value="statistics" className="mt-6">
-            <SystemStatisticsDashboard />
-          </TabsContent>
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Filters:</span>
+            </div>
 
-          <TabsContent value="management" className="mt-6">
-            {/* Search and Filters */}
-            <div className="mb-6 space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search staffs by name or email..."
-                  value={localSearch}
-                  onChange={(e) => setLocalSearch(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="pl-10"
-                />
-              </div>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">Filters:</span>
+            <span className="text-sm font-medium text-gray-700">Total Accounts: {staffs.totalCount}</span>
+          </div>
+        </div>
+
+        {/* Staff Table */}
+        <Card className="shadow-sm">
+          <CardContent>
+            {staffs.items.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
                 </div>
-
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <span className="text-sm font-medium text-gray-700">Total Accounts: {staffs.totalCount}</span>
+                <p className="text-lg font-medium text-gray-900 mb-2">No staffs found</p>
+                <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
               </div>
-            </div>
-
-            {/* Staff Table */}
-            <Card className="shadow-sm">
-              <CardContent>
-                {staffs.items.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-gray-400 mb-4">
-                      <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-lg font-medium text-gray-900 mb-2">No staffs found</p>
-                    <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {staffs.items.map((staff) => (
-                        <TableRow key={staff.id}>
-                          <TableCell className="font-medium">{staff.displayName}</TableCell>
-                          <TableCell>{staff.email}</TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(staff.status)}>{staff.status}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="outline" size="sm" onClick={() => handleViewDetails(staff.id)}>
-                              <Eye className="h-4 w-4 mr-1" />
-                              View Details
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pagination */}
-            <div className="flex justify-center items-center space-x-4 mt-6">
-              <Button
-                variant="outline"
-                disabled={staffs.page === 1}
-                onClick={() => setStaffs((prev) => ({ ...prev, page: prev.page - 1 }))}
-              >
-                Previous
-              </Button>
-              <span>
-                Page {staffs.page} of {Math.ceil(staffs.totalCount / staffs.pageSize)}
-              </span>
-              <Button
-                variant="outline"
-                disabled={staffs.page * staffs.pageSize >= staffs.totalCount}
-                onClick={() => setStaffs((prev) => ({ ...prev, page: prev.page + 1 }))}
-              >
-                Next
-              </Button>
-            </div>
-
-            {/* Results Summary */}
-            {staffs.items.length > 0 && (
-              <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
-                <p>
-                  Showing <span className="font-medium">{staffs.items.length}</span> of{" "}
-                  <span className="font-medium">{staffs.totalCount}</span> staffs
-                </p>
-                {(searchTerm || selectedStatus !== "all") && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setLocalSearch("")
-                      setSearchTerm("")
-                      setSelectedStatus("all")
-                      toast.success("All search filters have been cleared.");
-                    }}
-                  >
-                    Clear filters
-                  </Button>
-                )}
-              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {staffs.items.map((staff) => (
+                    <TableRow key={staff.id}>
+                      <TableCell className="font-medium">{staff.displayName}</TableCell>
+                      <TableCell>{staff.email}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(staff.status)}>{staff.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(staff.id)}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
-          </TabsContent>
-        </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center space-x-4 mt-6">
+          <Button
+            variant="outline"
+            disabled={staffs.page === 1}
+            onClick={() => setStaffs((prev) => ({ ...prev, page: prev.page - 1 }))}
+          >
+            Previous
+          </Button>
+          <span>
+            Page {staffs.page} of {Math.ceil(staffs.totalCount / staffs.pageSize)}
+          </span>
+          <Button
+            variant="outline"
+            disabled={staffs.page * staffs.pageSize >= staffs.totalCount}
+            onClick={() => setStaffs((prev) => ({ ...prev, page: prev.page + 1 }))}
+          >
+            Next
+          </Button>
+        </div>
+
+        {/* Results Summary */}
+        {staffs.items.length > 0 && (
+          <div className="flex items-center justify-between text-sm text-gray-700 mt-4">
+            <p>
+              Showing <span className="font-medium">{staffs.items.length}</span> of{" "}
+              <span className="font-medium">{staffs.totalCount}</span> staffs
+            </p>
+            {(searchTerm || selectedStatus !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setLocalSearch("")
+                  setSearchTerm("")
+                  setSelectedStatus("all")
+                  toast.success("All search filters have been cleared.");
+                }}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Details Dialog - Your existing code */}
         {selectedStaff && (
@@ -457,7 +436,7 @@ const StaffManagementWithStats: React.FC = () => {
           </Dialog>
         )}
 
-        {/* Create Dialog - Your existing code */}
+        {/* Create Dialog */}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogContent>
             <DialogHeader>
@@ -493,11 +472,14 @@ const StaffManagementWithStats: React.FC = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setIsCreateOpen(false);
-                setNewDisplayName("");
-                setNewEmail("");
-              }}>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  setNewDisplayName("");
+                  setNewEmail("");
+                }}
+              >
                 Cancel
               </Button>
               <Button onClick={handleCreateStaff}>Create Staff</Button>
@@ -509,4 +491,4 @@ const StaffManagementWithStats: React.FC = () => {
   )
 }
 
-export default StaffManagementWithStats 
+export default StaffManagementPage
