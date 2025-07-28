@@ -25,12 +25,71 @@ namespace InterviewPrep.API
 
         private static async Task SeedRolesAndUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            // Code seed roles và user của bạn ở đây...
+            // --- Seed Roles ---
             if (!await roleManager.RoleExistsAsync("UserAdmin")) await roleManager.CreateAsync(new IdentityRole("UserAdmin"));
             if (!await roleManager.RoleExistsAsync("Staff")) await roleManager.CreateAsync(new IdentityRole("Staff"));
             if (!await roleManager.RoleExistsAsync("Customer")) await roleManager.CreateAsync(new IdentityRole("Customer"));
             if (!await roleManager.RoleExistsAsync("SystemAdmin")) await roleManager.CreateAsync(new IdentityRole("SystemAdmin"));
-            // ... v.v cho các user
+            if (!await roleManager.RoleExistsAsync("BusinessAdmin")) await roleManager.CreateAsync(new IdentityRole("BusinessAdmin"));
+
+            // --- Seed UserAdmin Account ---
+            string userAdminEmail = "useradmin@gmail.com";
+            var userAdmin = await userManager.FindByEmailAsync(userAdminEmail);
+            if (userAdmin == null)
+            {
+                var newUserAdmin = new ApplicationUser
+                {
+                    UserName = userAdminEmail,
+                    Email = userAdminEmail,
+                    DisplayName = "User Admin",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(newUserAdmin, "Admin@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newUserAdmin, "UserAdmin");
+                }
+            }
+
+            // --- Seed SystemAdmin Account ---
+            string systemAdminEmail = "systemadmin@gmail.com";
+            var systemAdmin = await userManager.FindByEmailAsync(systemAdminEmail);
+            if (systemAdmin == null)
+            {
+                var newSystemAdmin = new ApplicationUser
+                {
+                    UserName = systemAdminEmail,
+                    Email = systemAdminEmail,
+                    DisplayName = "System Admin",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(newSystemAdmin, "Admin@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newSystemAdmin, "SystemAdmin");
+                }
+            }
+
+            // --- Seed BusinessAdmin Account ---
+            string businessAdminEmail = "businessadmin@gmail.com";
+            var businessAdmin = await userManager.FindByEmailAsync(businessAdminEmail);
+            if (businessAdmin == null)
+            {
+                var newBusinessAdmin = new ApplicationUser
+                {
+                    UserName = businessAdminEmail,
+                    Email = businessAdminEmail,
+                    DisplayName = "Business Admin",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(newBusinessAdmin, "Admin@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newBusinessAdmin, "BusinessAdmin");
+                }
+            }
+
+            // ... bạn có thể thêm các user khác như Staff, Customer ở đây nếu cần ...
         }
 
         private static async Task SeedQuestionData(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
