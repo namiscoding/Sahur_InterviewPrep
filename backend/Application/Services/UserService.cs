@@ -6,6 +6,7 @@ using InterviewPrep.API.Data.Repositories;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace InterviewPrep.API.Application.Services
@@ -16,13 +17,15 @@ namespace InterviewPrep.API.Application.Services
         private readonly IMapper _mapper;
         private readonly IAuditLogService _auditLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly SeedAccountHelper _seedAccountHelper;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
+        public UserService(IUserRepository userRepository, IMapper mapper, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor, SeedAccountHelper seedAccountHelper)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _auditLogService = auditLogService;
             _httpContextAccessor = httpContextAccessor;
+            _seedAccountHelper = seedAccountHelper;
         }
 
         public async Task<PagedResult<UserDTO>> GetAllCustomersAsync(string search = null, string status = null, int page = 1, int pageSize = 10)
@@ -54,8 +57,9 @@ namespace InterviewPrep.API.Application.Services
             _mapper.Map(updateDto, user);
             await _userRepository.UpdateUserAsync(user);
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id, $"Updated customer status from {oldStatus} to {user.Status}", ip); // Audit log added
+            await _auditLogService.LogActionAsync(currentUserId, $"Updated customer status: {user.DisplayName} from {oldStatus} to {user.Status}", ip);
 
             return _mapper.Map<UserDTO>(user);
         }
@@ -96,9 +100,10 @@ namespace InterviewPrep.API.Application.Services
 
             await _userRepository.UpdateUserAsync(user);
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id,
-                $"Updated customer subscription from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}",
+            await _auditLogService.LogActionAsync(currentUserId,
+                $"Updated customer subscription: {user.DisplayName} from {oldLevel} (expiry: {oldExpiry}) to {user.SubscriptionLevel} (expiry: {user.SubscriptionExpiryDate}). Reason: {reason}",
                 ip);
 
             return _mapper.Map<UserDTO>(user);

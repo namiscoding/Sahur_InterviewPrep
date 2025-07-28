@@ -31,10 +31,6 @@ namespace InterviewPrep.API.Application.Services
             var (transactions, total) = await _transactionRepository.GetAllTransactionsAsync(filter);
             var dtos = _mapper.Map<IEnumerable<TransactionListDTO>>(transactions);
 
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
-            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(userId, "Viewed all customer transactions", ip);
-
             return new PagedResult<TransactionListDTO>
             {
                 Items = dtos,
@@ -49,20 +45,12 @@ namespace InterviewPrep.API.Application.Services
             var transaction = await _transactionRepository.GetTransactionByIdAsync(id);
             if (transaction == null) return null;
 
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
-            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(userId, $"Viewed transaction details for ID: {id}", ip);
-
             return _mapper.Map<TransactionDetailDTO>(transaction);
         }
 
         public async Task<TransactionStatisticsDTO> GetTransactionStatisticsAsync(TransactionFilterDTO filter)
         {
             var statistics = await _transactionRepository.GetTransactionStatisticsAsync(filter);
-
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
-            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(userId, "Viewed transaction statistics", ip);
 
             return statistics;
         }

@@ -8,7 +8,7 @@ namespace InterviewPrep.API.Controllers
 {
     [Route("api/systemadmin/dashboard")]
     [ApiController]
-    //[Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "SystemAdmin")]
     public class SystemAdminDashboardController : ControllerBase
     {
         private readonly ISystemAdminDashboardService _dashboardService;

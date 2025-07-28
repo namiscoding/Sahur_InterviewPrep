@@ -305,21 +305,29 @@ const SystemAdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div className="p-8 space-y-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Interview Prep System Dashboard
-          </h1>
-          <p className="text-gray-600 mt-2 text-lg">System overview with real data from your platform</p>
+        <div className="flex items-center space-x-4">
+          <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              System Admin Dashboard
+            </h1>
+            <p className="text-gray-600 mt-2 text-lg flex items-center">
+              <Database className="w-4 h-4 mr-2" />
+              Real-time data from your platform
+            </p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-4 py-2">
+          <Badge variant="outline" className="bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-200 px-4 py-2 shadow-sm">
             <Activity className="w-4 h-4 mr-2" />
             Live Data
           </Badge>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-4 py-2">
+          <Badge variant="outline" className="bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-700 border-blue-200 px-4 py-2 shadow-sm">
             <Calendar className="w-4 h-4 mr-2" />
             {new Date().toLocaleDateString('vi-VN')}
           </Badge>
@@ -327,7 +335,7 @@ const SystemAdminDashboard: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -360,28 +368,42 @@ const SystemAdminDashboard: React.FC = () => {
       </div>
 
       {/* Analytics Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 bg-white p-1 rounded-lg shadow-md">
-          <TabsTrigger value="overview" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
-            <span>Overview</span>
-          </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center space-x-2">
-            <BookOpen className="w-4 h-4" />
-            <span>Content</span>
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center space-x-2">
-            <Users className="w-4 h-4" />
-            <span>Users</span>
-          </TabsTrigger>
-          <TabsTrigger value="business" className="flex items-center space-x-2">
-            <DollarSign className="w-4 h-4" />
-            <span>Business</span>
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="overview" className="space-y-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+          <TabsList className="grid w-full grid-cols-4 gap-1 bg-gray-50 p-1 rounded-xl h-16">
+            <TabsTrigger 
+              value="overview" 
+              className="flex items-center justify-center space-x-2 h-full rounded-lg font-medium transition-all duration-300 text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-white data-[state=inactive]:hover:shadow-sm"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span>Overview</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="content" 
+              className="flex items-center justify-center space-x-2 h-full rounded-lg font-medium transition-all duration-300 text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-white data-[state=inactive]:hover:shadow-sm"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Content</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users" 
+              className="flex items-center justify-center space-x-2 h-full rounded-lg font-medium transition-all duration-300 text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-white data-[state=inactive]:hover:shadow-sm"
+            >
+              <Users className="w-4 h-4" />
+              <span>Users</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="business" 
+              className="flex items-center justify-center space-x-2 h-full rounded-lg font-medium transition-all duration-300 text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-white data-[state=inactive]:hover:shadow-sm"
+            >
+              <DollarSign className="w-4 h-4" />
+              <span>Business</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="mt-8 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Daily Practice Activity - Real Data */}
             <Card className="shadow-lg border-0">
               <CardHeader>
@@ -450,8 +472,8 @@ const SystemAdminDashboard: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="content" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="content" className="mt-8 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Practice Session Types */}
             <Card className="shadow-lg border-0">
               <CardHeader>
@@ -530,8 +552,8 @@ const SystemAdminDashboard: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="users" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="users" className="mt-8 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Customer Statistics */}
             <Card className="shadow-lg border-0">
               <CardHeader>
@@ -611,8 +633,8 @@ const SystemAdminDashboard: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="business" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="business" className="mt-8 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Transaction Status */}
             <Card className="shadow-lg border-0">
               <CardHeader>
