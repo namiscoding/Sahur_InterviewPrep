@@ -1,24 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext"; // 1. Import useAuth
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { User } from "@/types/auth.types";
 
 declare global {
   interface Window {
     google: any;
   }
 }
+  const getRedirectPath = (user: User | null): string => {
+    if (!user?.roles) {
+      return '/'; // Trang mặc định nếu có lỗi
+    }
+
+    // Ưu tiên vai trò có quyền cao nhất
+    if (user.roles.includes('SystemAdmin')) {
+      return '/systemadmin/dashboard';
+    }
+    if (user.roles.includes('UserAdmin')) {
+      return '/admin/dashboard';
+    }
+    if (user.roles.includes('Staff')) {
+      return '/staff-dashboard';
+    }
+    if (user.roles.includes('Customer')) {
+      return '/questions';
+    }
+
+    return '/'; // Fallback
+  };
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const { login, loginWithGoogle } = useAuth(); // 2. Lấy các hàm từ AuthContext
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [credentials, setCredentials] = useState({
@@ -26,7 +50,7 @@ export function LoginForm() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [googleScriptLoaded, setGoogleScriptLoaded] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
@@ -35,102 +59,66 @@ export function LoginForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("https://localhost:2004/api/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
-      const data = await res.json();
+      // 1. Gọi hàm login từ context, hàm này trả về thông tin user
+      const loggedInUser = await login(credentials);
+      console.log("DỮ LIỆU TỪ API:", JSON.stringify(loggedInUser, null, 2)); 
+      toast.success("Đăng nhập thành công!");
 
-      if (!res.ok) {
-        const message =
-          data?.error ||
-          (data?.errors
-            ? Object.values(data.errors).flat().join("\n")
-            : "Invalid username or password.");
-        toast.error(message);
-        return;
-      }
+      // 2. Lấy đường dẫn cần chuyển hướng từ hàm helper
+      const redirectPath = getRedirectPath(loggedInUser);
 
-      handleLoginSuccess(data.token, data.user);
+      // 3. Chuyển hướng và tải lại trang
+      setTimeout(() => {
+        window.location.href = redirectPath;
+      }, 500);
+
     } catch (err) {
-      toast.error("An error occurred. Please try again later.");
+      toast.error("Email/Username hoặc mật khẩu không chính xác.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Xử lý Google login
   const handleGoogleLogin = async (response: any) => {
     if (!response.credential) return;
-  
     try {
-      const res = await fetch("https://localhost:2004/api/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken: response.credential }),
-      });
-      const data = await res.json();
-  
-      if (!res.ok) {
-        toast.error(data?.message || "Google login failed");
-        return;
-      }
-  
-      handleLoginSuccess(data.token, data.user);
+      // 4. Gọi hàm loginWithGoogle từ context
+      const loggedInUser = await loginWithGoogle(response.credential);
+      console.log("DỮ LIỆU TỪ API:", JSON.stringify(loggedInUser, null, 2)); 
+      const redirectPath = getRedirectPath(loggedInUser);
+
+      // 3. Chuyển hướng và tải lại trang
+      setTimeout(() => {
+        window.location.href = redirectPath;
+      }, 500);
+
     } catch (err) {
-      toast.error("Google login error");
+      toast.error("Đăng nhập với Google thất bại.");
     }
-  };
-  
-
-  const handleLoginSuccess = (token: string, user: any) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-
-    const decoded: any = jwtDecode(token);
-    const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-    toast.success("Login successful!");
-
-    if (role === "Admin") navigate("/categories")
-      else if (role==="User") navigate("/questions")
-    else navigate("/");
   };
 
   useEffect(() => {
+    // Logic tải Google script giữ nguyên
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
-  
     script.onload = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: "578646681210-5an53f3ktpkf8p35r5fpkb27i2piq598.apps.googleusercontent.com",
+          client_id: "578646681210-5an53f3ktpkf8p35r5fpkb27i2piq598.apps.googleusercontent.com", 
           callback: handleGoogleLogin,
         });
-  
-        // Gắn vào div bạn tạo để Google render đúng nút chuẩn
         window.google.accounts.id.renderButton(
           document.getElementById("google-signin-button"),
-          {
-            theme: "outline",
-            size: "large",
-            width: "100%",
-          }
+          { theme: "outline", size: "large", width: "100%" }
         );
-  
-        // Tuỳ chọn: Hiển thị tự động nếu người dùng đã đăng nhập trước
         window.google.accounts.id.prompt();
-        setGoogleScriptLoaded(true);
       }
     };
-  
     document.body.appendChild(script);
   }, []);
   
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">

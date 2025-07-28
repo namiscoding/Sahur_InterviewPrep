@@ -47,52 +47,47 @@ function App() {
           {/* Prioritize Toaster position from develop */}
           <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 4000 }} />
           <Routes>
-            {/* Public Routes (accessible to everyone) - Combined from both branches */}
-            <Route path="/staff-dashboard" element={<HomePage />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/register" element={<RegisterForm />} />
-            <Route path="/forgot-password" element={<ForgotPasswordForm />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/login" element={<LoginForm />} />
+              <Route path="/register" element={<RegisterForm />} />
+              <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route element={<Layout/>}>
+              <Route path="/business/questions" element={<QuestionAnalyticsPage />} />
+              <Route path="/staff-dashboard" element={<HomePage />} />
+              {/* User upgrade account routes (from develop) */}
+              <Route path="/upgrade" element={<SubscriptionUpgradePage />} />
+              <Route path="/upgrade/fail" element={<PaymentFailurePage />} />
+              <Route path="/upgrade/success" element={<PaymentSuccessPage />} />
 
-            {/* User upgrade account routes (from develop) */}
-            <Route path="/upgrade" element={<SubscriptionUpgradePage />} />
-            <Route path="/upgrade/fail" element={<PaymentFailurePage />} />
-            <Route path="/upgrade/success" element={<PaymentSuccessPage />} />
-
-            {/* User Profile & History Routes (typically for authenticated users) - Combined from both branches */}
-            <Route path="/update-profile" element={<UserProfile />} />
-            <Route path="/change-password" element={<ChangePassword />} />
-            <Route path="/practice-history" element={<PracticeHistory />} />
-            {/* Add the unique route from your branch */}
-            <Route path="/session-detail/:id" element={<SessionQuestionList />} />
+              {/* User Profile & History Routes (typically for authenticated users) - Combined from both branches */}
+              <Route path="/update-profile" element={<UserProfile />} />
+              <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/practice-history" element={<PracticeHistory />} />
+              {/* Add the unique route from your branch */}
+              <Route path="/session-detail/:id" element={<SessionQuestionList />} />
 
 
-            {/* Staff Routes (e.g., requires 'staff' or 'admin' role) - Combined from both branches */}
-            <Route path="/staff/categories" element={<CategoryManagementPage />} />
-            {/* QuestionManagementPage and QuestionAnalyticsPage from develop */}
-            <Route path="/staff/questions" element={<QuestionManagementPage />} />
-            <Route path="/staff/questions/analytics" element={<QuestionAnalyticsPage />} />
-            {/* Add more staff routes as needed */}
+              {/* Staff Routes (e.g., requires 'staff' or 'admin' role) - Combined from both branches */}
+              <Route path="/staff/categories" element={<CategoryManagementPage />} />
+              {/* QuestionManagementPage and QuestionAnalyticsPage from develop */}
+              <Route path="/staff/questions" element={<QuestionManagementPage />} />
+              {/* Add more staff routes as needed */}
 
-            {/* UserAdmin Routes with Layout */}
-            <Route element={<UserAdminLayout />}>
+              {/* UserAdmin Routes with Layout */}
               <Route path="/admin/dashboard" element={<UserAdminDashboard />} />
               <Route path="/admin/customers" element={<CustomerManagementPage />} />
               <Route path="/admin/staffs" element={<StaffManagementPage />}/>
               <Route path="/admin/subcriptionPlan" element={<SubscriptionPlanManagementPage />} />
               <Route path="/admin/audit-log" element={<AuditLogManagementPage />} />
-            </Route>
 
-            {/* SystemAdmin Routes with Layout */}
-            <Route element={<SystemAdminLayout />}>
+              {/* SystemAdmin Routes with Layout */}
               <Route path="/systemadmin/dashboard" element={<SystemAdminDashboard />} />
               <Route path="/systemadmin/useradmins" element={<UserAdminManagementPage />} />
               <Route path="/systemadmin/transactions" element={<SystemAdminTransactionsPage />} />
               <Route path="/systemadmin/usagelimits" element={<SystemAdminUsageLimitsPage />} />
-            </Route>
 
             {/* Routes wrapped in Layout (from develop, includes /questions) */}
-            <Route element={<Layout/>}>
+            
                 {/* Keep /questions here, as it's wrapped in Layout in develop */}
                 <Route path="/" element={<QuestionBankPage />} />
                 <Route path="/questions" element={<QuestionBankPage />} />
