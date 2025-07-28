@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -19,6 +20,7 @@ namespace InterviewPrep.API.Application.Services
         private readonly IAuditLogService _auditLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
+        private readonly SeedAccountHelper _seedAccountHelper;
 
         public UserAdminService(
             IUserAdminRepository userAdminRepository,
@@ -26,7 +28,8 @@ namespace InterviewPrep.API.Application.Services
             IMapper mapper,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            IEmailService emailService)
+            IEmailService emailService,
+            SeedAccountHelper seedAccountHelper)
         {
             _userAdminRepository = userAdminRepository;
             _userManager = userManager;
@@ -34,6 +37,7 @@ namespace InterviewPrep.API.Application.Services
             _auditLogService = auditLogService;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+            _seedAccountHelper = seedAccountHelper;
         }
 
         public async Task<PagedResult<UserAdminDTO>> GetAllUserAdminsAsync(string search = null, string status = null, int page = 1, int pageSize = 10)
@@ -82,8 +86,9 @@ namespace InterviewPrep.API.Application.Services
 
             await _userManager.AddToRoleAsync(userAdmin, "UserAdmin");
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(userAdmin.Id, $"Created new user admin account: {userAdmin.Email}", ip);
+            await _auditLogService.LogActionAsync(currentUserId, $"Created new UserAdmin account: {userAdmin.DisplayName} ({userAdmin.Email})", ip);
 
             await _emailService.SendEmailAsync(
                 userAdmin.Email,
@@ -110,8 +115,9 @@ namespace InterviewPrep.API.Application.Services
             _mapper.Map(updateDto, userAdmin);
             await _userAdminRepository.UpdateUserAdminAsync(userAdmin);
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id, $"Updated user admin status from {oldStatus} to {userAdmin.Status}", ip);
+            await _auditLogService.LogActionAsync(currentUserId, $"Updated UserAdmin status: {userAdmin.DisplayName} from {oldStatus} to {userAdmin.Status}", ip);
 
             return _mapper.Map<UserAdminDTO>(userAdmin);
         }
@@ -131,8 +137,9 @@ namespace InterviewPrep.API.Application.Services
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
             }
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id, $"Reset password for user admin: {userAdmin.Email}", ip);
+            await _auditLogService.LogActionAsync(currentUserId, $"Reset password for UserAdmin: {userAdmin.DisplayName} ({userAdmin.Email})", ip);
 
             await _emailService.SendEmailAsync(
                 userAdmin.Email,

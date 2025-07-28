@@ -8,7 +8,7 @@ namespace InterviewPrep.API.Controllers
 {
     [Route("api/systemadmin/useradmin")]
     [ApiController]
-    //[Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "SystemAdmin")]
     public class SystemAdminUserAdminController : ControllerBase
     {
         private readonly IUserAdminService _userAdminService;

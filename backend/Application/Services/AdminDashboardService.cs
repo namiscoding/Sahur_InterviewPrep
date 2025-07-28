@@ -25,14 +25,6 @@ namespace InterviewPrep.API.Application.Services
         {
             var stats = await _dashboardRepository.GetUserAdminDashboardStatsAsync();
 
-            // Log the action for audit
-            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(
-                _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System",
-                "Accessed UserAdmin dashboard statistics",
-                ip
-            );
-
             return stats;
         }
     }

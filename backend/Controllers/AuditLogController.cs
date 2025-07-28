@@ -12,7 +12,7 @@ namespace InterviewPrep.API.Controllers
 {
     [Route("api/admin/audit-logs")]
     [ApiController]
-    // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SystemAdmin")]
     public class AuditLogController : ControllerBase
     {
         private readonly IAuditLogService _auditLogService;

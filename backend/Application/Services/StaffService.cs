@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -22,6 +23,7 @@ namespace InterviewPrep.API.Application.Services
         private readonly IAuditLogService _auditLogService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
+        private readonly SeedAccountHelper _seedAccountHelper;
 
         public StaffService(
             IStaffRepository staffRepository,
@@ -29,7 +31,8 @@ namespace InterviewPrep.API.Application.Services
             IMapper mapper,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            IEmailService emailService)
+            IEmailService emailService,
+            SeedAccountHelper seedAccountHelper)
         {
             _staffRepository = staffRepository;
             _userManager = userManager;
@@ -37,6 +40,7 @@ namespace InterviewPrep.API.Application.Services
             _auditLogService = auditLogService;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+            _seedAccountHelper = seedAccountHelper;
         }
 
         public async Task<PagedResult<StaffDTO>> GetAllStaffAsync(string search = null, string status = null, int page = 1, int pageSize = 10)
@@ -85,8 +89,9 @@ namespace InterviewPrep.API.Application.Services
 
             await _userManager.AddToRoleAsync(staff, "Staff");
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(staff.Id, $"Created new staff account: {staff.Email}", ip);
+            await _auditLogService.LogActionAsync(currentUserId, $"Created new staff account: {staff.DisplayName} ({staff.Email})", ip);
 
             await _emailService.SendEmailAsync(
                 staff.Email,
@@ -113,8 +118,9 @@ namespace InterviewPrep.API.Application.Services
             _mapper.Map(updateDto, staff);
             await _staffRepository.UpdateStaffAsync(staff);
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id, $"Updated staff status from {oldStatus} to {staff.Status}", ip);
+            await _auditLogService.LogActionAsync(currentUserId, $"Updated staff status: {staff.DisplayName} from {oldStatus} to {staff.Status}", ip);
 
             return _mapper.Map<StaffDTO>(staff);
         }
@@ -134,8 +140,9 @@ namespace InterviewPrep.API.Application.Services
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
             }
 
+            var currentUserId = await _seedAccountHelper.GetCurrentUserIdAsync();
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-            await _auditLogService.LogActionAsync(id, $"Reset password for staff: {staff.Email}", ip);
+            await _auditLogService.LogActionAsync(currentUserId, $"Reset password for staff: {staff.DisplayName} ({staff.Email})", ip);
 
             await _emailService.SendEmailAsync(
                 staff.Email,

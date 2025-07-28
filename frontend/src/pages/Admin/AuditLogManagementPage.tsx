@@ -31,21 +31,19 @@ const AuditLogManagementPage: React.FC = () => {
     // Filter states
     const [filters, setFilters] = useState<AuditLogFilterParams>({
         userName: '',
-        userRole: 'all', // "Admin", "Staff", "Customer", "No Role", "all"
-        area: 'all',    // "Category", "Question", "Subscription Plan", "User", "Unknown", "all"
-        actionType: 'all', // "Added", "Updated", "Deleted", "Activated", "Inactivated", "Batch Activated", "Batch Inactivated", "Logged In/Out"
+        userRole: 'all', // "SystemAdmin", "UserAdmin", "Staff", "Customer", "BusinessAdmin", "all"
+        area: 'all',    // "Customer", "Staff", "UserAdmin", "Category", "Question", "Subscription", "System", "Transaction", "all"
+        actionType: 'all', // "Created", "Updated", "Deleted", "Activated", "Inactivated", "Reset Password", etc.
         startDate: undefined,
         endDate: undefined,
     });
 
-    // Options for dropdowns (match with your Action parsing logic in backend)
-    // You need to adjust these lists to exactly match what the backend returns
-    // and what you want to display/filter.
-    const roleOptions = ["all", "Admin", "Staff", "Customer", "No Role"];
-    const areaOptions = ["all", "Category", "Question", "Subscription Plan", "User", "Unknown"];
+    // Options for dropdowns (match với backend parsing logic)
+    const roleOptions = ["all", "SystemAdmin", "UserAdmin", "Staff", "Customer", "BusinessAdmin"];
+    const areaOptions = ["all", "Customer", "Staff", "UserAdmin", "Category", "Question", "Subscription", "System", "Transaction"];
     const actionTypeOptions = [
-        "all", "Added", "Updated", "Deleted", "Activated", "Inactivated",
-        "Batch Activated", "Batch Inactivated", "Logged In", "Logged Out", "Unknown"
+        "all", "Created", "Updated", "Deleted", "Activated", "Inactivated", "Reset Password",
+        "Batch Activated", "Batch Inactivated", "Logged In", "Logged Out"
     ];
 
     const fetchAuditLogs = async () => {

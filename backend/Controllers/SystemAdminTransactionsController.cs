@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.DTOs.Transaction;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ namespace InterviewPrep.API.Controllers
 {
     [Route("api/systemadmin/transactions")]
     [ApiController]
-    //[Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "SystemAdmin")]
     public class SystemAdminTransactionsController : ControllerBase
     {
         private readonly ITransactionAdminService _transactionAdminService;

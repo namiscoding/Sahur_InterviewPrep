@@ -9,7 +9,7 @@ namespace InterviewPrep.API.Controllers
 {
     [Route("api/systemadmin/systemsetting")]
     [ApiController]
-    //[Authorize(Roles = "SystemAdmin")]
+    [Authorize(Roles = "SystemAdmin")]
     public class SystemAdminSystemSettingController : ControllerBase
     {
         private readonly ISystemSettingService _systemSettingService;
