@@ -14,7 +14,8 @@ import {
   Activity,
   FileText,
   Play,
-  CreditCard
+  CreditCard,
+  User2
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -70,6 +71,8 @@ const Sidebar: React.FC = () => {
         return [
           ...commonItems,
           { to: '/business/questions', icon: BarChart3, label: 'Questions' },
+          { to: '/business/users', icon: Users, label: 'Customers' },
+          { to: '/business/staffs', icon: User2, label: 'Staffs' },
           { to: '/admin/audit-log', icon: Activity , label: 'Audit Logs' }
         ];
     }

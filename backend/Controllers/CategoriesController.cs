@@ -1,7 +1,6 @@
 ﻿using InterviewPrep.API.Application.DTOs.Category;
 using InterviewPrep.API.Application.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -12,6 +11,7 @@ namespace InterviewPrep.API.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
+
         public CategoriesController(ICategoryService categoriasService)
         {
             _categoryService = categoriasService;
@@ -60,16 +60,10 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                // TẠM THỜI cho dev/test, hãy thay bằng ID user thật sự trong DB khi có Auth
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var newCategory = await _categoryService.AddCategoryAsync(createCategoryDto, userId);
-
 
             return CreatedAtAction(nameof(GetAllCategories), new { id = newCategory.Id }, newCategory);
         }
@@ -85,11 +79,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var updatedCategory = await _categoryService.UpdateCategoryInfoAsync(id, updateDto, userId);
@@ -113,11 +103,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var updatedCategory = await _categoryService.UpdateCategoryStatusAsync(id, updateDto, userId);

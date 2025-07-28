@@ -94,6 +94,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.DifficultyLevel);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.UsageCount).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
             // Mối quan hệ với ApplicationUser
             // Lưu ý: CreatedBy trong model Question phải là kiểu 'string'

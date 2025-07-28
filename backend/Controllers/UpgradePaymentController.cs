@@ -1,7 +1,6 @@
 ﻿using InterviewPrep.API.Application.DTOs;
 using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Application.Services.Momo;
-using InterviewPrep.API.Application.Services;
 using InterviewPrep.API.Data;
 using InterviewPrep.API.Data.Models;
 using InterviewPrep.API.Data.Models.Enums;
@@ -13,6 +12,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+
 namespace InterviewPrep.API.Controllers
 {
     [ApiController]
@@ -26,6 +26,7 @@ namespace InterviewPrep.API.Controllers
         private readonly ISubscriptionService _subscriptionService;
         private readonly ITransactionService _transactionService;
         private readonly IConfiguration _configuration;
+
         public UpgradePaymentController(
            IMomoService momoService,
            ApplicationDbContext dbContext,
@@ -33,7 +34,7 @@ namespace InterviewPrep.API.Controllers
            UserManager<ApplicationUser> userManager,
            ISubscriptionService subscriptionService,
            ITransactionService transactionService,
-           IConfiguration configuration) 
+           IConfiguration configuration)
         {
             _momoService = momoService ?? throw new ArgumentNullException(nameof(momoService));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -41,7 +42,7 @@ namespace InterviewPrep.API.Controllers
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
             _transactionService = transactionService ?? throw new ArgumentNullException(nameof(transactionService));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration)); 
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public class UpgradeMomoFormDataModel
@@ -60,8 +61,7 @@ namespace InterviewPrep.API.Controllers
         [HttpPost("initiate")]
         public async Task<IActionResult> InitiateUpgradePayment([FromBody] UpgradeMomoFormDataModel formData)
         {
-            //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userId = "user5_id";
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User not authenticated.");
@@ -81,7 +81,7 @@ namespace InterviewPrep.API.Controllers
                 }
 
                 var subscriptionPlan = await _dbContext.SubscriptionPlans
-                                                     .FirstOrDefaultAsync(p => p.Id == formData.SubscriptionPlanId && p.IsActive);
+                                                    .FirstOrDefaultAsync(p => p.Id == formData.SubscriptionPlanId && p.IsActive);
 
                 if (subscriptionPlan == null)
                 {
@@ -144,9 +144,7 @@ namespace InterviewPrep.API.Controllers
 
             var callbackData = new MomoCallbackDTO();
 
-            var frontendBaseUrl = _configuration["Frontend:ValidAudience"] ?? "http://localhost:5173"; 
-            // var frontendBaseUrl = "http://localhost:5173";
-
+            var frontendBaseUrl = _configuration["Frontend:ValidAudience"] ?? "http://localhost:5173";
 
             if (collection.TryGetValue("partnerCode", out var partnerCode)) callbackData.PartnerCode = partnerCode.ToString();
             if (collection.TryGetValue("orderId", out var orderId)) callbackData.OrderId = orderId.ToString();
@@ -226,13 +224,11 @@ namespace InterviewPrep.API.Controllers
                         TransactionCode = callbackData.TransId
                     });
 
-                    // SỬA ĐỔI TẠI ĐÂY: Sử dụng frontendBaseUrl đã khai báo
                     return Redirect($"{frontendBaseUrl}/upgrade/success?orderId={callbackData.OrderId}&transId={callbackData.TransId}&resultCode={callbackData.ResultCode}");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error updating user subscription after successful MoMo payment for UserId: {UserId}, PlanId: {PlanId}", extraDataObject.UserId, extraDataObject.SubscriptionPlanId);
-                    // SỬA ĐỔI TẠI ĐÂY: Sử dụng frontendBaseUrl đã khai báo
                     return Redirect($"{frontendBaseUrl}/upgrade/fail?orderId={callbackData.OrderId}&resultCode=99&message=InternalServerError&localMessage={Uri.EscapeDataString("An error occurred while updating your subscription.")}");
                 }
             }
@@ -251,7 +247,6 @@ namespace InterviewPrep.API.Controllers
                     TransactionCode = callbackData.TransId
                 });
 
-                // SỬA ĐỔI TẠI ĐÂY: Sử dụng frontendBaseUrl đã khai báo
                 return Redirect($"{frontendBaseUrl}/upgrade/fail?orderId={callbackData.OrderId}&resultCode={callbackData.ResultCode}&message={Uri.EscapeDataString(callbackData.Message ?? "Payment failed.")}&localMessage={Uri.EscapeDataString(callbackData.LocalMessage ?? "")}");
             }
         }
@@ -302,7 +297,6 @@ namespace InterviewPrep.API.Controllers
                         return Ok(new { RspCode = "02", Message = "Subscription plan not found" });
                     }
 
-                    // Changed to ExternalTransactionId as per Transaction model
                     var existingTransaction = await _dbContext.Transactions
                         .AnyAsync(t => t.ExternalTransactionId == result.TransId && t.Status == TransactionStatus.Completed);
 
@@ -320,13 +314,13 @@ namespace InterviewPrep.API.Controllers
                     await _transactionService.LogTransactionAsync(new Transaction
                     {
                         UserId = user.Id,
-                        SubscriptionPlanId = subscriptionPlan.Id, // Corrected property name
+                        SubscriptionPlanId = subscriptionPlan.Id,
                         Amount = result.Amount,
                         Currency = subscriptionPlan.Currency,
-                        TransactionDate = DateTime.UtcNow, // Corrected property name
+                        TransactionDate = DateTime.UtcNow,
                         Status = TransactionStatus.Completed,
-                        PaymentMethod = "MoMo", // Added PaymentMethod
-                        ExternalTransactionId = result.TransId // Corrected property name
+                        PaymentMethod = "MoMo",
+                        ExternalTransactionId = result.TransId
                     });
 
                     return Ok(new { RspCode = "00", Message = "Success" });
@@ -342,13 +336,13 @@ namespace InterviewPrep.API.Controllers
                 await _transactionService.LogTransactionAsync(new Transaction
                 {
                     UserId = extraDataObject.UserId,
-                    SubscriptionPlanId = extraDataObject.SubscriptionPlanId, // Corrected property name
+                    SubscriptionPlanId = extraDataObject.SubscriptionPlanId,
                     Amount = result.Amount,
                     Currency = "VND",
-                    TransactionDate = DateTime.UtcNow, // Corrected property name
+                    TransactionDate = DateTime.UtcNow,
                     Status = TransactionStatus.Failed,
-                    PaymentMethod = "MoMo", // Added PaymentMethod
-                    ExternalTransactionId = result.TransId // Corrected property name
+                    PaymentMethod = "MoMo",
+                    ExternalTransactionId = result.TransId
                 });
 
                 return Ok(new { RspCode = "00", Message = "Success" });

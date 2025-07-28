@@ -19,7 +19,6 @@ namespace InterviewPrep.API.Controllers
     {
         private readonly IQuestionService _questionService;
         private readonly IExcelImporterService _excelImporterService;
-        // Inject ICategoryRepository và ITagRepository để lấy dữ liệu cho dropdowns
         private readonly ICategoryRepository _categoryRepository;
         private readonly ITagRepository _tagRepository;
 
@@ -27,13 +26,13 @@ namespace InterviewPrep.API.Controllers
         public QuestionController(
             IQuestionService questionService,
             IExcelImporterService excelImporterService,
-            ICategoryRepository categoryRepository, // Inject
-            ITagRepository tagRepository) // Inject
+            ICategoryRepository categoryRepository,
+            ITagRepository tagRepository)
         {
             _questionService = questionService;
             _excelImporterService = excelImporterService;
-            _categoryRepository = categoryRepository; // Gán
-            _tagRepository = tagRepository; // Gán
+            _categoryRepository = categoryRepository;
+            _tagRepository = tagRepository;
         }
 
         [HttpGet("staff/questions")]
@@ -86,11 +85,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var newQuestion = await _questionService.AddQuestionAsync(createDto, userId);
@@ -115,11 +110,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             try
@@ -152,7 +143,6 @@ namespace InterviewPrep.API.Controllers
             {
                 return NotFound();
             }
-            // Đảm bảo rằng GetQuestionByIdAsync trả về QuestionDTO hoặc bạn ánh xạ nó ở đây
             return Ok(question);
         }
 
@@ -167,11 +157,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var updatedQuestion = await _questionService.UpdateQuestionInfoAsync(id, updateDto, userId);
@@ -195,11 +181,7 @@ namespace InterviewPrep.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                userId = "user3_id";
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized("User is not authenticated or user ID not found.");
-                }
+                return Unauthorized("User is not authenticated or user ID not found.");
             }
 
             var updatedQuestion = await _questionService.UpdateQuestionStatusAsync(id, updateDto, userId);
@@ -215,21 +197,19 @@ namespace InterviewPrep.API.Controllers
 
         [HttpGet("staff/questions/category-trends")]
         public async Task<ActionResult<IEnumerable<CategoryUsageTrendDTO>>> GetCategoryUsageTrends(
-    [FromQuery] List<int>? categoryIds,
-    [FromQuery] DateTime? startDate,
-    [FromQuery] DateTime? endDate,
-    [FromQuery] string timeUnit = "month")
+        [FromQuery] List<int>? categoryIds,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] string timeUnit = "month")
         {
             try
             {
-                // Validate timeUnit parameter
                 var validTimeUnits = new[] { "year", "quarter", "month", "week", "day" };
                 if (!validTimeUnits.Contains(timeUnit.ToLower()))
                 {
                     return BadRequest(new { message = $"Invalid timeUnit. Valid values are: {string.Join(", ", validTimeUnits)}" });
                 }
 
-                // Validate date range
                 if (startDate.HasValue && endDate.HasValue && startDate.Value > endDate.Value)
                 {
                     return BadRequest(new { message = "Start date cannot be greater than end date" });
@@ -267,14 +247,12 @@ namespace InterviewPrep.API.Controllers
                 return StatusCode(500, new
                 {
                     message = "Internal server error occurred",
-                    details = ex.Message // Remove this in production
+                    details = ex.Message
                 });
             }
         }
 
-        // NEW: Usage ranking endpoint using existing QuestionDTO
         [HttpGet("staff/questions/usage-ranking")]
-        //[Authorize(Roles = "Staff,Admin")]
         public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestionsUsageRanking(
             [FromQuery] List<int>? categoryIds,
             [FromQuery] DateTime? startDate,
@@ -301,14 +279,12 @@ namespace InterviewPrep.API.Controllers
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Error retrieving questions usage ranking");
                 return StatusCode(500, new { message = "Internal server error occurred" });
             }
         }
 
-        // DEPRECATED: Keep for backward compatibility
         [HttpGet("staff/questions/analytics")]
-        //[Obsolete("Use /staff/questions/category-trends and /staff/questions/usage-ranking instead")]
+        [Obsolete("Use /staff/questions/category-trends and /staff/questions/usage-ranking instead")]
         public async Task<ActionResult<IEnumerable<QuestionDTO>>> GetQuestionAnalytics(
             [FromQuery] List<int>? categoryIds,
             [FromQuery] DateTime? startDate,
@@ -316,7 +292,6 @@ namespace InterviewPrep.API.Controllers
             [FromQuery] bool orderByUsageDescending = true,
             [FromQuery] int? topN = null)
         {
-            // Redirect to new usage ranking endpoint
             return await GetQuestionsUsageRanking(categoryIds, startDate, endDate, orderByUsageDescending, topN);
         }
 
@@ -346,104 +321,76 @@ namespace InterviewPrep.API.Controllers
         }
 
         [HttpGet("staff/questions/template/download")]
-        // [Authorize(Roles = "Staff,Admin")] // Uncomment nếu cần xác thực
-        public async Task<IActionResult> DownloadQuestionExcelTemplate() // Đổi thành async Task<IActionResult>
+        public async Task<IActionResult> DownloadQuestionExcelTemplate()
         {
             using (var package = new ExcelPackage())
             {
                 var worksheet = package.Workbook.Worksheets.Add("QuestionTemplate");
 
-                // Đặt tiêu đề cho các cột (như cũ)
                 worksheet.Cells[1, 1].Value = "Content";
                 worksheet.Cells[1, 2].Value = "SampleAnswer";
-                worksheet.Cells[1, 3].Value = "DifficultyLevel"; // Enum: Easy, Medium, Hard
-                worksheet.Cells[1, 4].Value = "IsActive";       // TRUE/FALSE
-                worksheet.Cells[1, 5].Value = "CategoryNames";  // Tên Category, cách nhau bởi dấu phẩy
-                worksheet.Cells[1, 6].Value = "TagNames";       // Tên Tag, cách nhau bởi dấu phẩy
+                worksheet.Cells[1, 3].Value = "DifficultyLevel";
+                worksheet.Cells[1, 4].Value = "IsActive";
+                worksheet.Cells[1, 5].Value = "CategoryNames";
+                worksheet.Cells[1, 6].Value = "TagNames";
 
-                // Căn chỉnh độ rộng cột tự động
                 worksheet.Cells[1, 1, 1, 6].AutoFitColumns();
 
-                // Tạo một Worksheet ẩn để chứa danh sách Data Validation (Dropdowns)
                 var hiddenListWorksheet = package.Workbook.Worksheets.Add("Lists");
-                hiddenListWorksheet.Hidden = eWorkSheetHidden.VeryHidden; // Ẩn worksheet này
+                hiddenListWorksheet.Hidden = eWorkSheetHidden.VeryHidden;
 
-                // --- DATA VALIDATION (DROPDOWNS) ---
-
-                // 1. DifficultyLevel (Cột C)
                 var difficultyLevels = Enum.GetNames(typeof(DifficultyLevel)).ToList();
-                // Thêm các giá trị này vào cột A của hiddenListWorksheet
                 for (int i = 0; i < difficultyLevels.Count; i++)
                 {
                     hiddenListWorksheet.Cells[i + 1, 1].Value = difficultyLevels[i];
                 }
-                // Áp dụng Data Validation cho cột DifficultyLevel (Cột C)
                 var difficultyValidation = worksheet.DataValidations.AddListValidation("C2:C1000");
                 difficultyValidation.Formula.ExcelFormula = $"=Lists!$A$1:$A${difficultyLevels.Count}";
                 difficultyValidation.PromptTitle = "Chọn mức độ khó";
                 difficultyValidation.Prompt = "Vui lòng chọn một trong các mức độ: Easy, Medium, Hard.";
 
-                // 2. IsActive (Cột D)
                 var activeOptions = new List<string> { "TRUE", "FALSE" };
-                // Thêm các giá trị này vào cột B của hiddenListWorksheet
                 for (int i = 0; i < activeOptions.Count; i++)
                 {
                     hiddenListWorksheet.Cells[i + 1, 2].Value = activeOptions[i];
                 }
-                // Áp dụng Data Validation cho cột IsActive (Cột D)
                 var activeValidation = worksheet.DataValidations.AddListValidation("D2:D1000");
                 activeValidation.Formula.ExcelFormula = $"=Lists!$B$1:$B${activeOptions.Count}";
                 activeValidation.PromptTitle = "Chọn trạng thái";
                 activeValidation.Prompt = "Vui lòng chọn TRUE hoặc FALSE.";
 
-                // 3. CategoryNames (Cột E)
                 var allCategories = await _categoryRepository.GetAllCategoriesAsync();
                 var categoryNames = allCategories.Select(c => c.Name).ToList();
-                // Thêm các giá trị này vào cột C của hiddenListWorksheet
                 for (int i = 0; i < categoryNames.Count; i++)
                 {
                     hiddenListWorksheet.Cells[i + 1, 3].Value = categoryNames[i];
                 }
-                // Áp dụng Data Validation cho cột CategoryNames (Cột E)
                 var categoryValidation = worksheet.DataValidations.AddListValidation("E2:E1000");
                 categoryValidation.Formula.ExcelFormula = $"=Lists!$C$1:$C${categoryNames.Count}";
                 categoryValidation.PromptTitle = "Chọn (các) Category";
                 categoryValidation.Prompt = "Chọn từ danh sách. Nếu nhiều, cách nhau bằng dấu phẩy (,).";
 
-                // 4. TagNames (Cột F)
                 var allTags = await _tagRepository.GetAllTagsAsync();
                 var tagNames = allTags.Select(t => t.Name).ToList();
-                // Thêm các giá trị này vào cột D của hiddenListWorksheet
                 for (int i = 0; i < tagNames.Count; i++)
                 {
                     hiddenListWorksheet.Cells[i + 1, 4].Value = tagNames[i];
                 }
-                // Áp dụng Data Validation cho cột TagNames (Cột F)
                 var tagValidation = worksheet.DataValidations.AddListValidation("F2:F1000");
                 tagValidation.Formula.ExcelFormula = $"=Lists!$D$1:$D${tagNames.Count}";
                 tagValidation.PromptTitle = "Chọn (các) Tag";
-                tagValidation.Prompt = "Chọn từ danh sách. Nếu nhiều, cách nhau bằng dấu phẩy (,). Tag mới sẽ được tạo tự động.";
+                tagValidation.Prompt = "Chọn từ danh sách. Nếu nhiều, cách nhau bằng dấu phẩy (,). Tag mới sẽ được tạo tự động nếu chưa tồn tại.";
 
-                // --- COMMENTS / NOTES ---
-
-                // Comment cho Content
                 var contentComment = worksheet.Cells["A1"].AddComment("Nội dung chính của câu hỏi (bắt buộc).", "Hệ thống");
-                // Comment cho SampleAnswer
                 var sampleAnswerComment = worksheet.Cells["B1"].AddComment("Câu trả lời mẫu (có thể để trống).", "Hệ thống");
-                // Comment cho DifficultyLevel
                 var difficultyComment = worksheet.Cells["C1"].AddComment("Mức độ khó của câu hỏi. Vui lòng chọn từ danh sách dropdown.", "Hệ thống");
-                // Comment cho IsActive
                 var activeComment = worksheet.Cells["D1"].AddComment("Trạng thái hoạt động của câu hỏi. Vui lòng chọn TRUE hoặc FALSE.", "Hệ thống");
-                // Comment cho CategoryNames
                 var categoryComment = worksheet.Cells["E1"].AddComment("Tên các Category liên quan. Nếu có nhiều, cách nhau bằng dấu phẩy (ví dụ: 'C#, OOP'). Phải là Category đã tồn tại.", "Hệ thống");
-                // Comment cho TagNames
                 var tagComment = worksheet.Cells["F1"].AddComment("Tên các Tag liên quan. Nếu có nhiều, cách nhau bằng dấu phẩy (ví dụ: 'SQL, Database'). Tag sẽ được tạo tự động nếu chưa tồn tại.", "Hệ thống");
 
 
-                // Chuyển package thành byte array
                 var fileBytes = package.GetAsByteArray();
 
-                // Trả về file
                 return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "QuestionTemplate.xlsx");
             }
         }

@@ -36,6 +36,8 @@ import AuditLogManagementPage from './pages/admin/AuditLogManagementPage'
 import UserAdminManagementPage from './pages/systemadmin/UserAdminManagementPage';
 import SystemAdminTransactionsPage from './pages/systemadmin/SystemAdminTransactionsPage';
 import SystemAdminUsageLimitsPage from './pages/systemadmin/SystemAdminUsageLimitsPage';
+import UserEngagementPage from './pages/admin/UserEngagementPage';
+import StaffPerformancePage from './pages/admin/StaffPerformancePage';
 
 
 
@@ -52,6 +54,9 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordForm />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route element={<Layout/>}>
+              {/* Business Admin Pages */}
+              <Route path="/business/users" element={<UserEngagementPage />} />
+              <Route path="/business/staffs" element={<StaffPerformancePage />} />
               <Route path="/business/questions" element={<QuestionAnalyticsPage />} />
               <Route path="/staff-dashboard" element={<HomePage />} />
               {/* User upgrade account routes (from develop) */}

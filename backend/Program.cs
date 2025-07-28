@@ -92,6 +92,7 @@ builder.Services.AddScoped<ITransactionAdminService, TransactionAdminService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
 builder.Services.AddScoped<IUserAdminDashboardService, UserAdminDashboardService>();
 builder.Services.AddScoped<ISystemAdminDashboardService, SystemAdminDashboardService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 

@@ -98,7 +98,11 @@ namespace InterviewPrep.API.Application.Services
             session.Status = SessionStatus.Completed;
             session.CompletedAt = DateTime.UtcNow;
             session.OverallScore = score;
-
+            var question = sessionAnswer.Question;
+            if (question != null)
+            {
+                question.UsageCount++;
+            }
             var usageLog = new UsageLog
             {
                 UserId = session.UserId,
@@ -231,6 +235,7 @@ namespace InterviewPrep.API.Application.Services
         {
             var session = await _context.MockSessions
                 .Include(s => s.SessionAnswers)
+                     .ThenInclude(sa => sa.Question)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
 
             if (session == null)
@@ -245,6 +250,15 @@ namespace InterviewPrep.API.Application.Services
             {
                 session.OverallScore = session.SessionAnswers.Average(sa => sa.Score);
             }
+
+            foreach (var answer in session.SessionAnswers)
+            {
+                if (answer.Question != null)
+                {
+                    answer.Question.UsageCount++;
+                }
+            }
+
 
             var usageLog = new UsageLog
             {

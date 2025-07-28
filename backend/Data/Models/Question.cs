@@ -10,7 +10,8 @@ namespace InterviewPrep.API.Data.Models
         public DifficultyLevel DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
         public int UsageCount { get; set; }
-        public string CreatedBy { get; set; } 
+        public string CreatedBy { get; set; }
+        public DateTime CreatedAt { get; set; }
         public virtual ApplicationUser Creator { get; set; } 
         public virtual ICollection<QuestionCategory> QuestionCategories { get; set; } = new List<QuestionCategory>();
         public virtual ICollection<QuestionTag> QuestionTags { get; set; } = new List<QuestionTag>();
